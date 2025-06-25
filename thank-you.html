@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank You – FleetLinkr</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      text-align: center;
+      padding: 50px 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      animation: fadeInUp 1s ease-out;
+      max-width: 400px;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .checkmark {
+      font-size: 60px;
+      color: #28a745;
+      animation: pop 0.4s ease-out;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(0.3);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      color: #0074D9;
+      margin-top: 20px;
+    }
+
+    p {
+      color: #555;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 25px;
+      text-decoration: none;
+      color: white;
+      background-color: #0074D9;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+    }
+
+    a:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="checkmark">✔️</div>
+    <h1>Thank You!</h1>
+    <p>Your message has been received.<br />We’ll be in touch shortly.</p>
+    <a href="index.html">Back to Home</a>
+  </div>
+</body>
+</html>

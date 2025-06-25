@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell Your TLC Vehicle | FleetLinkr</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0074D9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FleetLinkr">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+<link rel="shortcut icon" href="/assets/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#0074D9">
+
+
+  
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script src="assets/js/mobile-menu.js" defer></script>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <div class="logo-container">
+        <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img" width="150" height="60">
+        <div class="logo-text">
+          <span class="logo-main">FleetLinkr</span>
+          <span class="logo-sub">NYC</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="navbar" aria-label="Main navigation">
+    <div class="navbar-container">
+      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
+        <span class="hamburger">☰</span>
+        <span class="close">✕</span>
+        <span class="sr-only">Menu</span>
+      </button>
+      <ul class="navbar-links" id="primary-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="drivers.html">For Drivers</a></li>
+        <li><a href="dealerships.html">For Dealerships</a></li>
+        <li><a href="garages.html">For Garages</a></li>
+        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
+        <li><a href="sell-vehicle.html" class="active">Sell Vehicle</a></li>
+        <li><a href="insurance.html">Insurance</a></li>
+        <li><a href="view-listings.html">Listings</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section class="hero">
+      <h1>Sell Your Taxi or FHV</h1>
+      <p>Reach 10,000+ drivers looking for TLC-ready vehicles.</p>
+    </section>
+
+    <section class="section" id="sell-form">
+      <h2>List Your Vehicle</h2>
+      <form id="vehicle-form">
+        <input type="hidden" name="formType" value="vehicle_sale">
+        
+        <div class="form-group">
+          <label for="make">Make*</label>
+          <input type="text" id="make" name="make" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="model">Model*</label>
+          <input type="text" id="model" name="model" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="year">Year*</label>
+          <input type="number" id="year" name="year" min="2000" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="mileage">Mileage*</label>
+          <input type="number" id="mileage" name="mileage" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="price">Asking Price ($)*</label>
+          <input type="number" id="price" name="price" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="photos">Upload Photos (Max 10)*</label>
+          <input type="file" id="photos" name="photos" multiple accept="image/*" required>
+        </div>
+        
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="tlc_inspection" required> 
+            I confirm this vehicle passes TLC inspection.
+          </label>
+        </div>
+
+        <div class="g-recaptcha" data-sitekey="6LemWV4rAAAAAG6HMa_C2m04EU41rVuNB-dZnfgt"></div>
+        
+        <button type="submit" id="submit-btn" class="btn">Pay & Publish Listing ($99)</button>
+        <div id="loading" class="loading">Processing...</div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 FleetLinkr. All rights reserved.</p>
+    <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
+  </footer>
+
+  <script>
+    // Initialize Supabase
+    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Vehicle form submission
+    document.getElementById('vehicle-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submit-btn');
+      const loading = document.getElementById('loading');
+      
+      submitBtn.disabled = true;
+      loading.style.display = 'block';
+
+      try {
+        const form = e.target;
+        const formData = new FormData(form);
+        const files = formData.getAll('photos');
+        const imageUrls = [];
+
+        // Upload each image
+        for (const file of files) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          
+          const { data, error } = await supabase.storage
+            .from('vehicle-images')
+            .upload(`sales/${fileName}`, file);
+          
+          if (error) throw error;
+          imageUrls.push(`${SUPABASE_URL}/storage/v1/object/public/vehicle-images/sales/${fileName}`);
+        }
+
+        // Submit form data
+        const { data, error } = await supabase.from('vehicle_sales').insert({
+          make: formData.get('make'),
+          model: formData.get('model'),
+          year: formData.get('year'),
+          mileage: formData.get('mileage'),
+          price: formData.get('price'),
+          photos: imageUrls,
+          tlc_inspection: formData.get('tlc_inspection') === 'on',
+          created_at: new Date().toISOString()
+        });
+
+        if (error) throw error;
+        window.location.href = "thank-you.html?source=vehicle-sale";
+      } catch (error) {
+        console.error('Error:', error);
+        alert("Error submitting vehicle listing. Please try again.");
+      } finally {
+        submitBtn.disabled = false;
+        loading.style.display = 'none';
+      }
+    });
+
+    // PWA Installation
+    let deferredPrompt;
+    const installBtn = document.createElement('button');
+    installBtn.className = 'install-btn';
+    installBtn.textContent = 'Install App';
+    document.body.appendChild(installBtn);
+    installBtn.style.display = 'none';
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', () => {
+      installBtn.style.display = 'none';
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted install');
+        }
+        deferredPrompt = null;
+      });
+    });
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
+
+   
+
+  </script>
+</body>
+</html>
