@@ -33,15 +33,25 @@ img {
 /* ================ */
 /* Header & Logo */
 /* ================ */
-header {
+.site-header {
   background-color: var(--white);
-  text-align: center;
-  padding: 30px 10px 20px 20px;
-  position: relative;
-  min-height: 80px;
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px; /* smaller height if you want tighter space */
+}
+
+.header-container {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.site-logo {
+  max-height: 60px; /* adjust this value to control logo size */
+  height: auto;
+  width: auto;
 }
 
 .header-container {
