@@ -1,0 +1,42 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Windows thumbnail files
+Thumbs.db
+ehthumbs.db
+
+# Node / npm (future-proof)
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Environment files (if you ever use APIs)
+.env
+.env.local
+.env.*
+
+# Editor-specific files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# System-specific
+Desktop.ini
+
+# Backup files
+*.bak
+*.tmp
+*.swp
+*.~*
+
+# OS metadata files
+Icon?
