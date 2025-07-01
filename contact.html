@@ -145,61 +145,61 @@
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Contact form submission
-    document.getElementById('contact-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const submitBtn = document.getElementById('submit-contact');
-      const loading = document.getElementById('loading-contact');
-      const feedback = document.getElementById('form-feedback');
-      
-      submitBtn.disabled = true;
-      loading.style.display = 'block';
-      feedback.classList.add('hidden');
+    // Update the contact form submission handler
+document.getElementById('contact-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submit-contact');
+  const loading = document.getElementById('loading-contact');
+  const feedback = document.getElementById('form-feedback');
+  
+  submitBtn.disabled = true;
+  loading.style.display = 'block';
+  feedback.classList.add('hidden');
 
-      try {
-        // Verify reCAPTCHA
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) {
-          throw new Error("Please complete the reCAPTCHA verification");
-        }
+  try {
+    // Verify reCAPTCHA
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) {
+      throw new Error("Please complete the reCAPTCHA verification");
+    }
 
-        const form = e.target;
-        const formData = new FormData(form);
+    const form = e.target;
+    const formData = new FormData(form);
 
-        const { data, error } = await supabase.from('contacts').insert({
-          name: formData.get('name'),
-          email: formData.get('email'),
-          phone: formData.get('phone'),
-          role: formData.get('role'),
-          subject: formData.get('subject'),
-          message: formData.get('message'),
-          created_at: new Date().toISOString(),
-          recaptcha_response: recaptchaResponse
-        });
+    // Make sure your Supabase table has these exact column names
+    const { data, error } = await supabase.from('contacts').insert({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      role: formData.get('role'),
+      subject: formData.get('subject'),
+      message: formData.get('message'),
+      created_at: new Date().toISOString(),
+      recaptcha_response: recaptchaResponse
+    }).select();
 
-        if (error) throw error;
-        
-        // Show success message
-        feedback.textContent = "Thank you! Your message has been sent successfully.";
-        feedback.className = "form-feedback success";
-        feedback.classList.remove('hidden');
-        
-        // Reset form
-        form.reset();
-        grecaptcha.reset();
-        
-      } catch (error) {
-        console.error('Contact form error:', error);
-        feedback.textContent = `Error: ${error.message}`;
-        feedback.className = "form-feedback error";
-        feedback.classList.remove('hidden');
-        if (typeof grecaptcha !== 'undefined') {
-          grecaptcha.reset();
-        }
-      } finally {
-        submitBtn.disabled = false;
-        loading.style.display = 'none';
-      }
-    });
+    if (error) throw error;
+    
+    // Show success message
+    feedback.textContent = "Thank you! Your message has been sent successfully.";
+    feedback.className = "form-feedback success";
+    feedback.classList.remove('hidden');
+    
+    // Reset form
+    form.reset();
+    grecaptcha.reset();
+    
+  } catch (error) {
+    console.error('Contact form error:', error);
+    feedback.textContent = `Error: ${error.message}`;
+    feedback.className = "form-feedback error";
+    feedback.classList.remove('hidden');
+    grecaptcha.reset();
+  } finally {
+    submitBtn.disabled = false;
+    loading.style.display = 'none';
+  }
+});
 
 
 
