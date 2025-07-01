@@ -167,35 +167,41 @@
   }
 
   // Form submission
-  document.getElementById('driver-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const submitBtn = document.getElementById('submit-btn');
-    const loading = document.getElementById('loading');
+ // Update the driver form submission handler
+document.getElementById('driver-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submit-btn');
+  const loading = document.getElementById('loading');
+  
+  submitBtn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    const formData = new FormData(e.target);
     
-    submitBtn.disabled = true;
-    loading.style.display = 'block';
+    // Make sure your Supabase table matches these fields
+    const { data, error } = await supabase.from('driver_inquiries').insert({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      vehicle_type: formData.get('vehicle_type'),
+      message: formData.get('message'),
+      created_at: new Date().toISOString()
+    }).select(); // Add .select() to get the inserted data back
 
-    try {
-      const formData = new FormData(e.target);
-      const { data, error } = await supabase.from('driver_inquiries').insert({
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        vehicle_type: formData.get('vehicle_type'),
-        message: formData.get('message'),
-        created_at: new Date().toISOString()
-      });
-
-      if (error) throw error;
-      window.location.href = "thank-you.html";
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Error submitting form: ${error.message}`);
-    } finally {
-      submitBtn.disabled = false;
-      loading.style.display = 'none';
-    }
-  });
+    if (error) throw error;
+    
+    // Redirect to thank you page
+    window.location.href = "thank-you.html?source=driver-inquiry";
+    
+  } catch (error) {
+    console.error('Error:', error);
+    alert(`Error submitting form: ${error.message}`);
+  } finally {
+    submitBtn.disabled = false;
+    loading.style.display = 'none';
+  }
+});
 
   // PWA Installation
   let deferredPrompt;
@@ -251,8 +257,7 @@
       lazyImages.forEach((lazyImage) => lazyImageObserver.observe(lazyImage));
     }
   });
+
 </script>
-
-
 </body>
 </html>
