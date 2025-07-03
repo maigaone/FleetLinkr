@@ -1,21 +1,27 @@
 // Service Worker Version
-const CACHE_VERSION = 'v3'; // Incremented version
-const CACHE_NAME = `FleetLinkr-cache-${CACHE_VERSION}`;
-const OFFLINE_URL = '/offline.html'; // Add an offline fallback page
-
-// Core Assets for Offline Functionality
 const CORE_ASSETS = [
   '/',
   '/index.html',
+  '/assets/css/styles.css',
+  '/assets/images/logo-new.png',
+  '/assets/js/mobile-menu.js',
+  '/manifest.json',
+  
+  // Critical pages
+  '/contact.html',
   '/drivers.html',
   '/dealerships.html',
   '/garages.html',
+  '/insurance.html',
+  '/sell-vehicle.html',
   '/view-listings.html',
-  '/assets/css/styles.css',
-  '/assets/images/logo-new.png',
-  '/assets/images/favicon.png',
-  '/manifest.json',
-  OFFLINE_URL // Include offline page in core assets
+  '/yellow-garages.html',
+  '/thank-you.html',
+  
+  // Essential icons
+  '/assets/icons/android-chrome-192x192.png',
+  '/assets/icons/android-chrome-512x512.png',
+  '/assets/icons/favicon.ico'
 ];
 
 // Install Event - Cache Core Assets

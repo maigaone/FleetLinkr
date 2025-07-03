@@ -1,17 +1,24 @@
 {
   "name": "FleetLinkr",
+  "short_name": "FleetLinkr",
+  "description": "TLC Rental Marketplace",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0074D9",
+  "background_color": "#ffffff",
   "icons": [
     {
       "src": "/assets/icons/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/assets/icons/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ],
-  "theme_color": "#0074D9",
-  "background_color": "#ffffff"
+  ]
 }
