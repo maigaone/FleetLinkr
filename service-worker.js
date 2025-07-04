@@ -1,4 +1,13 @@
-// Service Worker Version
+// Service Worker Configuration
+const VERSION = 'v1.0.3';
+const CACHE_NAME = `FleetLinkr-cache-${VERSION}`;
+const API_CACHE_NAME = `FleetLinkr-api-cache-${VERSION}`;
+const OFFLINE_URL = '/offline.html';
+const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000; // 5 seconds
+
+// Core Assets to Cache Immediately
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -6,6 +15,7 @@ const CORE_ASSETS = [
   '/assets/images/logo-new.png',
   '/assets/js/mobile-menu.js',
   '/manifest.json',
+  '/offline.html',
   
   // Critical pages
   '/contact.html',
@@ -24,9 +34,9 @@ const CORE_ASSETS = [
   '/assets/icons/favicon.ico'
 ];
 
-// Install Event - Cache Core Assets
+// ========== INSTALL EVENT ==========
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing.');
+  console.log(`Service Worker installing (v${VERSION})`);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -35,7 +45,6 @@ self.addEventListener('install', (event) => {
         return cache.addAll(CORE_ASSETS)
           .catch(error => {
             console.error('Failed to cache some assets:', error);
-            // Continue even if some assets fail to cache
             return Promise.resolve();
           });
       })
@@ -43,15 +52,16 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate Event - Clean Up Old Caches
+// ========== ACTIVATE EVENT ==========
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating.');
+  console.log('Service Worker activating');
   
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cache => {
-          if (cache !== CACHE_NAME && cache.startsWith('FleetLinkr-cache')) {
+          // Delete old caches that don't match current version
+          if (![CACHE_NAME, API_CACHE_NAME].includes(cache)) {
             console.log('Deleting old cache:', cache);
             return caches.delete(cache);
           }
@@ -59,107 +69,101 @@ self.addEventListener('activate', (event) => {
       );
     })
     .then(() => self.clients.claim())
+    .then(() => enforceCacheSizeLimit(CACHE_NAME))
   );
 });
 
-// Improved Fetch Handler with better error handling
+// ========== FETCH EVENT ==========
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   
-  // Skip non-GET requests and chrome-extension requests
-  if (request.method !== 'GET' || request.url.startsWith('chrome-extension://')) {
+  // Skip non-GET requests and internal requests
+  if (request.method !== 'GET' || 
+      request.url.startsWith('chrome-extension://') ||
+      request.url.includes('sockjs-node')) {
     return;
   }
 
-  // Handle API requests with network-first strategy
-  if (request.url.includes('/api/') || request.url.includes('/storage/') || request.url.includes('/rest/')) {
-    event.respondWith(
-      fetch(request)
-        .then(networkResponse => {
-          // Only cache successful responses
-          if (networkResponse.ok) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => cache.put(request, responseClone))
-              .catch(err => console.error('Failed to cache API response:', err));
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(request))
-    );
+  // API requests strategy
+  if (isApiRequest(request)) {
+    event.respondWith(apiFirstStrategy(request));
     return;
   }
 
-  // For all other requests, use cache-first with network fallback
-  event.respondWith(
-    caches.match(request)
-      .then(cachedResponse => {
-        // Return cached response if available
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // Otherwise fetch from network
-        return fetch(request)
-          .then(networkResponse => {
-            // Only cache successful responses
-            if (networkResponse.ok) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(request, responseClone))
-                .catch(err => console.error('Failed to cache response:', err));
-            }
-            return networkResponse;
-          })
-          .catch(async () => {
-            // Special handling for HTML pages
-            if (request.headers.get('accept').includes('text/html')) {
-              return caches.match(OFFLINE_URL);
-            }
-            // Return empty response for other failed requests
-            return Response.error();
-          });
-      })
-  );
+  // Static assets strategy
+  event.respondWith(assetFirstStrategy(request));
 });
 
-// Background Sync with retry logic
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 5000; // 5 seconds
+function isApiRequest(request) {
+  return request.url.includes('/api/') || 
+         request.url.includes('/storage/') || 
+         request.url.includes('/rest/');
+}
 
+async function apiFirstStrategy(request) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(API_CACHE_NAME);
+      await cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    return cachedResponse || Response.error();
+  }
+}
+
+async function assetFirstStrategy(request) {
+  try {
+    // Return from cache if available
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) return cachedResponse;
+    
+    // Otherwise fetch from network
+    const networkResponse = await fetch(request);
+    
+    // Cache successful responses
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    // Fallback for navigation requests
+    if (request.headers.get('accept').includes('text/html')) {
+      return caches.match(OFFLINE_URL);
+    }
+    return Response.error();
+  }
+}
+
+// ========== BACKGROUND SYNC ==========
 self.addEventListener('sync', (event) => {
   if (event.tag === 'submit-form') {
-    console.log('Background sync for failed form submissions');
+    console.log('Background sync for failed submissions');
     event.waitUntil(
       retryFailedSubmissions()
-        .catch(error => console.error('Background sync failed:', error))
+        .catch(error => console.error('Sync failed:', error))
     );
   }
 });
 
 async function retryFailedSubmissions() {
   const cache = await caches.open('failed-submissions');
-  const keys = await cache.keys();
+  const requests = await cache.keys();
   
-  for (const request of keys) {
+  for (const request of requests) {
     let retryCount = 0;
     let success = false;
     
     while (retryCount < MAX_RETRIES && !success) {
       try {
-        const formData = await request.json();
-        const response = await fetch(request.url, {
-          method: 'POST',
-          body: JSON.stringify(formData),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const response = await fetch(request);
         if (response.ok) {
           await cache.delete(request);
           success = true;
-          console.log('Form submission retry succeeded');
+          console.log('Submission retry succeeded');
         }
       } catch (error) {
         console.error(`Retry ${retryCount + 1} failed:`, error);
@@ -172,13 +176,12 @@ async function retryFailedSubmissions() {
   }
 }
 
-// Push Notification with better error handling
+// ========== PUSH NOTIFICATIONS ==========
 self.addEventListener('push', (event) => {
   let data;
   try {
     data = event.data.json();
   } catch (e) {
-    console.error('Failed to parse push data:', e);
     data = {
       title: 'New Update',
       body: 'There are new updates available!',
@@ -188,59 +191,90 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: '/assets/images/logo-new.png',
-    badge: '/assets/images/favicon.png',
+    icon: '/assets/icons/android-chrome-192x192.png',
+    badge: '/assets/icons/favicon-32x32.png',
     data: { url: data.url || '/' },
-    vibrate: [200, 100, 200] // Vibration pattern
+    vibrate: [200, 100, 200]
   };
 
   event.waitUntil(
     self.registration.showNotification(data.title, options)
-      .catch(error => console.error('Failed to show notification:', error))
   );
 });
 
-// Notification click handler with fallback
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
   event.waitUntil(
-    clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    }).then(clientList => {
-      if (clientList.length > 0) {
-        return clientList[0].focus();
-      }
-      return clients.openWindow(event.notification.data.url);
-    })
+    clients.matchAll({ type: 'window' })
+      .then(clientList => {
+        if (clientList.length > 0) {
+          return clientList[0].focus();
+        }
+        return clients.openWindow(event.notification.data.url);
+      })
   );
 });
 
-// Periodically clean up old caches
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'cleanup-caches') {
-    event.waitUntil(cleanupOldCaches());
-  }
-});
-
-async function cleanupOldCaches() {
-  const cacheNames = await caches.keys();
-  const currentCache = cacheNames.find(name => name === CACHE_NAME);
+// ========== CACHE MANAGEMENT ==========
+async function enforceCacheSizeLimit(cacheName) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  let size = 0;
+  const resources = [];
   
-  if (!currentCache) return;
-  
-  const cache = await caches.open(currentCache);
-  const requests = await cache.keys();
-  const now = Date.now();
-  
-  for (const request of requests) {
+  // Calculate total cache size
+  for (const request of keys) {
     const response = await cache.match(request);
-    if (!response) continue;
-    
-    const date = response.headers.get('date');
-    if (date && (now - new Date(date).getTime() > 30 * 24 * 60 * 60 * 1000)) {
-      await cache.delete(request);
+    if (response) {
+      const blob = await response.blob();
+      const resourceSize = blob.size;
+      resources.push({
+        request,
+        size: resourceSize,
+        lastUsed: response.headers.get('date') || new Date().toISOString()
+      });
+      size += resourceSize;
     }
   }
+  
+  // If over limit, delete oldest resources first
+  if (size > MAX_CACHE_SIZE) {
+    console.log(`Cache exceeds limit (${bytesToSize(size)}), cleaning...`);
+    
+    // Sort by last used (oldest first)
+    resources.sort((a, b) => new Date(a.lastUsed) - new Date(b.lastUsed));
+    
+    let deletedSize = 0;
+    for (const resource of resources) {
+      if (size - deletedSize <= MAX_CACHE_SIZE * 0.9) break; // Stop at 90% of limit
+      
+      await cache.delete(resource.request);
+      deletedSize += resource.size;
+      console.log(`Deleted: ${resource.request.url} (${bytesToSize(resource.size)})`);
+    }
+    
+    console.log(`Freed ${bytesToSize(deletedSize)} of cache`);
+  }
 }
+
+function bytesToSize(bytes) {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  if (bytes === 0) return '0 Byte';
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
+// ========== MESSAGE HANDLER ==========
+self.addEventListener('message', (event) => {
+  if (event.data.action === 'UPDATE_CACHE') {
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(CORE_ASSETS))
+      .catch(console.error);
+  }
+  
+  if (event.data.action === 'CLEAR_CACHE') {
+    caches.delete(CACHE_NAME)
+      .then(() => console.log('Cache cleared'))
+      .catch(console.error);
+  }
+});
