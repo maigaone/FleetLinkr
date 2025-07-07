@@ -6,6 +6,7 @@ const OFFLINE_URL = '/offline.html';
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5 seconds
+const CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 // Core Assets to Cache Immediately
 const CORE_ASSETS = [
@@ -36,19 +37,26 @@ const CORE_ASSETS = [
 
 // ========== INSTALL EVENT ==========
 self.addEventListener('install', (event) => {
-  console.log(`Service Worker installing (v${VERSION})`);
+  console.log(`Service Worker installing (${VERSION})`);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
+      .then(async (cache) => {
         console.log('Caching core assets');
-        return cache.addAll(CORE_ASSETS)
-          .catch(error => {
-            console.error('Failed to cache some assets:', error);
-            return Promise.resolve();
-          });
+        const cachePromises = CORE_ASSETS.map(async (asset) => {
+          try {
+            await cache.add(asset);
+            console.log(`Cached: ${asset}`);
+          } catch (error) {
+            console.error(`Failed to cache ${asset}:`, error);
+          }
+        });
+        await Promise.all(cachePromises);
       })
       .then(() => self.skipWaiting())
+      .catch((error) => {
+        console.error('Service Worker installation failed:', error);
+      })
   );
 });
 
@@ -57,9 +65,9 @@ self.addEventListener('activate', (event) => {
   console.log('Service Worker activating');
   
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cache => {
+        cacheNames.map((cache) => {
           // Delete old caches that don't match current version
           if (![CACHE_NAME, API_CACHE_NAME].includes(cache)) {
             console.log('Deleting old cache:', cache);
@@ -70,6 +78,13 @@ self.addEventListener('activate', (event) => {
     })
     .then(() => self.clients.claim())
     .then(() => enforceCacheSizeLimit(CACHE_NAME))
+    .then(() => {
+      // Set up periodic cache cleanup
+      setInterval(() => {
+        enforceCacheSizeLimit(CACHE_NAME);
+        enforceCacheSizeLimit(API_CACHE_NAME);
+      }, CLEANUP_INTERVAL);
+    })
   );
 });
 
@@ -90,7 +105,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets strategy
+  // Image-specific strategy
+  if (request.destination === 'image') {
+    event.respondWith(imageCacheStrategy(request));
+    return;
+  }
+
+  // Default static assets strategy
   event.respondWith(assetFirstStrategy(request));
 });
 
@@ -98,6 +119,28 @@ function isApiRequest(request) {
   return request.url.includes('/api/') || 
          request.url.includes('/storage/') || 
          request.url.includes('/rest/');
+}
+
+async function imageCacheStrategy(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  
+  // Return cached image if available
+  if (cached) return cached;
+  
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    // Return placeholder image if fetch fails
+    return new Response(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#eee"/><text x="50" y="50" font-size="8" text-anchor="middle" fill="#aaa">Image not available</text></svg>', 
+      { headers: { 'Content-Type': 'image/svg+xml' }}
+    );
+  }
 }
 
 async function apiFirstStrategy(request) {
@@ -217,43 +260,47 @@ self.addEventListener('notificationclick', (event) => {
 
 // ========== CACHE MANAGEMENT ==========
 async function enforceCacheSizeLimit(cacheName) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  let size = 0;
-  const resources = [];
-  
-  // Calculate total cache size
-  for (const request of keys) {
-    const response = await cache.match(request);
-    if (response) {
-      const blob = await response.blob();
-      const resourceSize = blob.size;
-      resources.push({
-        request,
-        size: resourceSize,
-        lastUsed: response.headers.get('date') || new Date().toISOString()
-      });
-      size += resourceSize;
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    let size = 0;
+    const resources = [];
+    
+    // Calculate total cache size
+    for (const request of keys) {
+      const response = await cache.match(request);
+      if (response) {
+        const blob = await response.blob();
+        const resourceSize = blob.size;
+        resources.push({
+          request,
+          size: resourceSize,
+          lastUsed: response.headers.get('date') || new Date().toISOString()
+        });
+        size += resourceSize;
+      }
     }
-  }
-  
-  // If over limit, delete oldest resources first
-  if (size > MAX_CACHE_SIZE) {
-    console.log(`Cache exceeds limit (${bytesToSize(size)}), cleaning...`);
     
-    // Sort by last used (oldest first)
-    resources.sort((a, b) => new Date(a.lastUsed) - new Date(b.lastUsed));
-    
-    let deletedSize = 0;
-    for (const resource of resources) {
-      if (size - deletedSize <= MAX_CACHE_SIZE * 0.9) break; // Stop at 90% of limit
+    // If over limit, delete oldest resources first
+    if (size > MAX_CACHE_SIZE) {
+      console.log(`Cache exceeds limit (${bytesToSize(size)}), cleaning...`);
       
-      await cache.delete(resource.request);
-      deletedSize += resource.size;
-      console.log(`Deleted: ${resource.request.url} (${bytesToSize(resource.size)})`);
+      // Sort by last used (oldest first)
+      resources.sort((a, b) => new Date(a.lastUsed) - new Date(b.lastUsed));
+      
+      let deletedSize = 0;
+      for (const resource of resources) {
+        if (size - deletedSize <= MAX_CACHE_SIZE * 0.9) break; // Stop at 90% of limit
+        
+        await cache.delete(resource.request);
+        deletedSize += resource.size;
+        console.log(`Deleted: ${resource.request.url} (${bytesToSize(resource.size)})`);
+      }
+      
+      console.log(`Freed ${bytesToSize(deletedSize)} of cache`);
     }
-    
-    console.log(`Freed ${bytesToSize(deletedSize)} of cache`);
+  } catch (error) {
+    console.error('Cache cleanup failed:', error);
   }
 }
 
@@ -268,7 +315,16 @@ function bytesToSize(bytes) {
 self.addEventListener('message', (event) => {
   if (event.data.action === 'UPDATE_CACHE') {
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_ASSETS))
+      .then(cache => {
+        const cachePromises = CORE_ASSETS.map(async (asset) => {
+          try {
+            await cache.add(asset);
+          } catch (error) {
+            console.error(`Failed to update ${asset}:`, error);
+          }
+        });
+        return Promise.all(cachePromises);
+      })
       .catch(console.error);
   }
   

@@ -31,7 +31,6 @@ img {
 }
 
 
-
 /* ================ */
 /* Header & Logo */
 /* ================ */
@@ -316,6 +315,19 @@ body.nav-open {
   .search-box {
     flex-direction: column;
   }
+
+  /* Listing specific mobile styles */
+  .listing-image-container {
+    height: 180px;
+  }
+  
+  .card-header {
+    padding: 12px;
+  }
+  
+  .listing-details {
+    padding: 12px;
+  }
 }
 
   /* Safe area insets for notches */
@@ -463,29 +475,94 @@ body.nav-open {
 
 .vehicle-card, .listing-card {
   background: var(--white);
-  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 15px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
+  overflow: hidden;
 }
 
 .vehicle-card:hover, .listing-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
 }
 
-.vehicle-card img, .listing-card img {
+/* ================ */
+/* Listing Image Styles */
+/* ================ */
+.listing-image-container {
   width: 100%;
   height: 200px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  overflow: hidden;
+  position: relative;
+  background: #f5f5f5;
 }
 
-.price {
+.listing-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.listing-image:hover {
+  transform: scale(1.03);
+}
+
+.no-image {
+  width: 100%;
+  height: 200px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-style: italic;
+}
+
+.card-header {
+  padding: 15px;
+  background: var(--primary-color);
+  color: white;
+}
+
+.card-header h3 {
+  margin: 0 0 5px 0;
   font-size: 1.2rem;
+}
+
+.tlc-plate {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.price-badge {
+  background: var(--yellow-accent);
+  color: var(--black);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
   font-weight: bold;
-  color: var(--primary-color);
-  margin: 10px 0;
+  float: right;
+}
+
+.listing-details {
+  padding: 15px;
+}
+
+.listing-details p {
+  margin: 8px 0;
+}
+
+.contact-info {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.phone-number {
+  font-family: monospace;
+  letter-spacing: 1px;
 }
 
 /* ================ */
@@ -1006,14 +1083,9 @@ body.modal-open {
   overflow: hidden;
   position: fixed;
   width: 100%;
-/* Uses JS-calculated height */
   height: var(--viewport-height, 100vh); 
-/* Prevents layout shift */
-
   padding-right: var(--scrollbar-width, 0px);
- /* Blocks iOS rubber-banding */ 
   overscroll-behavior: none;
-/* Prevents accidental zooming */
   touch-action: none; 
 }
 
@@ -1113,9 +1185,6 @@ body.modal-open {
   font-weight: bold;
   float: right;
 }
-
-
-
 
 /* ================ */
 /* Utility Classes */
