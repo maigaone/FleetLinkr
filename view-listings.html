@@ -359,12 +359,6 @@
     `;
   }
 
-  // ... rest of your existing card HTML generation ...
-  // [Keep all the existing price formatting, details, etc.]
-  
-  return card;
-}
-  
   // Format price
   const formattedPrice = listing.price_per_day 
     ? `$${listing.price_per_day.toLocaleString()}/day` 
@@ -391,7 +385,6 @@
 
   // Add click handler to contact button
   card.querySelector('.contact-btn')?.addEventListener('click', () => {
-    // Will implement contact functionality later
     alert(`Contact form for ${listing.vehicle_type} (${listing.tlc_plate}) will open`);
   });
 
