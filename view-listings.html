@@ -306,43 +306,66 @@
 
     // Create individual listing card
     function createListingCard(listing) {
-      const card = document.createElement('div');
-      card.className = 'listing-card';
+  const card = document.createElement('div');
+  card.className = 'listing-card';
 
-      // Handle images
-      const imagesHTML = createImageHTML(listing);
-      
-      // Format price
-      const formattedPrice = listing.price_per_day 
-        ? `$${listing.price_per_day.toLocaleString()}/day` 
-        : 'Price not specified';
+  // 🧠 Normalize and format image URLs
+  let images = [];
 
-      card.innerHTML = `
-        <div class="card-header">
-          <h3>${listing.vehicle_type || 'Vehicle'}</h3>
-          <p class="tlc-plate">${listing.tlc_plate || 'TLC Plate Not Provided'}</p>
-          <span class="price-badge">${formattedPrice}</span>
-        </div>     
-        ${imagesHTML}
-        <div class="listing-details">
-          <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
-          <p><strong>Rental Type:</strong> ${listing.rental_type || 'Not specified'}</p>
-          ${listing.additional_details ? `<p class="details">${listing.additional_details}</p>` : ''}
-          <div class="contact-info">
-            <p><strong>Contact:</strong> ${listing.owner_name || 'Name not provided'}</p>
-            ${listing.phone ? `<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(listing.phone)}</span></p>` : ''}
-            <button class="contact-btn" data-listing-id="${listing.id}">Contact Owner</button>
-          </div>
-        </div>
-      `;
-
-      // Add click handler to contact button
-      card.querySelector('.contact-btn')?.addEventListener('click', () => {
-        alert(`Contact form for ${listing.vehicle_type} (${listing.tlc_plate}) will open`);
-      });
-
-      return card;
+  try {
+    if (Array.isArray(listing.image_urls)) {
+      images = listing.image_urls;
+    } else if (typeof listing.image_urls === 'string') {
+      // Try to parse if it's a JSON string
+      images = JSON.parse(listing.image_urls);
     }
+  } catch (e) {
+    console.warn('Image URL parse error:', listing.image_urls, e);
+  }
+
+  // Clean and format URLs
+  const formattedImages = images.map((url) => {
+    if (url.startsWith('http')) return url;
+    return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url}`;
+  });
+
+  // Handle missing or broken images
+  const imagesHTML = formattedImages.length > 0
+    ? formattedImages.map(url =>
+        `<img src="${url}" alt="${listing.vehicle_type}" loading="lazy" onerror="this.style.display='none'">`
+      ).join('')
+    : `<div class="no-image">No Image Available</div>`;
+
+  const formattedPrice = listing.price_per_day 
+    ? `$${listing.price_per_day.toLocaleString()}/day` 
+    : 'Price not specified';
+
+  card.innerHTML = `
+    <div class="card-header">
+      <h3>${listing.vehicle_type || 'Vehicle'}</h3>
+      <p class="tlc-plate">${listing.tlc_plate || 'TLC Plate Not Provided'}</p>
+      <span class="price-badge">${formattedPrice}</span>
+    </div>
+    <div class="images">${imagesHTML}</div>
+    <div class="listing-details">
+      <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
+      <p><strong>Rental Type:</strong> ${listing.rental_type || 'Not specified'}</p>
+      ${listing.additional_details ? `<p class="details">${listing.additional_details}</p>` : ''}
+      <div class="contact-info">
+        <p><strong>Contact:</strong> ${listing.owner_name || 'Name not provided'}</p>
+        ${listing.phone ? `<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(listing.phone)}</span></p>` : ''}
+        <button class="contact-btn" data-listing-id="${listing.id}">Contact Owner</button>
+      </div>
+    </div>
+  `;
+
+  // Contact button handler
+  card.querySelector('.contact-btn')?.addEventListener('click', () => {
+    alert(`Contact form for ${listing.vehicle_type} (${listing.tlc_plate}) will open`);
+  });
+
+  return card;
+}
 
     // Helper function for image handling
     function createImageHTML(listing) {
