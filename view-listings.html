@@ -20,7 +20,6 @@
 </head>
 
 <body>
-  <!-- Header and navigation remain the same -->
   <header class="site-header">
     <div class="header-container">
       <div class="logo-container">
@@ -361,7 +360,8 @@
           <img src="${imageUrl}" 
                alt="${listing.vehicle_type || 'Vehicle listing'}" 
                loading="lazy"
-               class="listing-image">
+               class="listing-image"
+               onerror="this.parentNode.querySelector('.image-fallback').classList.remove('hidden'); this.style.display='none'">
           <div class="image-fallback hidden">Image not available</div>
         </div>
       `;
