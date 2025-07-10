@@ -178,49 +178,77 @@
 
     // Load listings from Supabase
     async function loadListings() {
+  try {
+    showLoading();
+    hideError();
+    hideNoResults();
+
+    const { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Process image URLs
+    state.allListings = data.map(listing => {
       try {
-        showLoading();
-        hideError();
-        hideNoResults();
+        if (listing.image_urls) {
+          // Handle both stringified arrays and direct arrays
+          let urls = [];
+          if (typeof listing.image_urls === 'string') {
+            try {
+              urls = JSON.parse(listing.image_urls);
+              // Handle case where it's a string but not JSON (single URL)
+              if (!Array.isArray(urls)) {
+                urls = [listing.image_urls];
+              }
+            } catch (e) {
+              // If not valid JSON, treat as single URL string
+              urls = [listing.image_urls];
+            }
+          } else if (Array.isArray(listing.image_urls)) {
+            urls = listing.image_urls;
+          }
 
-        const { data, error } = await supabase
-          .from('listings')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Process image URLs
-        // In your loadListings function, replace the image processing part with:
-       state.allListings = data.map(listing => {
-  if (listing.image_urls) {
-    // Convert to array if it's a string
-    const urls = Array.isArray(listing.image_urls) 
-      ? listing.image_urls 
-      : JSON.parse(listing.image_urls || '[]');
-    
-    // Process each URL
-    listing.image_urls = urls.map(url => getImageUrl(url)).filter(url => url);
-  }
-  return listing;
-});     
-
-        state.filteredListings = [...state.allListings];
-        state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
-        
-        if (state.allListings.length === 0) {
-          showNoResults();
-        } else {
-          renderListings();
-          updatePagination();
+          // Process URLs and ensure they're valid
+          listing.image_urls = urls
+            .map(url => {
+              // Handle null/undefined
+              if (!url) return null;
+              // Trim and clean URL
+              url = url.toString().trim();
+              // If already full URL, return as-is
+              if (url.startsWith('http')) return url;
+              // Otherwise format as full URL
+              return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url.replace(/^\//, '')}`;
+            })
+            .filter(url => url); // Remove any null/empty values
         }
-      } catch (error) {
-        console.error('Error loading listings:', error);
-        showError();
-      } finally {
-        hideLoading();
+        return listing;
+      } catch (parseError) {
+        console.error('Error processing listing images:', parseError);
+        listing.image_urls = []; // Set empty array if error occurs
+        return listing;
       }
+    });
+
+    state.filteredListings = [...state.allListings];
+    state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
+    
+    if (state.allListings.length === 0) {
+      showNoResults();
+    } else {
+      renderListings();
+      updatePagination();
     }
+  } catch (error) {
+    console.error('Error loading listings:', error);
+    showError();
+  } finally {
+    hideLoading();
+  }
+}
 
     // Apply filters and search
     function applyFilters() {
