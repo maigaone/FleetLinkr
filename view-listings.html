@@ -309,33 +309,30 @@
   const card = document.createElement('div');
   card.className = 'listing-card';
 
-  // 🧠 Normalize and format image URLs
-  let images = [];
 
-  try {
-    if (Array.isArray(listing.image_urls)) {
-      images = listing.image_urls;
-    } else if (typeof listing.image_urls === 'string') {
-      // Try to parse if it's a JSON string
-      images = JSON.parse(listing.image_urls);
-    }
-  } catch (e) {
-    console.warn('Image URL parse error:', listing.image_urls, e);
-  }
+     /* 🔄 1. normalise the incoming `image_urls` */
+    let images = [];
+    try {
+      if (Array.isArray(listing.image_urls))         images = listing.image_urls;
+      else if (typeof listing.image_urls === 'string') images = JSON.parse(listing.image_urls);
+    } catch { /* ignore parse errors */ }
 
-  // Clean and format URLs
-  const formattedImages = images.map((url) => {
-    if (url.startsWith('http')) return url;
-    return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url}`;
-  });
+    /* 🧩 2. turn every entry into a VALID public URL */
+    const formattedImages = images
+      .filter(Boolean)
+      .map(getImageUrl)
+      .filter(Boolean);   // strips any empty results
 
-  // Handle missing or broken images
-  const imagesHTML = formattedImages.length > 0
-    ? formattedImages.map(url =>
-        `<img src="${url}" alt="${listing.vehicle_type}" loading="lazy" onerror="this.style.display='none'">`
-      ).join('')
-    : `<div class="no-image">No Image Available</div>`;
+    /* 🖼 3. build the markup */
+    const imagesHTML = formattedImages.length
+      ? formattedImages.map(u =>
+          `<img src="${u}" loading="lazy" alt="${listing.vehicle_type}"
+                onerror="this.style.display='none'" crossorigin="anonymous">`
+        ).join('')
+      : '<div class="no-image">No Image Available</div>';
 
+
+    
   const formattedPrice = listing.price_per_day 
     ? `$${listing.price_per_day.toLocaleString()}/day` 
     : 'Price not specified';
@@ -427,6 +424,21 @@
       elements.noResults.style.display = 'none';
       elements.container.style.display = 'grid';
     }
+
+
+  // 🆕 --- tiny helper that ALWAYS returns a valid URL ---
+  function getImageUrl(filePath) {
+    // If it’s already an absolute URL, leave it alone
+    if (/^https?:\/\//i.test(filePath)) return filePath;
+
+    // Ask Supabase to give us the correct public URL
+    const { data } = supabase
+      .storage
+      .from('vehicle-images')
+      .getPublicUrl(filePath.trim());
+
+    return data.publicUrl;     // guaranteed to be right or empty
+  }
   </script>
 
   <!-- Contact Modal -->
