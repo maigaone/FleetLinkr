@@ -111,11 +111,15 @@
     </div>
   </main>
 
-  <script>
+  
     // 🆕 --- tiny helper that ALWAYS returns a valid URL ---
+<script>
+/* ---------- Supabase helper ----------- */
 function getImageUrl(filePath) {
+  // Already absolute? return as-is
   if (/^https?:\/\//i.test(filePath)) return filePath;
 
+  // Ask Supabase for the public URL
   const { data } = supabase
     .storage
     .from('vehicle-images')
@@ -124,296 +128,187 @@ function getImageUrl(filePath) {
   return data?.publicUrl || '';
 }
 
-    // App State
-    const state = {
-      currentPage: 1,
-      itemsPerPage: 6,
-      totalPages: 1,
-      allListings: [],
-      filteredListings: []
-    };
+/* ------------ App State --------------- */
+const state = {
+  currentPage: 1,
+  itemsPerPage: 6,
+  totalPages: 1,
+  allListings: [],
+  filteredListings: []
+};
 
-    // DOM Elements
-    const elements = {
-      container: document.getElementById('listings-container'),
-      loading: document.getElementById('loading-message'),
-      error: document.getElementById('error-message'),
-      noResults: document.getElementById('no-results-message'),
-      prevPage: document.getElementById('prev-page'),
-      nextPage: document.getElementById('next-page'),
-      pageInfo: document.getElementById('page-info'),
-      searchInput: document.getElementById('search-input'),
-      searchBtn: document.getElementById('search-btn'),
-      filterType: document.getElementById('filter-type'),
-      filterLocation: document.getElementById('filter-location'),
-      filterRentalType: document.getElementById('filter-rental-type'),
-      resetFilters: document.getElementById('reset-filters'),
-      retryBtn: document.getElementById('retry-btn')
-    };
+/* ------------ DOM Refs ---------------- */
+const el = id => document.getElementById(id);
+const elements = {
+  container: el('listings-container'),
+  loading:   el('loading-message'),
+  error:     el('error-message'),
+  noResults: el('no-results-message'),
+  prevPage:  el('prev-page'),
+  nextPage:  el('next-page'),
+  pageInfo:  el('page-info'),
+  searchInput: el('search-input'),
+  searchBtn:   el('search-btn'),
+  filterType:      el('filter-type'),
+  filterLocation:  el('filter-location'),
+  filterRentalType:el('filter-rental-type'),
+  resetFilters:    el('reset-filters'),
+  retryBtn:        el('retry-btn')
+};
 
-    // Initialize the app
-    document.addEventListener('DOMContentLoaded', () => {
-      loadListings();
-      setupEventListeners();
+/* ------------ Init -------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  loadListings();
+  setupEventListeners();
+});
+
+/* ------------ Events ------------------ */
+function setupEventListeners() {
+  elements.searchBtn.addEventListener('click', applyFilters);
+  elements.searchInput.addEventListener('keyup', e => e.key === 'Enter' && applyFilters());
+  elements.filterType.addEventListener('change', applyFilters);
+  elements.filterLocation.addEventListener('change', applyFilters);
+  elements.filterRentalType.addEventListener('change', applyFilters);
+  elements.resetFilters.addEventListener('click', resetFilters);
+  elements.prevPage.addEventListener('click', goToPreviousPage);
+  elements.nextPage.addEventListener('click', goToNextPage);
+  elements.retryBtn.addEventListener('click', loadListings);
+}
+
+/* ------------ Data Load --------------- */
+async function loadListings() {
+  try {
+    showLoading();
+    hideError(); hideNoResults();
+
+    const { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    state.allListings = (data || []).map(l => {
+      /* --- robust image_urls parser --- */
+      let urls = [];
+      try {
+        if (Array.isArray(l.image_urls))       urls = l.image_urls;
+        else if (typeof l.image_urls === 'string') {
+          const str = l.image_urls.trim();
+          if (str.startsWith('['))  urls = JSON.parse(str);
+          else                      urls = str.split(',').map(u=>u.trim());
+        }
+      } catch (e) {
+        console.warn('parse error for listing', l.id, e);
+      }
+
+      console.log('Listing', l.id, 'parsed URLs:', urls);
+      l.image_urls = urls.map(getImageUrl).filter(Boolean);
+      return l;
     });
 
-    // Event Listeners
-    function setupEventListeners() {
-      elements.searchBtn.addEventListener('click', applyFilters);
-      elements.searchInput.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') applyFilters();
-      });
-      
-      elements.filterType.addEventListener('change', applyFilters);
-      elements.filterLocation.addEventListener('change', applyFilters);
-      elements.filterRentalType.addEventListener('change', applyFilters);
-      elements.resetFilters.addEventListener('click', resetFilters);
-      elements.prevPage.addEventListener('click', goToPreviousPage);
-      elements.nextPage.addEventListener('click', goToNextPage);
-      elements.retryBtn.addEventListener('click', loadListings);
-    }
+    state.filteredListings = [...state.allListings];
+    state.totalPages = Math.max(1, Math.ceil(state.filteredListings.length / state.itemsPerPage));
 
-    // Load listings from Supabase
-    async function loadListings() {
-      try {
-        showLoading();
-        hideError();
-        hideNoResults();
+    state.allListings.length ? renderListings() : showNoResults();
+    updatePagination();
+  } catch (err) {
+    console.error(err); showError();
+  } finally {
+    hideLoading();
+  }
+}
 
-        const { data, error } = await supabase
-          .from('listings')
-          .select('*')
-          .order('created_at', { ascending: false });
+/* ------------ Filters ----------------- */
+function applyFilters() {
+  try {
+    const q       = elements.searchInput.value.toLowerCase();
+    const type    = elements.filterType.value;
+    const loc     = elements.filterLocation.value;
+    const rentype = elements.filterRentalType.value;
 
-        if (error) throw error;
+    state.filteredListings = state.allListings.filter(l => {
+      const matchSearch = (l.vehicle_type||'').toLowerCase().includes(q) ||
+                          (l.tlc_plate||'').toLowerCase().includes(q)     ||
+                          (l.additional_details||'').toLowerCase().includes(q);
+      const matchType   = type ? l.vehicle_type === type : true;
+      const matchLoc    = loc  ? l.location     === loc  : true;
+      const matchRent   = rentype ? l.rental_type === rentype : true;
+      return matchSearch && matchType && matchLoc && matchRent;
+    });
 
-        // Process image URLs
-        state.allListings = data.map(listing => {
-          if (listing.image_urls) {
-            // Convert string array to actual array if needed
-            const urls = Array.isArray(listing.image_urls) 
-              ? listing.image_urls 
-              : JSON.parse(listing.image_urls || '[]');
-            
-            // Format URLs properly
-            listing.image_urls = urls.map(url => {
-              // If URL doesn't start with http, prepend Supabase URL
-              if (url && !url.startsWith('http') && !url.startsWith('/')) {
-                return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url}`;
-              }
-              return url;
-            }).filter(url => url); // Remove any empty/null URLs
-          }
-          return listing;
-        });
+    state.currentPage = 1;
+    state.totalPages  = Math.max(1, Math.ceil(state.filteredListings.length / state.itemsPerPage));
+    state.filteredListings.length ? (hideNoResults(), renderListings()) : showNoResults();
+    updatePagination();
+  } catch (err) {
+    console.error(err); showError();
+  }
+}
+function resetFilters() { elements.searchInput.value=''; elements.filterType.value=''; elements.filterLocation.value=''; elements.filterRentalType.value=''; applyFilters(); }
 
-        state.filteredListings = [...state.allListings];
-        state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
-        
-        if (state.allListings.length === 0) {
-          showNoResults();
-        } else {
-          renderListings();
-          updatePagination();
-        }
-      } catch (error) {
-        console.error('Error loading listings:', error);
-        showError();
-      } finally {
-        hideLoading();
-      }
-    }
+/* ------------ Pagination -------------- */
+function goToPreviousPage(){ if (state.currentPage>1){ state.currentPage--; renderListings(); updatePagination(); } }
+function goToNextPage(){ if (state.currentPage<state.totalPages){ state.currentPage++; renderListings(); updatePagination(); } }
+function updatePagination(){
+  elements.pageInfo.textContent = `Page ${state.currentPage} of ${state.totalPages}`;
+  elements.prevPage.disabled = state.currentPage===1;
+  elements.nextPage.disabled = state.currentPage===state.totalPages;
+}
 
-    // Apply filters and search
-    function applyFilters() {
-      try {
-        const searchTerm = elements.searchInput.value.toLowerCase();
-        const typeFilter = elements.filterType.value;
-        const locationFilter = elements.filterLocation.value;
-        const rentalTypeFilter = elements.filterRentalType.value;
+/* ------------ Render ------------------ */
+function renderListings() {
+  const start = (state.currentPage-1)*state.itemsPerPage;
+  const page  = state.filteredListings.slice(start, start+state.itemsPerPage);
 
-        state.filteredListings = state.allListings.filter(listing => {
-          const matchesSearch = 
-            (listing.vehicle_type?.toLowerCase().includes(searchTerm)) ||
-            (listing.tlc_plate?.toLowerCase().includes(searchTerm)) ||
-            (listing.additional_details?.toLowerCase().includes(searchTerm));
-          
-          const matchesType = typeFilter ? listing.vehicle_type === typeFilter : true;
-          const matchesLocation = locationFilter ? listing.location === locationFilter : true;
-          const matchesRentalType = rentalTypeFilter ? listing.rental_type === rentalTypeFilter : true;
+  elements.container.innerHTML='';
+  if (!page.length){ showNoResults(); return; }
 
-          return matchesSearch && matchesType && matchesLocation && matchesRentalType;
-        });
+  const frag=document.createDocumentFragment();
+  page.forEach(l=>frag.appendChild(createListingCard(l)));
+  elements.container.appendChild(frag);
+}
+function createListingCard(l){
+  const card=document.createElement('div');
+  card.className='listing-card';
 
-        state.currentPage = 1;
-        state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
-        
-        if (state.filteredListings.length === 0) {
-          showNoResults();
-        } else {
-          hideNoResults();
-          renderListings();
-          updatePagination();
-        }
-      } catch (error) {
-        console.error('Filtering error:', error);
-        showError();
-      }
-    }
-
-    // Reset all filters
-    function resetFilters() {
-      elements.searchInput.value = '';
-      elements.filterType.value = '';
-      elements.filterLocation.value = '';
-      elements.filterRentalType.value = '';
-      applyFilters();
-    }
-
-    // Pagination functions
-    function goToPreviousPage() {
-      if (state.currentPage > 1) {
-        state.currentPage--;
-        renderListings();
-        updatePagination();
-      }
-    }
-
-    function goToNextPage() {
-      if (state.currentPage < state.totalPages) {
-        state.currentPage++;
-        renderListings();
-        updatePagination();
-      }
-    }
-
-    function updatePagination() {
-      elements.pageInfo.textContent = `Page ${state.currentPage} of ${state.totalPages}`;
-      elements.prevPage.disabled = state.currentPage === 1;
-      elements.nextPage.disabled = state.currentPage === state.totalPages;
-    }
-
-    // Render listings to the DOM
-    function renderListings() {
-      const startIdx = (state.currentPage - 1) * state.itemsPerPage;
-      const endIdx = startIdx + state.itemsPerPage;
-      const listingsToShow = state.filteredListings.slice(startIdx, endIdx);
-
-      elements.container.innerHTML = '';
-
-      if (listingsToShow.length === 0) {
-        showNoResults();
-        return;
-      }
-
-      const fragment = document.createDocumentFragment();
-
-      listingsToShow.forEach(listing => {
-        const card = createListingCard(listing);
-        fragment.appendChild(card);
-      });
-
-      elements.container.appendChild(fragment);
-    }
-
-    // Create individual listing card
-    function createListingCard(listing) {
-  const card = document.createElement('div');
-  card.className = 'listing-card';
-
-
-     /* 🔄 1. normalise the incoming `image_urls` */
-    let images = [];
-    try {
-      if (Array.isArray(listing.image_urls))         images = listing.image_urls;
-      else if (typeof listing.image_urls === 'string') images = JSON.parse(listing.image_urls);
-    } catch { /* ignore parse errors */ }
-
-    /* 🧩 2. turn every entry into a VALID public URL */
-    const formattedImages = images
-      .filter(Boolean)
-      .map(getImageUrl)
-      .filter(Boolean);   // strips any empty results
-
-    /* 🖼 3. build the markup */
-    const imagesHTML = formattedImages.length
-      ? formattedImages.map(u =>
-          `<img src="${u}" loading="lazy" alt="${listing.vehicle_type}"
-                onerror="this.style.display='none'" crossorigin="anonymous">`
-        ).join('')
+  const imgs = l.image_urls.length
+      ? l.image_urls.map(u=>`<img src="${u}" alt="${l.vehicle_type}" loading="lazy" onerror="this.style.display='none'>`).join('')
       : '<div class="no-image">No Image Available</div>';
 
-
-    
-  const formattedPrice = listing.price_per_day 
-    ? `$${listing.price_per_day.toLocaleString()}/day` 
-    : 'Price not specified';
-
+  const price = l.price_per_day ? `$${l.price_per_day.toLocaleString()}/day` : 'Price not specified';
   card.innerHTML = `
     <div class="card-header">
-      <h3>${listing.vehicle_type || 'Vehicle'}</h3>
-      <p class="tlc-plate">${listing.tlc_plate || 'TLC Plate Not Provided'}</p>
-      <span class="price-badge">${formattedPrice}</span>
+      <h3>${l.vehicle_type||'Vehicle'}</h3>
+      <p class="tlc-plate">${l.tlc_plate||'TLC Plate Not Provided'}</p>
+      <span class="price-badge">${price}</span>
     </div>
-    <div class="images">${imagesHTML}</div>
+    <div class="images">${imgs}</div>
     <div class="listing-details">
-      <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
-      <p><strong>Rental Type:</strong> ${listing.rental_type || 'Not specified'}</p>
-      ${listing.additional_details ? `<p class="details">${listing.additional_details}</p>` : ''}
+      <p><strong>Location:</strong> ${l.location||'Not specified'}</p>
+      <p><strong>Rental Type:</strong> ${l.rental_type||'Not specified'}</p>
+      ${l.additional_details?`<p class="details">${l.additional_details}</p>`:''}
       <div class="contact-info">
-        <p><strong>Contact:</strong> ${listing.owner_name || 'Name not provided'}</p>
-        ${listing.phone ? `<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(listing.phone)}</span></p>` : ''}
-        <button class="contact-btn" data-listing-id="${listing.id}">Contact Owner</button>
+        <p><strong>Contact:</strong> ${l.owner_name||'Name not provided'}</p>
+        ${l.phone?`<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(l.phone)}</span></p>`:''}
+        <button class="contact-btn" data-id="${l.id}">Contact Owner</button>
       </div>
-    </div>
-  `;
-
-  // Contact button handler
-  card.querySelector('.contact-btn')?.addEventListener('click', () => {
-    alert(`Contact form for ${listing.vehicle_type} (${listing.tlc_plate}) will open`);
-  });
-
+    </div>`;
+  card.querySelector('.contact-btn').addEventListener('click',()=>alert(`Contact form for ${l.vehicle_type}`));
   return card;
 }
 
+/* ------------ Helpers ----------------- */
+function formatPhoneNumber(p){ if(!p)return ''; const c=(''+p).replace(/\D/g,''); const m=c.match(/^(\d{3})(\d{3})(\d{4})$/); return m?`(${m[1]}) ${m[2]}-${m[3]}`:p; }
 
-    // Helper function to format phone numbers
-    function formatPhoneNumber(phone) {
-      if (!phone) return '';
-      const cleaned = ('' + phone).replace(/\D/g, '');
-      const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-      return match ? `(${match[1]}) ${match[2]}-${match[3]}` : phone;
-    }
+/* ------------ UI Toggles -------------- */
+function showLoading(){ elements.loading.style.display='flex'; elements.container.style.display='none'; }
+function hideLoading(){ elements.loading.style.display='none'; elements.container.style.display='grid'; }
+function showError(){ elements.error.style.display='block'; elements.container.style.display='none'; }
+function hideError(){ elements.error.style.display='none'; }
+function showNoResults(){ elements.noResults.style.display='block'; elements.container.style.display='none'; }
+function hideNoResults(){ elements.noResults.style.display='none'; elements.container.style.display='grid'; }
 
-    // UI State Management
-    function showLoading() {
-      elements.loading.style.display = 'flex';
-      elements.container.style.display = 'none';
-    }
-
-    function hideLoading() {
-      elements.loading.style.display = 'none';
-      elements.container.style.display = 'grid';
-    }
-
-    function showError() {
-      elements.error.style.display = 'block';
-      elements.container.style.display = 'none';
-    }
-
-    function hideError() {
-      elements.error.style.display = 'none';
-    }
-
-    function showNoResults() {
-      elements.noResults.style.display = 'block';
-      elements.container.style.display = 'none';
-    }
-
-    function hideNoResults() {
-      elements.noResults.style.display = 'none';
-      elements.container.style.display = 'grid';
-    }
 
   </script>
 
