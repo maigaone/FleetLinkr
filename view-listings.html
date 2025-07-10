@@ -113,16 +113,23 @@
 
   <script>
 
-
-/*==========================*/
     // 🆕 --- tiny helper that ALWAYS returns a valid URL ---
 function getImageUrl(filePath) {
+  if (!filePath) return '';
+  
+  // If it's already a full URL, return as-is
   if (/^https?:\/\//i.test(filePath)) return filePath;
 
+  // Clean up the path - remove leading/trailing slashes and spaces
+  const cleanPath = filePath.trim().replace(/^\/+|\/+$/g, '');
+  
+  if (!cleanPath) return '';
+
+  // Get public URL from Supabase
   const { data } = supabase
     .storage
     .from('vehicle-images')
-    .getPublicUrl(filePath.trim());
+    .getPublicUrl(cleanPath);
 
   return data?.publicUrl || '';
 }
@@ -191,24 +198,20 @@ function getImageUrl(filePath) {
         if (error) throw error;
 
         // Process image URLs
-        state.allListings = data.map(listing => {
-          if (listing.image_urls) {
-            // Convert string array to actual array if needed
-            const urls = Array.isArray(listing.image_urls) 
-              ? listing.image_urls 
-              : JSON.parse(listing.image_urls || '[]');
-            
-            // Format URLs properly
-            listing.image_urls = urls.map(url => {
-              // If URL doesn't start with http, prepend Supabase URL
-              if (url && !url.startsWith('http') && !url.startsWith('/')) {
-                return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url}`;
-              }
-              return url;
-            }).filter(url => url); // Remove any empty/null URLs
-          }
-          return listing;
-        });
+        // In your loadListings function, replace the image processing part with:
+state.allListings = data.map(listing => {
+  // Process image URLs
+  if (listing.image_urls) {
+    // Convert string array to actual array if needed
+    const urls = Array.isArray(listing.image_urls) 
+      ? listing.image_urls 
+      : JSON.parse(listing.image_urls || '[]');
+    
+    // Format URLs properly using our getImageUrl helper
+    listing.image_urls = urls.map(url => getImageUrl(url)).filter(url => url);
+  }
+  return listing;
+});
 
         state.filteredListings = [...state.allListings];
         state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
@@ -417,10 +420,6 @@ function getImageUrl(filePath) {
       elements.noResults.style.display = 'none';
       elements.container.style.display = 'grid';
     }
-
-
-
-    /*================================*/
 
   </script>
 
