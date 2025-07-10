@@ -114,24 +114,17 @@
   <script>
 
     // 🆕 --- tiny helper that ALWAYS returns a valid URL ---
-function getImageUrl(filePath) {
+   function getImageUrl(filePath) {
   if (!filePath) return '';
   
   // If it's already a full URL, return as-is
   if (/^https?:\/\//i.test(filePath)) return filePath;
 
-  // Clean up the path - remove leading/trailing slashes and spaces
+  // If it's just a filename, construct the full URL
   const cleanPath = filePath.trim().replace(/^\/+|\/+$/g, '');
-  
   if (!cleanPath) return '';
 
-  // Get public URL from Supabase
-  const { data } = supabase
-    .storage
-    .from('vehicle-images')
-    .getPublicUrl(cleanPath);
-
-  return data?.publicUrl || '';
+  return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${cleanPath}`;
 }
 
     // App State
@@ -199,19 +192,18 @@ function getImageUrl(filePath) {
 
         // Process image URLs
         // In your loadListings function, replace the image processing part with:
-state.allListings = data.map(listing => {
-  // Process image URLs
+       state.allListings = data.map(listing => {
   if (listing.image_urls) {
-    // Convert string array to actual array if needed
+    // Convert to array if it's a string
     const urls = Array.isArray(listing.image_urls) 
       ? listing.image_urls 
       : JSON.parse(listing.image_urls || '[]');
     
-    // Format URLs properly using our getImageUrl helper
+    // Process each URL
     listing.image_urls = urls.map(url => getImageUrl(url)).filter(url => url);
   }
   return listing;
-});
+});     
 
         state.filteredListings = [...state.allListings];
         state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
