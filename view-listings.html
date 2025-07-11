@@ -197,46 +197,38 @@
 
     // Process image URLs
     state.allListings = data.map(listing => {
+  if (listing.image_urls) {
+    // Handle both stringified arrays and direct arrays
+    let urls = [];
+    if (typeof listing.image_urls === 'string') {
       try {
-        if (listing.image_urls) {
-          // Handle both stringified arrays and direct arrays
-          let urls = [];
-          if (typeof listing.image_urls === 'string') {
-            try {
-              urls = JSON.parse(listing.image_urls);
-              // Handle case where it's a string but not JSON (single URL)
-              if (!Array.isArray(urls)) {
-                urls = [listing.image_urls];
-              }
-            } catch (e) {
-              // If not valid JSON, treat as single URL string
-              urls = [listing.image_urls];
-            }
-          } else if (Array.isArray(listing.image_urls)) {
-            urls = listing.image_urls;
-          }
-
-          // Process URLs and ensure they're valid
-          listing.image_urls = url
-            .map(url => {
-              // Handle null/undefined
-              if (!url) return null;
-              // Trim and clean URL
-              url = url.toString().trim();
-              // If already full URL, return as-is
-              if (url.startsWith('http')) return url;
-              // Otherwise format as full URL
-              return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url.replace(/^\//, '')}`;
-            })
-            .filter(url => url); // Remove any null/empty values
-        }
-        return listing;
-      } catch (parseError) {
-        console.error('Error processing listing images:', parseError);
-        listing.image_urls = []; // Set empty array if error occurs
-        return listing;
+        urls = JSON.parse(listing.image_urls);
+        if (!Array.isArray(urls)) urls = [listing.image_urls]; // Fallback
+      } catch {
+        urls = [listing.image_urls]; // Treat as single URL
       }
-    });
+    } else if (Array.isArray(listing.image_urls)) {
+      urls = listing.image_urls;
+    }
+
+    // Clean URLs (remove null/empty, ensure valid)
+    listing.image_urls = urls
+      .filter(url => url?.trim())
+      .map(url => {
+        url = url.trim();
+        return url.startsWith('http') ? url : 
+          `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url.replace(/^\//, '')}`;
+      });
+  }
+  return listing;
+});
+
+
+
+
+
+
+
 
     state.filteredListings = [...state.allListings];
     state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
