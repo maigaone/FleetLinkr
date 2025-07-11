@@ -112,7 +112,26 @@
   </main>
 
   <script>
+   // Image upload helper (add this FIRST)
+async function uploadImage(file) {
+  if (!file) return null;
 
+  // Generate unique filename (timestamp + original name)
+  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`; // Replace spaces with hyphens
+
+  // Upload to Supabase Storage
+  const { data, error } = await supabase.storage
+    .from('vehicle-images')
+    .upload(fileName, file);
+
+  if (error) {
+    console.error("Image upload failed:", error);
+    return null;
+  }
+
+  // Return full public URL
+  return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+}
     // 🆕 --- tiny helper that ALWAYS returns a valid URL ---
    function getImageUrl(filePath) {
   if (!filePath) return '';
@@ -224,12 +243,6 @@
 });
 
 
-
-
-
-
-
-
     state.filteredListings = [...state.allListings];
     state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
     
@@ -246,8 +259,6 @@
     hideLoading();
   }
 }
-
-
 
 
     // Apply filters and search
