@@ -10,8 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/mobile-menu.js" defer></script>
 
-   <script>
-    // Initialize Supabase in head
+  <script>
+    // Initialize Supabase
     window.supabase = supabase.createClient(
       "https://dndeljolayctbafmizcl.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
@@ -45,7 +45,6 @@
         <li><a href="dealerships.html">For Dealerships</a></li>
         <li><a href="garages.html">For Garages</a></li>
         <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
-        <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
         <li><a href="insurance.html">Insurance</a></li>
         <li><a href="view-listings.html" class="active">Listings</a></li>
         <li><a href="add-listing.html">Add Listing</a></li>
@@ -113,39 +112,15 @@
   </main>
 
   <script>
-   // Image upload helper (add this FIRST)
-async function uploadImage(file) {
-  if (!file) return null;
-
-  // Generate unique filename (timestamp + original name)
-  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`; // Replace spaces with hyphens
-
-  // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
-    .from('vehicle-images')
-    .upload(fileName, file);
-
-  if (error) {
-    console.error("Image upload failed:", error);
-    return null;
-  }
-
-  // Return full public URL
-  return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
-}
-    // 🆕 --- tiny helper that ALWAYS returns a valid URL ---
-   function getImageUrl(filePath) {
-  if (!filePath) return '';
-  
-  // If it's already a full URL, return as-is
-  if (/^https?:\/\//i.test(filePath)) return filePath;
-
-  // If it's just a filename, construct the full URL
-  const cleanPath = filePath.trim().replace(/^\/+|\/+$/g, '');
-  if (!cleanPath) return '';
-
-  return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${cleanPath}`;
-}
+    // URL Helper (for image display only)
+    function getImageUrl(filePath) {
+      if (!filePath) return '';
+      if (/^https?:\/\//i.test(filePath)) return filePath;
+      const cleanPath = filePath.trim().replace(/^\/+|\/+$/g, '');
+      return cleanPath ? 
+        `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${cleanPath}` : 
+        '';
+    }
 
     // App State
     const state = {
@@ -180,13 +155,10 @@ async function uploadImage(file) {
       setupEventListeners();
     });
 
-    // Event Listeners
+    // Event Listeners (for viewing only)
     function setupEventListeners() {
       elements.searchBtn.addEventListener('click', applyFilters);
-      elements.searchInput.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') applyFilters();
-      });
-      
+      elements.searchInput.addEventListener('keyup', (e) => e.key === 'Enter' && applyFilters());
       elements.filterType.addEventListener('change', applyFilters);
       elements.filterLocation.addEventListener('change', applyFilters);
       elements.filterRentalType.addEventListener('change', applyFilters);
@@ -196,110 +168,71 @@ async function uploadImage(file) {
       elements.retryBtn.addEventListener('click', loadListings);
     }
 
-
-
-
-
-
-    // Load listings from Supabase
+    // Load listings (read-only)
     async function loadListings() {
-  try {
-    showLoading();
-    hideError();
-    hideNoResults();
-
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // Process image URLs
-    state.allListings = data.map(listing => {
-  if (listing.image_urls) {
-    // Handle both stringified arrays and direct arrays
-    let urls = [];
-    if (typeof listing.image_urls === 'string') {
       try {
-        urls = JSON.parse(listing.image_urls);
-        if (!Array.isArray(urls)) urls = [listing.image_urls]; // Fallback
-      } catch {
-        urls = [listing.image_urls]; // Treat as single URL
-      }
-    } else if (Array.isArray(listing.image_urls)) {
-      urls = listing.image_urls;
-    }
+        showLoading();
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-    // Clean URLs (remove null/empty, ensure valid)
-    listing.image_urls = urls
-      .filter(url => url?.trim())
-      .map(url => {
-        url = url.trim();
-        return url.startsWith('http') ? url : 
-          `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${url.replace(/^\//, '')}`;
-      });
-  }
-  return listing;
-});
+        if (error) throw error;
 
+        state.allListings = data.map(listing => ({
+          ...listing,
+          image_urls: processImageUrls(listing.image_urls)
+        }));
 
-    state.filteredListings = [...state.allListings];
-    state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
-    
-    if (state.allListings.length === 0) {
-      showNoResults();
-    } else {
-      renderListings();
-      updatePagination();
-    }
-  } catch (error) {
-    console.error('Error loading listings:', error);
-    showError();
-  } finally {
-    hideLoading();
-  }
-}
-
-
-    // Apply filters and search
-    function applyFilters() {
-      try {
-        const searchTerm = elements.searchInput.value.toLowerCase();
-        const typeFilter = elements.filterType.value;
-        const locationFilter = elements.filterLocation.value;
-        const rentalTypeFilter = elements.filterRentalType.value;
-
-        state.filteredListings = state.allListings.filter(listing => {
-          const matchesSearch = 
-            (listing.vehicle_type?.toLowerCase().includes(searchTerm)) ||
-            (listing.tlc_plate?.toLowerCase().includes(searchTerm)) ||
-            (listing.additional_details?.toLowerCase().includes(searchTerm));
-          
-          const matchesType = typeFilter ? listing.vehicle_type === typeFilter : true;
-          const matchesLocation = locationFilter ? listing.location === locationFilter : true;
-          const matchesRentalType = rentalTypeFilter ? listing.rental_type === rentalTypeFilter : true;
-
-          return matchesSearch && matchesType && matchesLocation && matchesRentalType;
-        });
-
-        state.currentPage = 1;
-        state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
-        
-        if (state.filteredListings.length === 0) {
-          showNoResults();
-        } else {
-          hideNoResults();
-          renderListings();
-          updatePagination();
-        }
+        state.filteredListings = [...state.allListings];
+        updatePagination();
+        renderListings();
       } catch (error) {
-        console.error('Filtering error:', error);
+        console.error('Error loading listings:', error);
         showError();
+      } finally {
+        hideLoading();
       }
     }
 
-    // Reset all filters
+    // Process image URLs (safe handling)
+    function processImageUrls(urls) {
+      if (!urls) return [];
+      try {
+        const parsed = typeof urls === 'string' ? JSON.parse(urls) : urls;
+        return (Array.isArray(parsed) ? parsed : [parsed])
+          .filter(url => url)
+          .map(url => getImageUrl(url));
+      } catch {
+        return [];
+      }
+    }
+
+    // Filtering and rendering (view-only)
+    function applyFilters() {
+      const searchTerm = elements.searchInput.value.toLowerCase();
+      const typeFilter = elements.filterType.value;
+      const locationFilter = elements.filterLocation.value;
+      const rentalTypeFilter = elements.filterRentalType.value;
+
+      state.filteredListings = state.allListings.filter(listing => {
+        const matchesSearch = [
+          listing.vehicle_type,
+          listing.tlc_plate,
+          listing.additional_details
+        ].some(field => field?.toLowerCase().includes(searchTerm));
+        
+        return matchesSearch &&
+          (!typeFilter || listing.vehicle_type === typeFilter) &&
+          (!locationFilter || listing.location === locationFilter) &&
+          (!rentalTypeFilter || listing.rental_type === rentalTypeFilter);
+      });
+
+      state.currentPage = 1;
+      updatePagination();
+      renderListings();
+    }
+
     function resetFilters() {
       elements.searchInput.value = '';
       elements.filterType.value = '';
@@ -308,7 +241,7 @@ async function uploadImage(file) {
       applyFilters();
     }
 
-    // Pagination functions
+    // Pagination
     function goToPreviousPage() {
       if (state.currentPage > 1) {
         state.currentPage--;
@@ -326,96 +259,51 @@ async function uploadImage(file) {
     }
 
     function updatePagination() {
+      state.totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
       elements.pageInfo.textContent = `Page ${state.currentPage} of ${state.totalPages}`;
       elements.prevPage.disabled = state.currentPage === 1;
       elements.nextPage.disabled = state.currentPage === state.totalPages;
+      state.filteredListings.length ? hideNoResults() : showNoResults();
     }
 
-    // Render listings to the DOM
+    // Render listings
     function renderListings() {
       const startIdx = (state.currentPage - 1) * state.itemsPerPage;
-      const endIdx = startIdx + state.itemsPerPage;
-      const listingsToShow = state.filteredListings.slice(startIdx, endIdx);
-
-      elements.container.innerHTML = '';
-
-      if (listingsToShow.length === 0) {
-        showNoResults();
-        return;
-      }
-
-      const fragment = document.createDocumentFragment();
-
-      listingsToShow.forEach(listing => {
-        const card = createListingCard(listing);
-        fragment.appendChild(card);
-      });
-
-      elements.container.appendChild(fragment);
+      const listingsToShow = state.filteredListings.slice(startIdx, startIdx + state.itemsPerPage);
+      
+      elements.container.innerHTML = listingsToShow.length ? 
+        listingsToShow.map(createListingCard).join('') : '';
     }
 
-    // Create individual listing card
     function createListingCard(listing) {
-  const card = document.createElement('div');
-  card.className = 'listing-card';
+      const imagesHTML = listing.image_urls?.length ?
+        listing.image_urls.map(url => `
+          <img src="${url}" loading="lazy" alt="${listing.vehicle_type}" 
+               onerror="this.style.display='none'" crossorigin="anonymous">
+        `).join('') : '<div class="no-image">No Image Available</div>';
 
+      return `
+        <div class="listing-card">
+          <div class="card-header">
+            <h3>${listing.vehicle_type || 'Vehicle'}</h3>
+            <p class="tlc-plate">${listing.tlc_plate || 'TLC Plate Not Provided'}</p>
+            <span class="price-badge">${listing.price_per_day ? `$${listing.price_per_day.toLocaleString()}/day` : 'Price not specified'}</span>
+          </div>
+          <div class="images">${imagesHTML}</div>
+          <div class="listing-details">
+            <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
+            <p><strong>Rental Type:</strong> ${listing.rental_type || 'Not specified'}</p>
+            ${listing.additional_details ? `<p class="details">${listing.additional_details}</p>` : ''}
+            <div class="contact-info">
+              <p><strong>Contact:</strong> ${listing.owner_name || 'Name not provided'}</p>
+              ${listing.phone ? `<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(listing.phone)}</span></p>` : ''}
+              <button class="contact-btn">Contact Owner</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
-     /* 🔄 1. normalise the incoming `image_urls` */
-    let images = [];
-    try {
-      if (Array.isArray(listing.image_urls))         images = listing.image_urls;
-      else if (typeof listing.image_urls === 'string') images = JSON.parse(listing.image_urls);
-    } catch { /* ignore parse errors */ }
-
-    /* 🧩 2. turn every entry into a VALID public URL */
-    const formattedImages = images
-      .filter(Boolean)
-      .map(getImageUrl)
-      .filter(Boolean);   // strips any empty results
-
-    /* 🖼 3. build the markup */
-    const imagesHTML = formattedImages.length
-      ? formattedImages.map(u =>
-          `<img src="${u}" loading="lazy" alt="${listing.vehicle_type}"
-                onerror="this.style.display='none'" crossorigin="anonymous">`
-        ).join('')
-      : '<div class="no-image">No Image Available</div>';
-
-
-    
-  const formattedPrice = listing.price_per_day 
-    ? `$${listing.price_per_day.toLocaleString()}/day` 
-    : 'Price not specified';
-
-  card.innerHTML = `
-    <div class="card-header">
-      <h3>${listing.vehicle_type || 'Vehicle'}</h3>
-      <p class="tlc-plate">${listing.tlc_plate || 'TLC Plate Not Provided'}</p>
-      <span class="price-badge">${formattedPrice}</span>
-    </div>
-    <div class="images">${imagesHTML}</div>
-    <div class="listing-details">
-      <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
-      <p><strong>Rental Type:</strong> ${listing.rental_type || 'Not specified'}</p>
-      ${listing.additional_details ? `<p class="details">${listing.additional_details}</p>` : ''}
-      <div class="contact-info">
-        <p><strong>Contact:</strong> ${listing.owner_name || 'Name not provided'}</p>
-        ${listing.phone ? `<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(listing.phone)}</span></p>` : ''}
-        <button class="contact-btn" data-listing-id="${listing.id}">Contact Owner</button>
-      </div>
-    </div>
-  `;
-
-  // Contact button handler
-  card.querySelector('.contact-btn')?.addEventListener('click', () => {
-    alert(`Contact form for ${listing.vehicle_type} (${listing.tlc_plate}) will open`);
-  });
-
-  return card;
-}
-
-
-    // Helper function to format phone numbers
     function formatPhoneNumber(phone) {
       if (!phone) return '';
       const cleaned = ('' + phone).replace(/\D/g, '');
@@ -423,7 +311,7 @@ async function uploadImage(file) {
       return match ? `(${match[1]}) ${match[2]}-${match[3]}` : phone;
     }
 
-    // UI State Management
+    // UI State
     function showLoading() {
       elements.loading.style.display = 'flex';
       elements.container.style.display = 'none';
@@ -452,7 +340,6 @@ async function uploadImage(file) {
       elements.noResults.style.display = 'none';
       elements.container.style.display = 'grid';
     }
-
   </script>
 
   <!-- Contact Modal -->

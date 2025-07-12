@@ -22,19 +22,24 @@
   <main class="main-content">
     <h1>Add New Vehicle Listing</h1>
     <form id="add-listing-form" enctype="multipart/form-data">
-      <!-- Vehicle Details -->
-      <input type="text" id="vehicle-type" placeholder="Vehicle Type (e.g., Toyota Camry)" required>
-      <input type="number" id="price" placeholder="Price per day ($)" required>
-      
-      <!-- Image Upload -->
-      <input type="file" id="image-upload" accept="image/*" required>
-      
-      <!-- Other Fields -->
-      <input type="text" id="tlc-plate" placeholder="TLC Plate Number">
-      <textarea id="details" placeholder="Additional details..."></textarea>
-      
-      <button type="submit">Submit Listing</button>
-    </form>
+  <!-- Required Fields -->
+  <input type="text" id="owner-name" placeholder="Your Name" required>
+  <input type="email" id="email" placeholder="Your Email" required>
+  <input type="tel" id="phone" placeholder="Your Phone" required>
+  <input type="text" id="vehicle-type" placeholder="Vehicle Type (e.g., Toyota Camry)" required>
+  <input type="text" id="tlc-plate" placeholder="TLC Plate #" required>
+  <input type="text" id="rental-type" placeholder="Rental Type (Daily/Weekly)" required>
+  <input type="text" id="location" placeholder="Location (e.g., Brooklyn)" required>
+  <input type="number" id="price" placeholder="Price per day ($)" required min="1">
+  
+  <!-- Image Upload -->
+  <input type="file" id="image-upload" accept="image/*" required multiple>
+  
+  <!-- Optional -->
+  <textarea id="details" placeholder="Additional details"></textarea>
+  
+  <button type="submit">Submit Listing</button>
+</form>
   </main>
 
   <script>
@@ -51,29 +56,39 @@
 
     // Form Submission
     document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const imageFile = document.getElementById('image-upload').files[0];
-      
-      try {
-        const imageUrl = await uploadImage(imageFile);
-        
-        const { error } = await supabase.from('listings').insert([{
-          vehicle_type: document.getElementById('vehicle-type').value,
-          price_per_day: parseFloat(document.getElementById('price').value),
-          image_urls: [imageUrl], // Store as array
-          tlc_plate: document.getElementById('tlc-plate').value,
-          additional_details: document.getElementById('details').value
-          // Add other fields as needed
-        }]);
+  e.preventDefault();
+  
+  try {
+    // Upload all images
+    const files = document.getElementById('image-upload').files;
+    const imageUrls = [];
+    for (const file of files) {
+      const url = await uploadImage(file);
+      imageUrls.push(url);
+    }
 
-        if (error) throw error;
-        alert("Listing added successfully!");
-        window.location.href = "view-listings.html"; // Redirect to view listings
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Failed to add listing. Check console for details.");
-      }
-    });
+    // Submit to Supabase
+    const { error } = await supabase.from('listings').insert([{
+      owner_name: document.getElementById('owner-name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      vehicle_type: document.getElementById('vehicle-type').value,
+      tlc_plate: document.getElementById('tlc-plate').value,
+      rental_type: document.getElementById('rental-type').value,
+      location: document.getElementById('location').value,
+      price_per_day: parseFloat(document.getElementById('price').value),
+      additional_details: document.getElementById('details').value,
+      image_urls: imageUrls  // Array of URLs
+    }]);
+
+    if (error) throw error;
+    alert("Listing added!");
+    window.location.href = "view-listings.html";
+  } catch (error) {
+    console.error("Error:", error);
+    alert(`Failed: ${error.message}`);
+  }
+});
   </script>
 </body>
 </html>
