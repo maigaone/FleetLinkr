@@ -379,6 +379,9 @@
       try {
         // Verify reCAPTCHA (you'll need to implement this)
         const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+        throw new Error("Please complete the reCAPTCHA verification");
+       } 
         // Add your reCAPTCHA verification logic here
         
         // Upload images
