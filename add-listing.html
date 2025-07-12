@@ -5,9 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FleetLinkr - Add New Listing</title>
   <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Add these styles to your existing styles.css or keep them here */
+    .add-listing-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .add-listing-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    .file-upload {
+      border: 2px dashed #ddd;
+      padding: 2rem;
+      text-align: center;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .file-upload:hover {
+      border-color: #0074D9;
+    }
+    
+    .submit-btn {
+      grid-column: span 2;
+      background: #0074D9;
+      color: white;
+      padding: 1rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .submit-btn:hover {
+      background: #005ea6;
+    }
+    
+    h1 {
+      color: #0074D9;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Initialize Supabase (same as in view-listings.html)
     window.supabase = supabase.createClient(
       "https://dndeljolayctbafmizcl.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
@@ -15,37 +93,127 @@
   </script>
 </head>
 <body>
-  <!-- Reuse the same header/nav as view-listings.html -->
-  <header class="site-header">...</header>
-  <nav class="navbar">...</nav>
+  <!-- Consistent Header/Navigation -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="logo-container">
+        <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img" width="150" height="60">
+        <div class="logo-text">
+          <span class="logo-main">FleetLinkr</span>
+          <span class="logo-sub">NYC</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="navbar" aria-label="Main navigation">
+    <div class="navbar-container">
+      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
+        <span class="hamburger">☰</span>
+        <span class="close">✕</span>
+        <span class="sr-only">Menu</span>
+      </button>
+      <ul class="navbar-links" id="primary-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="drivers.html">For Drivers</a></li>
+        <li><a href="dealerships.html">For Dealerships</a></li>
+        <li><a href="garages.html">For Garages</a></li>
+        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
+        <li><a href="insurance.html">Insurance</a></li>
+        <li><a href="view-listings.html">Listings</a></li>
+        <li><a href="add-listing.html" class="active">Add Listing</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
 
   <main class="main-content">
-    <h1>Add New Vehicle Listing</h1>
-    <form id="add-listing-form" enctype="multipart/form-data">
-  <!-- Required Fields -->
-  <input type="text" id="owner-name" placeholder="Your Name" required>
-  <input type="email" id="email" placeholder="Your Email" required>
-  <input type="tel" id="phone" placeholder="Your Phone" required>
-  <input type="text" id="vehicle-type" placeholder="Vehicle Type (e.g., Toyota Camry)" required>
-  <input type="text" id="tlc-plate" placeholder="TLC Plate #" required>
-  <input type="text" id="rental-type" placeholder="Rental Type (Daily/Weekly)" required>
-  <input type="text" id="location" placeholder="Location (e.g., Brooklyn)" required>
-  <input type="number" id="price" placeholder="Price per day ($)" required min="1">
-  
-  <!-- Image Upload -->
-  <input type="file" id="image-upload" accept="image/*" required multiple>
-  
-  <!-- Optional -->
-  <textarea id="details" placeholder="Additional details"></textarea>
-  
-  <button type="submit">Submit Listing</button>
-</form>
+    <div class="add-listing-container">
+      <h1>Add New Vehicle Listing</h1>
+      <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data">
+        <!-- Vehicle Details -->
+        <div class="form-group">
+          <label for="owner-name">Your Name</label>
+          <input type="text" id="owner-name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Your Email</label>
+          <input type="email" id="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="vehicle-type">Vehicle Type</label>
+          <input type="text" id="vehicle-type" placeholder="e.g., Toyota Camry" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="tlc-plate">TLC Plate #</label>
+          <input type="text" id="tlc-plate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="rental-type">Rental Type</label>
+          <select id="rental-type" required>
+            <option value="">Select...</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Lease-to-Own">Lease-to-Own</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="location">Location</label>
+          <select id="location" required>
+            <option value="">Select...</option>
+            <option value="Manhattan">Manhattan</option>
+            <option value="Brooklyn">Brooklyn</option>
+            <option value="Queens">Queens</option>
+            <option value="Bronx">Bronx</option>
+            <option value="Staten Island">Staten Island</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="price">Price Per Day ($)</label>
+          <input type="number" id="price" min="1" required>
+        </div>
+        
+        <div class="form-group full-width">
+          <label for="image-upload">Vehicle Photos</label>
+          <input type="file" id="image-upload" accept="image/*" multiple required class="file-upload">
+        </div>
+        
+        <div class="form-group full-width">
+          <label for="details">Additional Details</label>
+          <textarea id="details"></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit Listing</button>
+      </form>
+     <div id="success-message" class="success-message">
+        <div class="checkmark">
+          <svg viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" style="stroke-dasharray: 50; stroke-dashoffset: 50;"/>
+          </svg>
+        </div>
+        <h2>Your listing has been submitted successfully!</h2>
+        <p>You'll be redirected to view your listing shortly.</p>
+      </div>
+    </div>
   </main>
 
   <script>
-    // Image Upload Handler (critical!)
+    // Image Upload Handler
     async function uploadImage(file) {
-      const fileName = `${Date.now()}-${file.name}`;
+      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
       const { data, error } = await supabase.storage
         .from('vehicle-images')
         .upload(fileName, file);
@@ -56,37 +224,58 @@
 
     // Form Submission
     document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  try {
-    // Upload all images
-    const files = document.getElementById('image-upload').files;
-    const imageUrls = [];
-    for (const file of files) {
-      const url = await uploadImage(file);
-      imageUrls.push(url);
-    }
+      e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+      
+      try {
+        // Upload all images
+        const files = document.getElementById('image-upload').files;
+        const imageUrls = [];
+        for (let i = 0; i < files.length; i++) {
+          const url = await uploadImage(files[i]);
+          imageUrls.push(url);
+        }
+        
+        // Submit to Supabase
+        const { error } = await supabase.from('listings').insert([{
+          owner_name: document.getElementById('owner-name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          vehicle_type: document.getElementById('vehicle-type').value,
+          tlc_plate: document.getElementById('tlc-plate').value,
+          rental_type: document.getElementById('rental-type').value,
+          location: document.getElementById('location').value,
+          price_per_day: parseFloat(document.getElementById('price').value),
+          additional_details: document.getElementById('details').value,
+          image_urls: imageUrls
 
-    // Submit to Supabase
-    const { error } = await supabase.from('listings').insert([{
-      owner_name: document.getElementById('owner-name').value,
-      email: document.getElementById('email').value,
-      phone: document.getElementById('phone').value,
-      vehicle_type: document.getElementById('vehicle-type').value,
-      tlc_plate: document.getElementById('tlc-plate').value,
-      rental_type: document.getElementById('rental-type').value,
-      location: document.getElementById('location').value,
-      price_per_day: parseFloat(document.getElementById('price').value),
-      additional_details: document.getElementById('details').value,
-      image_urls: imageUrls  // Array of URLs
-    }]);
+          
+        }]);
+           
+        if (error) throw error;
 
-    if (error) throw error;
-    alert("Listing added!");
-    window.location.href = "view-listings.html";
+    // ====== SUCCESS MESSAGE CODE GOES HERE ======
+        document.getElementById('add-listing-form').style.display = 'none';
+        const successMsg = document.getElementById('success-message');
+        successMsg.style.display = 'block';
+    
+     // Animate checkmark
+        const checkmark = document.querySelector('.checkmark__check');
+        checkmark.style.animation = 'drawCheck 0.6s ease-out forwards';
+    
+    // Redirect after 3 seconds
+    setTimeout(() => {
+      window.location.href = "view-listings.html";
+    }, 3000);
+    // ====== END OF SUCCESS MESSAGE CODE ======
+
   } catch (error) {
     console.error("Error:", error);
-    alert(`Failed: ${error.message}`);
+    alert("Failed to add listing: " + error.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Listing';
   }
 });
   </script>
