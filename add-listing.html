@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetLinkr - Add New Listing</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Initialize Supabase (same as in view-listings.html)
+    window.supabase = supabase.createClient(
+      "https://dndeljolayctbafmizcl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
+    );
+  </script>
+</head>
+<body>
+  <!-- Reuse the same header/nav as view-listings.html -->
+  <header class="site-header">...</header>
+  <nav class="navbar">...</nav>
+
+  <main class="main-content">
+    <h1>Add New Vehicle Listing</h1>
+    <form id="add-listing-form" enctype="multipart/form-data">
+      <!-- Vehicle Details -->
+      <input type="text" id="vehicle-type" placeholder="Vehicle Type (e.g., Toyota Camry)" required>
+      <input type="number" id="price" placeholder="Price per day ($)" required>
+      
+      <!-- Image Upload -->
+      <input type="file" id="image-upload" accept="image/*" required>
+      
+      <!-- Other Fields -->
+      <input type="text" id="tlc-plate" placeholder="TLC Plate Number">
+      <textarea id="details" placeholder="Additional details..."></textarea>
+      
+      <button type="submit">Submit Listing</button>
+    </form>
+  </main>
+
+  <script>
+    // Image Upload Handler (critical!)
+    async function uploadImage(file) {
+      const fileName = `${Date.now()}-${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('vehicle-images')
+        .upload(fileName, file);
+      
+      if (error) throw error;
+      return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+    }
+
+    // Form Submission
+    document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const imageFile = document.getElementById('image-upload').files[0];
+      
+      try {
+        const imageUrl = await uploadImage(imageFile);
+        
+        const { error } = await supabase.from('listings').insert([{
+          vehicle_type: document.getElementById('vehicle-type').value,
+          price_per_day: parseFloat(document.getElementById('price').value),
+          image_urls: [imageUrl], // Store as array
+          tlc_plate: document.getElementById('tlc-plate').value,
+          additional_details: document.getElementById('details').value
+          // Add other fields as needed
+        }]);
+
+        if (error) throw error;
+        alert("Listing added successfully!");
+        window.location.href = "view-listings.html"; // Redirect to view listings
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to add listing. Check console for details.");
+      }
+    });
+  </script>
+</body>
+</html>
