@@ -83,54 +83,6 @@
       margin-bottom: 2rem;
       text-align: center;
     }
-
-    /* Success Message Styles */
-    .success-message {
-      display: none;
-      text-align: center;
-      padding: 2rem;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-top: 1rem;
-    }
-
-    .checkmark {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 2rem;
-    }
-
-    .checkmark__circle {
-      stroke: #0074D9;
-      stroke-width: 2;
-      stroke-miterlimit: 10;
-      fill: none;
-    }
-
-    .checkmark__check {
-      stroke: #0074D9;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-miterlimit: 10;
-      stroke-dasharray: 50;
-      stroke-dashoffset: 50;
-    }
-
-    @keyframes drawCheck {
-      to {
-        stroke-dashoffset: 0;
-      }
-    }
-
-    .success-message h2 {
-      color: #0074D9;
-      margin-bottom: 1rem;
-    }
-
-    .success-message p {
-      color: #666;
-      font-size: 1.1rem;
-    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -245,7 +197,7 @@
         
         <button type="submit" class="submit-btn">Submit Listing</button>
       </form>
-      <div id="success-message" class="success-message">
+     <div id="success-message" class="success-message">
         <div class="checkmark">
           <svg viewBox="0 0 52 52">
             <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
@@ -298,31 +250,34 @@
           price_per_day: parseFloat(document.getElementById('price').value),
           additional_details: document.getElementById('details').value,
           image_urls: imageUrls
+
+          
         }]);
            
         if (error) throw error;
 
-        // Show success message
+    // ====== SUCCESS MESSAGE CODE GOES HERE ======
         document.getElementById('add-listing-form').style.display = 'none';
         const successMsg = document.getElementById('success-message');
         successMsg.style.display = 'block';
     
-        // Animate checkmark
+     // Animate checkmark
         const checkmark = document.querySelector('.checkmark__check');
         checkmark.style.animation = 'drawCheck 0.6s ease-out forwards';
     
-        // Redirect after 3 seconds
-        setTimeout(() => {
-          window.location.href = "view-listings.html";
-        }, 3000);
+    // Redirect after 3 seconds
+    setTimeout(() => {
+      window.location.href = "view-listings.html";
+    }, 3000);
+    // ====== END OF SUCCESS MESSAGE CODE ======
 
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Failed to add listing: " + error.message);
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Listing';
-      }
-    });
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to add listing: " + error.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Listing';
+  }
+});
   </script>
 </body>
 </html>
