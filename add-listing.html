@@ -110,41 +110,208 @@
     }
     
     .success-message {
-      /* Your existing success message styles */
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 2rem;
     }
     
     .checkmark {
-      /* Your existing checkmark styles */
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: block;
+      stroke-width: 2;
+      stroke: #4bb71b;
+      stroke-miterlimit: 10;
+      margin: 10% auto 20px;
+      box-shadow: inset 0px 0px 0px #4bb71b;
+      animation: fillCheckmark 0.4s ease-in-out 0.4s forwards, scaleCheckmark 0.3s ease-in-out 0.9s both;
+    }
+    
+    .checkmark__circle {
+      stroke-dasharray: 166;
+      stroke-dashoffset: 166;
+      stroke-width: 2;
+      stroke-miterlimit: 10;
+      stroke: #4bb71b;
+      fill: none;
+      animation: strokeCheckmark 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    
+    .checkmark__check {
+      transform-origin: 50% 50%;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+      animation: strokeCheckmark 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .recaptcha-container {
+      margin: 1.5rem 0;
+    }
+    
+    @keyframes strokeCheckmark {
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+    
+    @keyframes scaleCheckmark {
+      0%, 100% {
+        transform: none;
+      }
+      50% {
+        transform: scale3d(1.1, 1.1, 1);
+      }
+    }
+    
+    @keyframes fillCheckmark {
+      100% {
+        box-shadow: inset 0px 0px 0px 30px #4bb71b;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Header and Navigation (same as before) -->
-  <header class="site-header">...</header>
-  <nav class="navbar">...</nav>
+  <!-- Header and Navigation -->
+  <header class="site-header">
+    <div class="container">
+      <h1 class="logo">FleetLinkr</h1>
+    </div>
+  </header>
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html">Home</a>
+      <a href="view-listings.html">View Listings</a>
+      <a href="add-listing.html" class="active">Add Listing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </nav>
 
   <main class="main-content">
     <div class="add-listing-container">
       <h1>Add New Vehicle Listing</h1>
       <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data">
-        <!-- Your form fields (owner-name, email, etc.) -->
+        <div class="form-grid">
+          <!-- Owner Information -->
+          <div class="form-group">
+            <label for="owner-name">Owner Name*</label>
+            <input type="text" id="owner-name" name="owner-name" required>
+            <div class="validation-error">This field is required</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email*</label>
+            <input type="email" id="email" name="email" required>
+            <div class="validation-error">Please enter a valid email address</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Phone Number*</label>
+            <input type="tel" id="phone" name="phone" required>
+            <div class="validation-error">Please enter a valid phone number</div>
+          </div>
+          
+          <!-- Vehicle Information -->
+          <div class="form-group">
+            <label for="vehicle-type">Vehicle Type*</label>
+            <select id="vehicle-type" name="vehicle-type" required>
+              <option value="">Select vehicle type</option>
+              <option value="sedan">Sedan</option>
+              <option value="suv">SUV</option>
+              <option value="minivan">Minivan</option>
+              <option value="truck">Truck</option>
+            </select>
+            <div class="validation-error">This field is required</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="tlc-plate">TLC Plate Number*</label>
+            <input type="text" id="tlc-plate" name="tlc-plate" required>
+            <div class="validation-error">This field is required</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="rental-type">Rental Type*</label>
+            <select id="rental-type" name="rental-type" required>
+              <option value="">Select rental type</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <div class="validation-error">This field is required</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="location">Location*</label>
+            <input type="text" id="location" name="location" required>
+            <div class="validation-error">This field is required</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="price">Price Per Day ($)*</label>
+            <input type="number" id="price" name="price" min="0" step="0.01" required>
+            <div class="validation-error">Please enter a valid price</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="details">Additional Details</label>
+            <textarea id="details" name="details"></textarea>
+          </div>
+        </div>
         
         <!-- Enhanced File Upload -->
         <div class="form-group file-upload-container">
-          <label>Vehicle Photos</label>
+          <label>Vehicle Photos*</label>
           <div class="file-upload-wrapper" id="upload-wrapper">
             <div class="upload-icon">📁</div>
             <p class="upload-instructions">Drag & drop images here or click to browse</p>
             <p>Maximum 10 photos (JPEG/PNG, 5MB max each)</p>
-            <input type="file" id="image-upload" class="file-upload-input" accept="image/jpeg,image/png" multiple>
+            <input type="file" id="image-upload" class="file-upload-input" accept="image/jpeg,image/png" multiple required>
           </div>
           <div class="preview-container" id="image-preview"></div>
           <div class="validation-error" id="image-error">Please upload at least one photo</div>
         </div>
         
         <!-- reCAPTCHA -->
-        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
-        <div class="validation-error" id="recaptcha-error">Please complete the reCAPTCHA</div>
+        <div class="recaptcha-container">
+          <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
+          <div class="validation-error" id="recaptcha-error">Please complete the reCAPTCHA</div>
+        </div>
         
         <button type="submit" class="submit-btn">Submit Listing</button>
       </form>
@@ -167,6 +334,11 @@
   </main>
 
   <script>
+    // Initialize Supabase
+    const supabaseUrl = "https://dndeljolayctbafmizcl.supabase.co";;
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
     // Constants
     const MAX_FILE_SIZE_MB = 5;
     const MAX_FILES = 10;
