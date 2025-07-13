@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FleetLinkr - Add New Listing</title>
@@ -9,6 +12,84 @@
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
     /* Add to your existing styles */
+
+  .site-header {
+    background-color: #0074D9;
+    color: white;
+    padding: 1rem 0;
+    text-align: center;
+  }
+  
+  .logo {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Navigation Styles */
+  .navbar {
+    background-color: #f8f9fa;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .navbar .container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .navbar a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .navbar a:hover {
+    background-color: #e9ecef;
+    color: #0074D9;
+  }
+  
+  .navbar a.active {
+    color: #0074D9;
+    background-color: #e9ecef;
+  }
+  
+  /* Main Content Styles */
+  .add-listing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .add-listing-container h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+  }
+  
+  /* Rest of your existing styles... */
+  .file-upload-container {
+    grid-column: span 2;
+  }
+  
+  .file-upload-wrapper {
+    border: 2px dashed #ddd;
+    padding: 2rem;
+    text-align: center;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.3s;
+  }
+  
+  /* ... keep all your other existing styles ... */
+
     .file-upload-container {
       grid-column: span 2;
     }
