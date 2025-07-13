@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FleetLinkr - Add New Listing</title>
@@ -11,85 +8,108 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
-    /* Add to your existing styles */
-
-  .site-header {
-    background-color: #0074D9;
-    color: white;
-    padding: 1rem 0;
-    text-align: center;
-  }
-  
-  .logo {
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  /* Navigation Styles */
-  .navbar {
-    background-color: #f8f9fa;
-    padding: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
-  }
-  
-  .navbar .container {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-  }
-  
-  .navbar a {
-    color: #333;
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-  }
-  
-  .navbar a:hover {
-    background-color: #e9ecef;
-    color: #0074D9;
-  }
-  
-  .navbar a.active {
-    color: #0074D9;
-    background-color: #e9ecef;
-  }
-  
-  /* Main Content Styles */
-  .add-listing-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-  
-  .add-listing-container h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 2rem;
-    font-size: 2rem;
-  }
-  
-  /* Rest of your existing styles... */
-  .file-upload-container {
-    grid-column: span 2;
-  }
-  
-  .file-upload-wrapper {
-    border: 2px dashed #ddd;
-    padding: 2rem;
-    text-align: center;
-    border-radius: 4px;
-    position: relative;
-    transition: all 0.3s;
-  }
-  
-  /* ... keep all your other existing styles ... */
-
+    /* Header Styles */
+    .site-header {
+      background-color: #0074D9;
+      color: white;
+      padding: 1rem 0;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 0;
+    }
+    
+    /* Navigation Styles */
+    .navbar {
+      background-color: #f8f9fa;
+      padding: 1rem 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .navbar .container {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
+    
+    .navbar a {
+      color: #333;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .navbar a:hover {
+      background-color: #e9ecef;
+      color: #0074D9;
+    }
+    
+    .navbar a.active {
+      color: #0074D9;
+      background-color: #e9ecef;
+    }
+    
+    /* Main Content Styles */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .add-listing-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    
+    .add-listing-container h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+    }
+    
+    /* Form Styles */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    /* File Upload Styles */
     .file-upload-container {
       grid-column: span 2;
     }
@@ -162,17 +182,6 @@
       font-size: 14px;
     }
     
-    .validation-error {
-      color: #dc3545;
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
-      display: none;
-    }
-    
-    input.invalid, select.invalid {
-      border-color: #dc3545 !important;
-    }
-    
     .upload-instructions {
       margin-bottom: 1rem;
       color: #666;
@@ -190,6 +199,24 @@
       margin-top: 0.25rem;
     }
     
+    /* Validation Styles */
+    .validation-error {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    
+    input.invalid, select.invalid {
+      border-color: #dc3545 !important;
+    }
+    
+    /* reCAPTCHA Styles */
+    .recaptcha-container {
+      margin: 1.5rem 0;
+    }
+    
+    /* Success Message Styles */
     .success-message {
       display: none;
       text-align: center;
@@ -229,42 +256,53 @@
       animation: strokeCheckmark 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
     }
     
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-    
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+    /* Button Styles */
+    .submit-btn {
+      background-color: #0074D9;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
       font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+      margin-top: 1rem;
     }
     
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
+    .submit-btn:hover {
+      background-color: #005bb5;
     }
     
-    .recaptcha-container {
-      margin: 1.5rem 0;
+    .submit-btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
     }
     
+    .btn {
+      display: inline-block;
+      background-color: #0074D9;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      margin: 0.5rem;
+      transition: background-color 0.3s;
+    }
+    
+    .btn:hover {
+      background-color: #005bb5;
+    }
+    
+    .btn.secondary {
+      background-color: #6c757d;
+    }
+    
+    .btn.secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    /* Animations */
     @keyframes strokeCheckmark {
       100% {
         stroke-dashoffset: 0;
@@ -283,6 +321,18 @@
     @keyframes fillCheckmark {
       100% {
         box-shadow: inset 0px 0px 0px 30px #4bb71b;
+      }
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .navbar .container {
+        flex-direction: column;
+        gap: 0.5rem;
       }
     }
   </style>
@@ -416,7 +466,7 @@
 
   <script>
     // Initialize Supabase
-    const supabaseUrl = "https://dndeljolayctbafmizcl.supabase.co";;
+    const supabaseUrl = "https://dndeljolayctbafmizcl.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -682,15 +732,20 @@
       }
     });
 
-    // Image Upload Helper
+    // Image Upload Helper (Updated with error handling)
     async function uploadImage(file) {
-      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      const { data, error } = await supabase.storage
-        .from('vehicle-images')
-        .upload(fileName, file);
-      
-      if (error) throw error;
-      return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+      try {
+        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+        const { data, error } = await supabase.storage
+          .from('vehicle-images')
+          .upload(fileName, file);
+        
+        if (error) throw error;
+        return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+      } catch (error) {
+        console.error("Upload failed:", error);
+        throw new Error("Failed to upload image. Please try again.");
+      }
     }
   </script>
 </body>
