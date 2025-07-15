@@ -627,8 +627,16 @@
     }
 
     // Form Submission
-    form.addEventListener('submit', async (e) => {
+      form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      // Reset previous errors
+      document.querySelectorAll('.validation-error').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('.invalid').forEach(el => {
+        el.classList.remove('invalid');
+      });
       
       // Validate all fields
       let isValid = true;
@@ -678,24 +686,26 @@
       
       const submitBtn = form.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Processing...';
+      submitBtn.textContent = 'Uploading Images...';
 
       try {
-        // Verify reCAPTCHA (you'll need to implement this)
-        const recaptchaResponse = grecaptcha.getResponse();
-        // Add your reCAPTCHA verification logic here
-        
-        // Upload images
+        // Upload images first
         const files = imageUpload.files;
         const imageUrls = [];
         
-        // Upload all files in parallel
-        const uploadPromises = Array.from(files).map(file => uploadImage(file));
-        const uploadedUrls = await Promise.all(uploadPromises);
-        imageUrls.push(...uploadedUrls);
+        // Show upload progress
+        submitBtn.textContent = `Uploading 1/${files.length} images...`;
+        
+        // Upload files sequentially with progress feedback
+        for (let i = 0; i < files.length; i++) {
+          submitBtn.textContent = `Uploading ${i+1}/${files.length} images...`;
+          const url = await uploadImage(files[i]);
+          imageUrls.push(url);
+        }
         
         // Submit to Supabase
-        const { error } = await supabase.from('listings').insert([{
+        submitBtn.textContent = 'Saving Listing...';
+        const { data, error } = await supabase.from('listings').insert([{
           owner_name: document.getElementById('owner-name').value,
           email: document.getElementById('email').value,
           phone: document.getElementById('phone').value,
@@ -705,10 +715,12 @@
           location: document.getElementById('location').value,
           price_per_day: parseFloat(document.getElementById('price').value),
           additional_details: document.getElementById('details').value,
-          image_urls: imageUrls
-        }]);
+          image_urls: imageUrls,
+          created_at: new Date().toISOString()
+        }]).select();
 
         if (error) throw error;
+        if (!data || data.length === 0) throw new Error('No data returned from server');
 
         // Show success UI
         form.style.display = 'none';
@@ -718,13 +730,36 @@
         const checkmark = document.querySelector('.checkmark__check');
         checkmark.style.animation = 'drawCheck 0.6s ease-out forwards';
         
+        // NEW: Play a success sound
+        const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3');
+        audio.play().catch(e => console.log('Audio play failed:', e));
+        
+        // NEW: Show uploaded images in success message
+        const successImagesContainer = document.createElement('div');
+        successImagesContainer.className = 'preview-container';
+        successImagesContainer.style.justifyContent = 'center';
+        successImagesContainer.style.margin = '20px 0';
+        
+        imageUrls.forEach(url => {
+          const img = document.createElement('img');
+          img.src = url;
+          img.style.height = '100px';
+          img.style.width = 'auto';
+          img.style.margin = '0 5px';
+          img.style.borderRadius = '4px';
+          img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+          successImagesContainer.appendChild(img);
+        });
+        
+        successMessage.insertBefore(successImagesContainer, successMessage.querySelector('.redirect-buttons'));
+
         // Redirect after 5 seconds
         setTimeout(() => {
-          window.location.href = "thank-you.html?listing_submitted=true";
+          window.location.href = "thank-you.html?listing_submitted=true&id=" + data[0].id;
         }, 5000);
 
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Submission Error:", error);
         alert(`Submission failed: ${error.message}`);
         grecaptcha.reset();
       } finally {
@@ -733,13 +768,23 @@
       }
     });
 
-    // Improved Image Upload Helper with error handling
+    // NEW: Improved Image Upload Function with better error handling
     async function uploadImage(file) {
+      // Validate file type and size again (client-side)
+      if (!file.type.match('image/(jpeg|png)')) {
+        throw new Error('Only JPEG/PNG images are allowed');
+      }
+      
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        throw new Error(`Image exceeds maximum size of ${MAX_FILE_SIZE_MB}MB`);
+      }
+
       try {
-        // Generate unique filename
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${file.name.replace(/\s+/g, '-')}`;
+        // Generate unique filename with better randomness
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
         
-        // Upload to Supabase storage
+        // Upload to Supabase storage with error handling
         const { data, error } = await supabase.storage
           .from('vehicle-images')
           .upload(fileName, file, {
@@ -748,15 +793,21 @@
           });
         
         if (error) {
-          console.error('Upload error:', error);
-          throw new Error('Failed to upload image. Please try again.');
+          console.error('Supabase Upload Error:', error);
+          throw new Error(error.message || 'Failed to upload image');
         }
         
         // Return public URL
-        return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+        const publicUrl = `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+        
+        // Verify the image is accessible
+        const imgCheck = await fetch(publicUrl);
+        if (!imgCheck.ok) throw new Error('Uploaded image not accessible');
+        
+        return publicUrl;
       } catch (error) {
-        console.error("Upload failed:", error);
-        throw new Error("Failed to upload image. Please try again.");
+        console.error("Upload Failed:", error);
+        throw new Error(`Image upload failed: ${error.message}`);
       }
     }
   </script>
