@@ -448,7 +448,7 @@
       </form>
       
       <!-- Success message -->
-      <div id="success-message" class="success-message">
+      <div id="success-message" class="success-message" style="display: none;">
         <div class="checkmark">
           <svg viewBox="0 0 52 52">
             <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
@@ -481,6 +481,7 @@
     const imageError = document.getElementById('image-error');
     const recaptchaError = document.getElementById('recaptcha-error');
     const uploadWrapper = document.getElementById('upload-wrapper');
+    const successMessage = document.getElementById('success-message');
 
     // Real-time Validation Functions
     function validateEmail(email) {
@@ -535,13 +536,13 @@
       // Check file count
       if (files.length > MAX_FILES) {
         showImageError(`Maximum ${MAX_FILES} photos allowed`);
-        this.value = '';
+        imageUpload.value = '';
         return;
       }
       
       // Check if any files are invalid
       let hasInvalidFiles = false;
-      Array.from(files).forEach((file, index) => {
+      Array.from(files).forEach((file) => {
         if (!file.type.match('image/(jpeg|png)')) {
           hasInvalidFiles = true;
           return;
@@ -555,7 +556,7 @@
       
       if (hasInvalidFiles) {
         showImageError(`Please upload only JPEG/PNG images under ${MAX_FILE_SIZE_MB}MB`);
-        this.value = '';
+        imageUpload.value = '';
         return;
       }
       
@@ -687,10 +688,11 @@
         // Upload images
         const files = imageUpload.files;
         const imageUrls = [];
-        for (let i = 0; i < files.length; i++) {
-          const url = await uploadImage(files[i]);
-          imageUrls.push(url);
-        }
+        
+        // Upload all files in parallel
+        const uploadPromises = Array.from(files).map(file => uploadImage(file));
+        const uploadedUrls = await Promise.all(uploadPromises);
+        imageUrls.push(...uploadedUrls);
         
         // Submit to Supabase
         const { error } = await supabase.from('listings').insert([{
@@ -710,8 +712,7 @@
 
         // Show success UI
         form.style.display = 'none';
-        const successMsg = document.getElementById('success-message');
-        successMsg.style.display = 'block';
+        successMessage.style.display = 'block';
         
         // Animate checkmark
         const checkmark = document.querySelector('.checkmark__check');
@@ -732,15 +733,26 @@
       }
     });
 
-    // Image Upload Helper (Updated with error handling)
+    // Improved Image Upload Helper with error handling
     async function uploadImage(file) {
       try {
-        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+        // Generate unique filename
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${file.name.replace(/\s+/g, '-')}`;
+        
+        // Upload to Supabase storage
         const { data, error } = await supabase.storage
           .from('vehicle-images')
-          .upload(fileName, file);
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Upload error:', error);
+          throw new Error('Failed to upload image. Please try again.');
+        }
+        
+        // Return public URL
         return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
       } catch (error) {
         console.error("Upload failed:", error);
