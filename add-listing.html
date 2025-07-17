@@ -83,14 +83,16 @@
       margin-bottom: 2rem;
       text-align: center;
     }
+
+    .g-recaptcha {
+      grid-column: span 2;
+      margin: 1rem 0;
+      display: flex;
+      justify-content: center;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    window.supabase = supabase.createClient(
-      "https://dndeljolayctbafmizcl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
-    );
-  </script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
   <!-- Consistent Header/Navigation -->
@@ -194,6 +196,9 @@
           <label for="details">Additional Details</label>
           <textarea id="details"></textarea>
         </div>
+
+        <!-- reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
         
         <button type="submit" class="submit-btn">Submit Listing</button>
       </form>
@@ -201,6 +206,12 @@
   </main>
 
   <script>
+    // Initialize Supabase
+    window.supabase = supabase.createClient(
+      "https://dndeljolayctbafmizcl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
+    );
+
     // Image Upload Handler
     async function uploadImage(file) {
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
@@ -220,6 +231,12 @@
       submitBtn.textContent = 'Processing...';
       
       try {
+        // Verify reCAPTCHA
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+          throw new Error("Please complete the reCAPTCHA verification");
+        }
+
         // Upload all images
         const files = document.getElementById('image-upload').files;
         const imageUrls = [];
@@ -243,14 +260,16 @@
         }]);
 
         if (error) throw error;
-        alert("Listing added successfully!");
-        window.location.href = "view-listings.html";
+        
+        // Redirect to thank you page instead of showing alert
+        window.location.href = "thank-you.html";
       } catch (error) {
         console.error("Error:", error);
         alert("Failed to add listing: " + error.message);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Listing';
+        grecaptcha.reset();
       }
     });
   </script>
