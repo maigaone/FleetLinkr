@@ -315,7 +315,7 @@
           available_from: document.getElementById('available-from').value,
           available_to: document.getElementById('available-to').value || null,
           included_mileage: parseInt(document.getElementById('included-mileage').value),
-          excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value * 100),
+          excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value)* 100),
           location: document.getElementById('location').value,
           photos: imageUrls,
           tlc_inspection: true,
