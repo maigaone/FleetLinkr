@@ -129,11 +129,11 @@
     </div>
   </nav>
 
-  <main class="main-content">
+    <main class="main-content">
     <div class="add-listing-container">
       <h1>Add New Vehicle Listing</h1>
       <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data">
-        <!-- Vehicle Details -->
+        <!-- Owner Information -->
         <div class="form-group">
           <label for="owner-name">Your Name</label>
           <input type="text" id="owner-name" required>
@@ -148,30 +148,72 @@
           <label for="phone">Phone Number</label>
           <input type="tel" id="phone" required>
         </div>
-        
+
+        <!-- Vehicle Information -->
         <div class="form-group">
-          <label for="vehicle-type">Vehicle Type</label>
-          <input type="text" id="vehicle-type" placeholder="e.g., Toyota Camry" required>
+          <label for="make">Make*</label>
+          <input type="text" id="make" required>
         </div>
         
         <div class="form-group">
-          <label for="tlc-plate">TLC Plate #</label>
+          <label for="model">Model*</label>
+          <input type="text" id="model" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="year">Year*</label>
+          <input type="number" id="year" min="2000" max="2025" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="tlc-plate">TLC Plate #*</label>
           <input type="text" id="tlc-plate" required>
         </div>
-        
+
+        <!-- Rental Details -->
         <div class="form-group">
-          <label for="rental-type">Rental Type</label>
-          <select id="rental-type" required>
-            <option value="">Select...</option>
-            <option value="Daily">Daily</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="Lease-to-Own">Lease-to-Own</option>
-          </select>
+          <label for="daily-rate">Daily Rate ($)*</label>
+          <input type="number" id="daily-rate" min="1" required>
         </div>
         
         <div class="form-group">
-          <label for="location">Location</label>
+          <label for="weekly-rate">Weekly Rate ($)</label>
+          <input type="number" id="weekly-rate" min="1">
+        </div>
+        
+        <div class="form-group">
+          <label for="monthly-rate">Monthly Rate ($)</label>
+          <input type="number" id="monthly-rate" min="1">
+        </div>
+        
+        <div class="form-group">
+          <label for="minimum-days">Minimum Rental Days*</label>
+          <input type="number" id="minimum-days" min="1" value="1" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="available-from">Available From*</label>
+          <input type="date" id="available-from" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="available-to">Available To</label>
+          <input type="date" id="available-to">
+        </div>
+        
+        <div class="form-group">
+          <label for="included-mileage">Included Mileage (per day)</label>
+          <input type="number" id="included-mileage" min="0" value="100">
+        </div>
+        
+        <div class="form-group">
+          <label for="excess-fee">Excess Mileage Fee ($/mile)</label>
+          <input type="number" id="excess-fee" min="0" step="0.01" value="0.50">
+        </div>
+
+        <!-- Location and Photos -->
+        <div class="form-group">
+          <label for="location">Location*</label>
           <select id="location" required>
             <option value="">Select...</option>
             <option value="Manhattan">Manhattan</option>
@@ -182,19 +224,17 @@
           </select>
         </div>
         
-        <div class="form-group">
-          <label for="price">Price Per Day ($)</label>
-          <input type="number" id="price" min="1" required>
-        </div>
-        
         <div class="form-group full-width">
-          <label for="image-upload">Vehicle Photos</label>
+          <label for="image-upload">Vehicle Photos (Max 10)*</label>
           <input type="file" id="image-upload" accept="image/*" multiple required class="file-upload">
         </div>
-        
+
+        <!-- TLC Inspection -->
         <div class="form-group full-width">
-          <label for="details">Additional Details</label>
-          <textarea id="details"></textarea>
+          <label>
+            <input type="checkbox" name="tlc_inspection" required checked> 
+            I confirm this vehicle passes TLC inspection.*
+          </label>
         </div>
 
         <!-- reCAPTCHA -->
@@ -206,14 +246,14 @@
   </main>
 
   <script>
-   // Define Supabase constants at the top
+    // Define Supabase constants
     const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
     
     // Initialize Supabase
-     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-   // Image Upload Handler (updated for new table)
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Image Upload Handler
     async function uploadImage(file) {
       const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
       const { data, error } = await supabase.storage
@@ -224,7 +264,7 @@
       return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
     }
 
-    // Updated Form Submission for rental_listings
+    // Form Submission
     document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -240,39 +280,51 @@
 
         // Upload all images
         const files = document.getElementById('image-upload').files;
+        if (files.length > 10) throw new Error("Maximum 10 photos allowed");
+        
         const imageUrls = [];
         for (let i = 0; i < files.length; i++) {
           const url = await uploadImage(files[i]);
           imageUrls.push(url);
         }
         
-          // Submit to Supabase (updated for rental_listings table)
+        // Calculate weekly/monthly rates if not provided
+        const dailyRate = parseFloat(document.getElementById('daily-rate').value);
+        const weeklyRate = document.getElementById('weekly-rate').value 
+          ? parseFloat(document.getElementById('weekly-rate').value)
+          : dailyRate * 5; // Default calculation
+        
+        const monthlyRate = document.getElementById('monthly-rate').value 
+          ? parseFloat(document.getElementById('monthly-rate').value)
+          : dailyRate * 20; // Default calculation
+
+        // Submit to Supabase
         const { error } = await supabase.from('rental_listings').insert([{
           owner_id: null, // Will need authentication to set this properly
           owner_name: document.getElementById('owner-name').value,
           email: document.getElementById('email').value,
           phone: document.getElementById('phone').value,
-          make: document.getElementById('vehicle-type').value.split(' ')[0], // Extract make
-          model: document.getElementById('vehicle-type').value.split(' ').slice(1).join(' '), // Extract model
-          year: new Date().getFullYear(), // Default to current year
+          make: document.getElementById('make').value,
+          model: document.getElementById('model').value,
+          year: parseInt(document.getElementById('year').value),
           tlc_plate: document.getElementById('tlc-plate').value,
-          rental_type: document.getElementById('rental-type').value,
-          daily_rate: parseFloat(document.getElementById('price').value),
-          weekly_rate: parseFloat(document.getElementById('price').value) * 5, // Example calculation
-          monthly_rate: parseFloat(document.getElementById('price').value) * 20, // Example calculation
-          minimum_rental_days: document.getElementById('rental-type').value === 'Monthly' ? 30 : 
-          
-          document.getElementById('rental-type').value === 'Weekly' ? 7 : 1,
+          daily_rate: Math.round(dailyRate * 100), // Convert to cents
+          weekly_rate: Math.round(weeklyRate * 100),
+          monthly_rate: Math.round(monthlyRate * 100),
+          minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
+          available_from: document.getElementById('available-from').value,
+          available_to: document.getElementById('available-to').value || null,
+          included_mileage: parseInt(document.getElementById('included-mileage').value),
+          excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value * 100),
           location: document.getElementById('location').value,
           photos: imageUrls,
-          description: document.getElementById('details').value,
-          tlc_inspection: true, // Assuming rental vehicles pass inspection
-          status: 'active'
+          tlc_inspection: true,
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }]);
 
         if (error) throw error;
-        
-        // Redirect to thank you page instead of showing alert
         window.location.href = "thank-you.html";
       } catch (error) {
         console.error("Error:", error);
