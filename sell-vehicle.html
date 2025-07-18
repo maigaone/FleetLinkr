@@ -10,15 +10,12 @@
   <meta name="apple-mobile-web-app-title" content="FleetLinkr">
   <meta name="mobile-web-app-capable" content="yes">
   
-  
-<!-- Essential Favicon Links -->
-<link rel="manifest" href="/manifest.json"> 
-<link rel="icon" href="/assets/icons/favicon.ico" sizes="any"> 
-<link rel="icon" href="/assets/icons/favicon-32x32.png" type="image/png" sizes="32x32"> 
-<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png"> 
+  <!-- Essential Favicon Links -->
+  <link rel="manifest" href="/manifest.json"> 
+  <link rel="icon" href="/assets/icons/favicon.ico" sizes="any"> 
+  <link rel="icon" href="/assets/icons/favicon-32x32.png" type="image/png" sizes="32x32"> 
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png"> 
 
-
-  
   <link rel="stylesheet" href="assets/css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -70,6 +67,7 @@
       <form id="vehicle-form">
         <input type="hidden" name="formType" value="vehicle_sale">
         
+        <h3>Vehicle Information</h3>
         <div class="form-group">
           <label for="make">Make*</label>
           <input type="text" id="make" name="make" required>
@@ -82,7 +80,7 @@
         
         <div class="form-group">
           <label for="year">Year*</label>
-          <input type="number" id="year" name="year" min="2000" required>
+          <input type="number" id="year" name="year" min="2000" max="2025" required>
         </div>
         
         <div class="form-group">
@@ -96,15 +94,91 @@
         </div>
         
         <div class="form-group">
+          <label for="vin">VIN (Optional)</label>
+          <input type="text" id="vin" name="vin">
+        </div>
+        
+        <div class="form-group">
+          <label for="condition">Vehicle Condition*</label>
+          <select id="condition" name="condition" required>
+            <option value="">Select condition...</option>
+            <option value="excellent">Excellent</option>
+            <option value="good">Good</option>
+            <option value="fair">Fair</option>
+            <option value="needs_work">Needs Work</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
           <label for="photos">Upload Photos (Max 10)*</label>
           <input type="file" id="photos" name="photos" multiple accept="image/*" required>
+          <p class="form-hint">Clear photos help your vehicle sell faster</p>
         </div>
         
         <div class="form-group">
           <label>
             <input type="checkbox" name="tlc_inspection" required> 
-            I confirm this vehicle passes TLC inspection.
+            I confirm this vehicle passes TLC inspection.*
           </label>
+        </div>
+
+        <h3>Seller Information</h3>
+        <div class="form-group">
+          <label for="seller-name">Your Name*</label>
+          <input type="text" id="seller-name" name="seller_name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="seller-phone">Phone Number*</label>
+          <input type="tel" id="seller-phone" name="seller_phone" pattern="[0-9]{10}" required>
+          <p class="form-hint">Format: 1234567890 (no dashes)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="seller-email">Email*</label>
+          <input type="email" id="seller-email" name="seller_email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="contact-method">Preferred Contact Method*</label>
+          <select id="contact-method" name="contact_method" required>
+            <option value="">Select...</option>
+            <option value="phone">Phone Call</option>
+            <option value="text">Text Message</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Vehicle Location (Borough)*</label>
+          <select id="location" name="location" required>
+            <option value="">Select...</option>
+            <option value="Manhattan">Manhattan</option>
+            <option value="Brooklyn">Brooklyn</option>
+            <option value="Queens">Queens</option>
+            <option value="Bronx">Bronx</option>
+            <option value="Staten Island">Staten Island</option>
+            <option value="NJ">New Jersey</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="is_dealer"> 
+            I'm a licensed dealer
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="show_contact" checked> 
+            Display my contact information publicly
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Vehicle Description (Optional)</label>
+          <textarea id="description" name="description" rows="4"></textarea>
         </div>
 
         <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
@@ -126,7 +200,8 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Vehicle form submission
+
+    // Vehicle form submission (updated for sale_listings table)
     document.getElementById('vehicle-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = document.getElementById('submit-btn');
@@ -139,38 +214,65 @@
         const form = e.target;
         const formData = new FormData(form);
         const files = formData.getAll('photos');
+        
+        // Validate file count
+        if (files.length > 10) {
+          throw new Error('Maximum 10 photos allowed');
+        }
+
         const imageUrls = [];
 
         // Upload each image
         for (const file of files) {
           const fileExt = file.name.split('.').pop();
-          const fileName = `${Math.random()}.${fileExt}`;
+          const fileName = `sales/${Math.random()}.${fileExt}`;
           
           const { data, error } = await supabase.storage
             .from('vehicle-images')
-            .upload(`sales/${fileName}`, file);
+            .upload(fileName, file);
           
           if (error) throw error;
-          imageUrls.push(`${SUPABASE_URL}/storage/v1/object/public/vehicle-images/sales/${fileName}`);
+          imageUrls.push(`${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`);
         }
 
-        // Submit form data
-        const { data, error } = await supabase.from('vehicle_sales').insert({
+        // Submit form data to sale_listings table
+        const { data, error } = await supabase.from('sale_listings').insert({
+          // Vehicle info
           make: formData.get('make'),
           model: formData.get('model'),
           year: formData.get('year'),
           mileage: formData.get('mileage'),
-          price: formData.get('price'),
+          price: formData.get('price') * 100, // Convert to cents
+          vin: formData.get('vin'),
+          condition: formData.get('condition'),
           photos: imageUrls,
           tlc_inspection: formData.get('tlc_inspection') === 'on',
-          created_at: new Date().toISOString()
+          description: formData.get('description'),
+          vehicle_type: 'sedan', // Default or add to form
+          
+          // Seller info
+          seller_id: null, // Will need authentication to set this
+          seller_name: formData.get('seller_name'),
+          seller_phone: formData.get('seller_phone'),
+          seller_email: formData.get('seller_email'),
+          contact_method: formData.get('contact_method'),
+          location: formData.get('location'),
+          is_dealer: formData.get('is_dealer') === 'on',
+          show_contact: formData.get('show_contact') === 'on',
+          
+          // Sale-specific
+          title_status: 'clean', // Default or add to form
+          
+          // Status
+          status: 'pending_payment'
         });
 
         if (error) throw error;
+        
         window.location.href = "thank-you.html?source=vehicle-sale";
       } catch (error) {
         console.error('Error:', error);
-        alert("Error submitting vehicle listing. Please try again.");
+        alert(`Error submitting vehicle listing: ${error.message}`);
       } finally {
         submitBtn.disabled = false;
         loading.style.display = 'none';
@@ -208,9 +310,6 @@
         navigator.serviceWorker.register('/service-worker.js');
       });
     }
-
-   
-
   </script>
 </body>
 </html>

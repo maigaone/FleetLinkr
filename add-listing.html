@@ -211,19 +211,18 @@
       "https://dndeljolayctbafmizcl.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
     );
-
-    // Image Upload Handler
+   // Image Upload Handler (updated for new table)
     async function uploadImage(file) {
-      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+      const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
       const { data, error } = await supabase.storage
         .from('vehicle-images')
         .upload(fileName, file);
       
       if (error) throw error;
-      return `https://dndeljolayctbafmizcl.supabase.co/storage/v1/object/public/vehicle-images/${fileName}`;
+      return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
     }
 
-    // Form Submission
+    // Updated Form Submission for rental_listings
     document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -245,18 +244,28 @@
           imageUrls.push(url);
         }
         
-        // Submit to Supabase
-        const { error } = await supabase.from('listings').insert([{
+          // Submit to Supabase (updated for rental_listings table)
+        const { error } = await supabase.from('rental_listings').insert([{
+          owner_id: null, // Will need authentication to set this properly
           owner_name: document.getElementById('owner-name').value,
           email: document.getElementById('email').value,
           phone: document.getElementById('phone').value,
-          vehicle_type: document.getElementById('vehicle-type').value,
+          make: document.getElementById('vehicle-type').value.split(' ')[0], // Extract make
+          model: document.getElementById('vehicle-type').value.split(' ').slice(1).join(' '), // Extract model
+          year: new Date().getFullYear(), // Default to current year
           tlc_plate: document.getElementById('tlc-plate').value,
           rental_type: document.getElementById('rental-type').value,
+          daily_rate: parseFloat(document.getElementById('price').value),
+          weekly_rate: parseFloat(document.getElementById('price').value) * 5, // Example calculation
+          monthly_rate: parseFloat(document.getElementById('price').value) * 20, // Example calculation
+          minimum_rental_days: document.getElementById('rental-type').value === 'Monthly' ? 30 : 
+          
+          document.getElementById('rental-type').value === 'Weekly' ? 7 : 1,
           location: document.getElementById('location').value,
-          price_per_day: parseFloat(document.getElementById('price').value),
-          additional_details: document.getElementById('details').value,
-          image_urls: imageUrls
+          photos: imageUrls,
+          description: document.getElementById('details').value,
+          tlc_inspection: true, // Assuming rental vehicles pass inspection
+          status: 'active'
         }]);
 
         if (error) throw error;
