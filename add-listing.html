@@ -206,11 +206,13 @@
   </main>
 
   <script>
+   // Define Supabase constants at the top
+    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+    
     // Initialize Supabase
-    window.supabase = supabase.createClient(
-      "https://dndeljolayctbafmizcl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
-    );
+     window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
    // Image Upload Handler (updated for new table)
     async function uploadImage(file) {
       const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
