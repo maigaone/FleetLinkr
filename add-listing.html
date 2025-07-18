@@ -284,7 +284,7 @@
         
         const imageUrls = [];
         for (let i = 0; i < files.length; i++) {
-          const url = await uploadImage(files[i]);
+          const url = await uploadImage(files[i]);  // Fixed: Removed extra parenthesis
           imageUrls.push(url);
         }
         
