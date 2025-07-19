@@ -275,50 +275,65 @@
     </div>
   </main>
 
+  
   <script>
-    // Define Supabase constants
-    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-    
-    // Initialize Supabase
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Define Supabase constants
+  const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+  
+  // Initialize Supabase immediately
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Check initial auth state when page loads
-    async function checkAuthState() {
-      const { data: { session } } = await supabase.auth.getSession();
+  // Check initial auth state when page loads
+  document.addEventListener('DOMContentLoaded', async () => {
+    await checkAuthState();
+    
+    // Setup event listeners after auth check
+    document.getElementById('login-btn').addEventListener('click', handleLogin);
+    document.getElementById('logout-btn').addEventListener('click', handleLogout);
+    document.getElementById('add-listing-form').addEventListener('submit', handleFormSubmit);
+  });
+
+  async function checkAuthState() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      
       if (session?.user) {
         document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
         document.getElementById('login-btn').style.display = 'none';
         document.getElementById('logout-btn').style.display = 'block';
         document.getElementById('add-listing-form').style.display = 'grid';
       }
+    } catch (error) {
+      console.error("Auth state check failed:", error);
     }
+  }
 
-    // Call on page load
-    checkAuthState();
-
-    // Auth functions
-    document.getElementById('login-btn').addEventListener('click', async () => {
+  async function handleLogin() {
+    try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.href }
       });
-      if (error) {
-        console.error("Login error:", error);
-        alert("Login failed: " + error.message);
-      }
-    });
+      if (error) throw error;
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed: " + error.message);
+    }
+  }
 
-    document.getElementById('logout-btn').addEventListener('click', async () => {
+  async function handleLogout() {
+    try {
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Logout error:", error);
-        alert("Logout failed: " + error.message);
-      } else {
-        window.location.reload();
-      }
-    });
-
+      if (error) throw error;
+      window.location.reload();
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Logout failed: " + error.message);
+    }
+  }
+   
     // Image Upload Handler
     async function uploadImage(file) {
       const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
