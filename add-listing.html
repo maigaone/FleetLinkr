@@ -121,6 +121,17 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+ <script> // Define Supabase constants
+  const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+  
+  // Initialize Supabase immediately
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+</script>
+
+
 </head>
 <body>
   <!-- Consistent Header/Navigation -->
@@ -277,12 +288,7 @@
 
   
   <script>
-  // Define Supabase constants
-  const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
   
-  // Initialize Supabase immediately
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // Check initial auth state when page loads
   document.addEventListener('DOMContentLoaded', async () => {
