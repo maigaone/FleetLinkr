@@ -1,0 +1,48 @@
+<!-- Create new file profile.html -->
+<div class="profile-container">
+  <h2>Your Profile</h2>
+  <form id="profile-form">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="profile-email" disabled>
+    </div>
+    <div class="form-group">
+      <label for="profile-name">Full Name</label>
+      <input type="text" id="profile-name" required>
+    </div>
+    <div class="form-group">
+      <label for="profile-phone">Phone</label>
+      <input type="tel" id="profile-phone" required>
+    </div>
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
+
+<script>
+  // Profile management code
+  document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) window.location.href = "login.html";
+
+    const { data: profile } = await supabase.from('user_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    document.getElementById('profile-email').value = user.email;
+    if (profile) {
+      document.getElementById('profile-name').value = profile.full_name;
+      document.getElementById('profile-phone').value = profile.phone;
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('user_profiles').upsert({
+        user_id: user.id,
+        full_name: document.getElementById('profile-name').value,
+        phone: document.getElementById('profile-phone').value
+      });
+      alert('Profile updated!');
+    });
+  });
+</script>

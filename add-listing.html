@@ -90,6 +90,34 @@
       display: flex;
       justify-content: center;
     }
+
+    .error-message {
+      color: #d9534f;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+
+    .auth-section {
+      text-align: center;
+      padding: 1rem;
+      background: #f8f9fa;
+      margin-bottom: 1rem;
+    }
+
+    .auth-btn {
+      background: #0074D9;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 0.5rem;
+    }
+
+    .auth-btn:hover {
+      background: #005ea6;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -129,51 +157,47 @@
     </div>
   </nav>
 
-    <main class="main-content">
+  <div id="auth-section" class="auth-section">
+     <div id="auth-message">Please login to create listings</div>
+     <button id="login-btn" class="auth-btn">Login</button>
+     <button id="logout-btn" class="auth-btn" style="display:none;">Logout</button>
+  </div>
+
+  <main class="main-content">
     <div class="add-listing-container">
       <h1>Add New Vehicle Listing</h1>
-      <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data">
-        <!-- Owner Information -->
-        <div class="form-group">
-          <label for="owner-name">Your Name</label>
-          <input type="text" id="owner-name" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="email">Your Email</label>
-          <input type="email" id="email" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" required>
-        </div>
-
+      
+      <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data" style="display:none;">
         <!-- Vehicle Information -->
         <div class="form-group">
           <label for="make">Make*</label>
           <input type="text" id="make" required>
+          <div id="make-error" class="error-message">Please enter the vehicle make</div>
         </div>
         
         <div class="form-group">
           <label for="model">Model*</label>
           <input type="text" id="model" required>
+          <div id="model-error" class="error-message">Please enter the vehicle model</div>
         </div>
         
         <div class="form-group">
           <label for="year">Year*</label>
           <input type="number" id="year" min="2000" max="2025" required>
+          <div id="year-error" class="error-message">Please enter a valid year (2000-2025)</div>
         </div>
         
         <div class="form-group">
           <label for="tlc-plate">TLC Plate #*</label>
           <input type="text" id="tlc-plate" required>
+          <div id="tlc-plate-error" class="error-message">Please enter the TLC plate number</div>
         </div>
 
         <!-- Rental Details -->
         <div class="form-group">
           <label for="daily-rate">Daily Rate ($)*</label>
           <input type="number" id="daily-rate" min="1" required>
+          <div id="daily-rate-error" class="error-message">Please enter a valid daily rate</div>
         </div>
         
         <div class="form-group">
@@ -189,11 +213,13 @@
         <div class="form-group">
           <label for="minimum-days">Minimum Rental Days*</label>
           <input type="number" id="minimum-days" min="1" value="1" required>
+          <div id="minimum-days-error" class="error-message">Please enter minimum rental days</div>
         </div>
         
         <div class="form-group">
           <label for="available-from">Available From*</label>
           <input type="date" id="available-from" required>
+          <div id="available-from-error" class="error-message">Please select a start date</div>
         </div>
         
         <div class="form-group">
@@ -222,23 +248,27 @@
             <option value="Bronx">Bronx</option>
             <option value="Staten Island">Staten Island</option>
           </select>
+          <div id="location-error" class="error-message">Please select a location</div>
         </div>
         
         <div class="form-group full-width">
           <label for="image-upload">Vehicle Photos (Max 10)*</label>
           <input type="file" id="image-upload" accept="image/*" multiple required class="file-upload">
+          <div id="image-upload-error" class="error-message">Please upload at least one photo</div>
         </div>
 
         <!-- TLC Inspection -->
         <div class="form-group full-width">
           <label>
-            <input type="checkbox" name="tlc_inspection" required checked> 
+            <input type="checkbox" id="tlc_inspection" required checked> 
             I confirm this vehicle passes TLC inspection.*
           </label>
+          <div id="tlc-inspection-error" class="error-message">You must confirm TLC inspection status</div>
         </div>
 
         <!-- reCAPTCHA -->
         <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
+        <div id="recaptcha-error" class="error-message" style="text-align: center;">Please complete the reCAPTCHA</div>
         
         <button type="submit" class="submit-btn">Submit Listing</button>
       </form>
@@ -251,7 +281,43 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
     
     // Initialize Supabase
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Check initial auth state when page loads
+    async function checkAuthState() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
+        document.getElementById('login-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'block';
+        document.getElementById('add-listing-form').style.display = 'grid';
+      }
+    }
+
+    // Call on page load
+    checkAuthState();
+
+    // Auth functions
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href }
+      });
+      if (error) {
+        console.error("Login error:", error);
+        alert("Login failed: " + error.message);
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error);
+        alert("Logout failed: " + error.message);
+      } else {
+        window.location.reload();
+      }
+    });
 
     // Image Upload Handler
     async function uploadImage(file) {
@@ -264,27 +330,80 @@
       return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
     }
 
+    // Form Validation
+    function validateForm() {
+      let isValid = true;
+      const requiredFields = [
+        'make', 'model', 'year', 'tlc-plate', 'daily-rate', 
+        'minimum-days', 'available-from', 'location'
+      ];
+
+      // Validate required fields
+      requiredFields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        const errorElement = document.getElementById(`${fieldId}-error`);
+        
+        if (!element.value) {
+          errorElement.style.display = 'block';
+          isValid = false;
+        } else {
+          errorElement.style.display = 'none';
+        }
+      });
+
+      // Validate year range
+      const year = parseInt(document.getElementById('year').value);
+      if (year < 2000 || year > 2025) {
+        document.getElementById('year-error').style.display = 'block';
+        isValid = false;
+      }
+
+      // Validate images
+      const files = document.getElementById('image-upload').files;
+      if (files.length === 0) {
+        document.getElementById('image-upload-error').style.display = 'block';
+        isValid = false;
+      } else if (files.length > 10) {
+        document.getElementById('image-upload-error').textContent = 'Maximum 10 photos allowed';
+        document.getElementById('image-upload-error').style.display = 'block';
+        isValid = false;
+      }
+
+      // Validate TLC inspection checkbox
+      if (!document.getElementById('tlc_inspection').checked) {
+        document.getElementById('tlc-inspection-error').style.display = 'block';
+        isValid = false;
+      }
+
+      // Validate reCAPTCHA
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (!recaptchaResponse) {
+        document.getElementById('recaptcha-error').style.display = 'block';
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
     // Form Submission
     document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      if (!validateForm()) {
+        return;
+      }
+
       const submitBtn = e.target.querySelector('button[type="submit"]');
       submitBtn.disabled = true;
       submitBtn.textContent = 'Processing...';
       
       try {
-        // Verify reCAPTCHA
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) {
-          throw new Error("Please complete the reCAPTCHA verification");
-        }
-
         // Upload all images
         const files = document.getElementById('image-upload').files;
-        if (files.length > 10) throw new Error("Maximum 10 photos allowed");
-        
         const imageUrls = [];
+        
         for (let i = 0; i < files.length; i++) {
-          const url = await uploadImage(files[i]);  // Fixed: Removed extra parenthesis
+          const url = await uploadImage(files[i]);
           imageUrls.push(url);
         }
         
@@ -298,12 +417,12 @@
           ? parseFloat(document.getElementById('monthly-rate').value)
           : dailyRate * 20; // Default calculation
 
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("User not authenticated");
+
         // Submit to Supabase
         const { error } = await supabase.from('rental_listings').insert([{
-          owner_id: null, // Will need authentication to set this properly
-          owner_name: document.getElementById('owner-name').value,
-          email: document.getElementById('email').value,
-          phone: document.getElementById('phone').value,
           make: document.getElementById('make').value,
           model: document.getElementById('model').value,
           year: parseInt(document.getElementById('year').value),
@@ -315,13 +434,14 @@
           available_from: document.getElementById('available-from').value,
           available_to: document.getElementById('available-to').value || null,
           included_mileage: parseInt(document.getElementById('included-mileage').value),
-          excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value)* 100),
+          excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
           location: document.getElementById('location').value,
           photos: imageUrls,
-          tlc_inspection: true,
+          tlc_inspection: document.getElementById('tlc_inspection').checked,
           status: 'active',
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          user_id: user.id
         }]);
 
         if (error) throw error;

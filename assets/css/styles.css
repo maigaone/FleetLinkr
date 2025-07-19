@@ -64,6 +64,37 @@ header {
   transform: scale(1.02);
 }
 
+
+/* Auth section */
+.auth-section {
+  padding: 1rem;
+  text-align: right;
+  background: #f5f5f5;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.auth-btn {
+  background: #0074D9;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Profile page */
+.profile-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
 /* ================ */
 /* Navigation - Enhanced for Mobile */
 /* ================ */
