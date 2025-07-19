@@ -275,32 +275,22 @@
     </div>
   </main>
 
-  
  <script>
-        // Initialize Supabase
-    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  // Main initialization function
-  async function initializeApp() {
+  // Wait for DOM and all scripts to be ready
+  document.addEventListener('DOMContentLoaded', async () => {
     try {
+      // First, make sure Supabase is loaded
+      if (typeof supabase === 'undefined') {
+        throw new Error('Supabase not loaded');
+      }
+
+      // Initialize Supabase client
+      const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
       // Check auth state
-      await checkAuthState();
-      
-      // Setup event listeners
-      document.getElementById('login-btn').addEventListener('click', handleLogin);
-      document.getElementById('logout-btn').addEventListener('click', handleLogout);
-      document.getElementById('add-listing-form').addEventListener('submit', handleFormSubmit);
-    } catch (error) {
-      console.error("Initialization error:", error);
-    }
-  }
-
-  // Check authentication state
-  async function checkAuthState() {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
       if (error) throw error;
       
       if (session?.user) {
@@ -309,167 +299,167 @@
         document.getElementById('logout-btn').style.display = 'block';
         document.getElementById('add-listing-form').style.display = 'grid';
       }
-    } catch (error) {
-      console.error("Auth state check failed:", error);
-    }
-  }
 
-  // Login handler
-  async function handleLogin() {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.href }
+      // Login handler
+      document.getElementById('login-btn').addEventListener('click', async () => {
+        try {
+          const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.href }
+          });
+          if (error) throw error;
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Login failed: " + error.message);
+        }
       });
-      if (error) throw error;
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Login failed: " + error.message);
-    }
-  }
 
-  // Logout handler
-  async function handleLogout() {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout error:", error);
-      alert("Logout failed: " + error.message);
-    }
-  }
+      // Logout handler
+      document.getElementById('logout-btn').addEventListener('click', async () => {
+        try {
+          const { error } = await supabaseClient.auth.signOut();
+          if (error) throw error;
+          window.location.reload();
+        } catch (error) {
+          console.error("Logout error:", error);
+          alert("Logout failed: " + error.message);
+        }
+      });
 
-  // Image Upload Handler
-  async function uploadImage(file) {
-    const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-    const { data, error } = await supabase.storage
-      .from('vehicle-images')
-      .upload(fileName, file);
-    
-    if (error) throw error;
-    return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
-  }
-
-  // Form Validation
-  function validateForm() {
-    let isValid = true;
-    const requiredFields = [
-      'make', 'model', 'year', 'tlc-plate', 'daily-rate', 
-      'minimum-days', 'available-from', 'location'
-    ];
-
-    requiredFields.forEach(fieldId => {
-      const element = document.getElementById(fieldId);
-      const errorElement = document.getElementById(`${fieldId}-error`);
-      
-      if (!element.value) {
-        errorElement.style.display = 'block';
-        isValid = false;
-      } else {
-        errorElement.style.display = 'none';
+      // Image Upload Handler
+      async function uploadImage(file) {
+        const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+        const { data, error } = await supabaseClient.storage
+          .from('vehicle-images')
+          .upload(fileName, file);
+        
+        if (error) throw error;
+        return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
       }
-    });
 
-    const year = parseInt(document.getElementById('year').value);
-    if (year < 2000 || year > 2025) {
-      document.getElementById('year-error').style.display = 'block';
-      isValid = false;
-    }
+      // Form Validation
+      function validateForm() {
+        let isValid = true;
+        const requiredFields = [
+          'make', 'model', 'year', 'tlc-plate', 'daily-rate', 
+          'minimum-days', 'available-from', 'location'
+        ];
 
-    const files = document.getElementById('image-upload').files;
-    if (files.length === 0) {
-      document.getElementById('image-upload-error').style.display = 'block';
-      isValid = false;
-    } else if (files.length > 10) {
-      document.getElementById('image-upload-error').textContent = 'Maximum 10 photos allowed';
-      document.getElementById('image-upload-error').style.display = 'block';
-      isValid = false;
-    }
+        requiredFields.forEach(fieldId => {
+          const element = document.getElementById(fieldId);
+          const errorElement = document.getElementById(`${fieldId}-error`);
+          
+          if (!element.value) {
+            errorElement.style.display = 'block';
+            isValid = false;
+          } else {
+            errorElement.style.display = 'none';
+          }
+        });
 
-    if (!document.getElementById('tlc_inspection').checked) {
-      document.getElementById('tlc-inspection-error').style.display = 'block';
-      isValid = false;
-    }
+        const year = parseInt(document.getElementById('year').value);
+        if (year < 2000 || year > 2025) {
+          document.getElementById('year-error').style.display = 'block';
+          isValid = false;
+        }
 
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) {
-      document.getElementById('recaptcha-error').style.display = 'block';
-      isValid = false;
-    }
+        const files = document.getElementById('image-upload').files;
+        if (files.length === 0) {
+          document.getElementById('image-upload-error').style.display = 'block';
+          isValid = false;
+        } else if (files.length > 10) {
+          document.getElementById('image-upload-error').textContent = 'Maximum 10 photos allowed';
+          document.getElementById('image-upload-error').style.display = 'block';
+          isValid = false;
+        }
 
-    return isValid;
-  }
+        if (!document.getElementById('tlc_inspection').checked) {
+          document.getElementById('tlc-inspection-error').style.display = 'block';
+          isValid = false;
+        }
 
-  // Form Submission
-  async function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+          document.getElementById('recaptcha-error').style.display = 'block';
+          isValid = false;
+        }
 
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Processing...';
-    
-    try {
-      const files = document.getElementById('image-upload').files;
-      const imageUrls = [];
-      
-      for (let i = 0; i < files.length; i++) {
-        const url = await uploadImage(files[i]);
-        imageUrls.push(url);
+        return isValid;
       }
-      
-      const dailyRate = parseFloat(document.getElementById('daily-rate').value);
-      const weeklyRate = document.getElementById('weekly-rate').value 
-        ? parseFloat(document.getElementById('weekly-rate').value)
-        : dailyRate * 5;
-      
-      const monthlyRate = document.getElementById('monthly-rate').value 
-        ? parseFloat(document.getElementById('monthly-rate').value)
-        : dailyRate * 20;
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("User not authenticated");
+      // Form Submission
+      document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+          return;
+        }
 
-      const { error } = await supabase.from('rental_listings').insert([{
-        make: document.getElementById('make').value,
-        model: document.getElementById('model').value,
-        year: parseInt(document.getElementById('year').value),
-        tlc_plate: document.getElementById('tlc-plate').value,
-        daily_rate: Math.round(dailyRate * 100),
-        weekly_rate: Math.round(weeklyRate * 100),
-        monthly_rate: Math.round(monthlyRate * 100),
-        minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
-        available_from: document.getElementById('available-from').value,
-        available_to: document.getElementById('available-to').value || null,
-        included_mileage: parseInt(document.getElementById('included-mileage').value),
-        excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
-        location: document.getElementById('location').value,
-        photos: imageUrls,
-        tlc_inspection: document.getElementById('tlc_inspection').checked,
-        status: 'active',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_id: user.id
-      }]);
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+        
+        try {
+          const files = document.getElementById('image-upload').files;
+          const imageUrls = [];
+          
+          for (let i = 0; i < files.length; i++) {
+            const url = await uploadImage(files[i]);
+            imageUrls.push(url);
+          }
+          
+          const dailyRate = parseFloat(document.getElementById('daily-rate').value);
+          const weeklyRate = document.getElementById('weekly-rate').value 
+            ? parseFloat(document.getElementById('weekly-rate').value)
+            : dailyRate * 5;
+          
+          const monthlyRate = document.getElementById('monthly-rate').value 
+            ? parseFloat(document.getElementById('monthly-rate').value)
+            : dailyRate * 20;
 
-      if (error) throw error;
-      window.location.href = "thank-you.html";
+          const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+          if (userError || !user) throw new Error("User not authenticated");
+
+          const { error } = await supabaseClient.from('rental_listings').insert([{
+            make: document.getElementById('make').value,
+            model: document.getElementById('model').value,
+            year: parseInt(document.getElementById('year').value),
+            tlc_plate: document.getElementById('tlc-plate').value,
+            daily_rate: Math.round(dailyRate * 100),
+            weekly_rate: Math.round(weeklyRate * 100),
+            monthly_rate: Math.round(monthlyRate * 100),
+            minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
+            available_from: document.getElementById('available-from').value,
+            available_to: document.getElementById('available-to').value || null,
+            included_mileage: parseInt(document.getElementById('included-mileage').value),
+            excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
+            location: document.getElementById('location').value,
+            photos: imageUrls,
+            tlc_inspection: document.getElementById('tlc_inspection').checked,
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: user.id
+          }]);
+
+          if (error) throw error;
+          window.location.href = "thank-you.html";
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Failed to add listing: " + error.message);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Listing';
+          grecaptcha.reset();
+        }
+      });
+
     } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to add listing: " + error.message);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit Listing';
-      grecaptcha.reset();
+      console.error("Initialization error:", error);
+      alert("Application initialization failed. Please refresh the page.");
     }
-  }
-
-  // Start the application when DOM is ready
-  document.addEventListener('DOMContentLoaded', initializeApp);
-</script>
+  });
+</script> 
+ 
 </body>
 </html>
