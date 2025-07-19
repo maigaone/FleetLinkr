@@ -121,17 +121,6 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
- <script> // Define Supabase constants
-  const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-  
-  // Initialize Supabase immediately
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-</script>
-
-
 </head>
 <body>
   <!-- Consistent Header/Navigation -->
@@ -287,194 +276,194 @@
   </main>
 
   
-  <script>
-  
-
-  // Check initial auth state when page loads
-  document.addEventListener('DOMContentLoaded', async () => {
-    await checkAuthState();
-    
-    // Setup event listeners after auth check
-    document.getElementById('login-btn').addEventListener('click', handleLogin);
-    document.getElementById('logout-btn').addEventListener('click', handleLogout);
-    document.getElementById('add-listing-form').addEventListener('submit', handleFormSubmit);
-  });
-
-  async function checkAuthState() {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
+ <script>
+    // Wait for both DOM and Supabase to be ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Define Supabase constants
+      const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
       
-      if (session?.user) {
-        document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
-        document.getElementById('login-btn').style.display = 'none';
-        document.getElementById('logout-btn').style.display = 'block';
-        document.getElementById('add-listing-form').style.display = 'grid';
-      }
-    } catch (error) {
-      console.error("Auth state check failed:", error);
-    }
-  }
+      // Initialize Supabase
+      const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  async function handleLogin() {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.href }
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Login failed: " + error.message);
-    }
-  }
-
-  async function handleLogout() {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout error:", error);
-      alert("Logout failed: " + error.message);
-    }
-  }
-   
-    // Image Upload Handler
-    async function uploadImage(file) {
-      const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      const { data, error } = await supabase.storage
-        .from('vehicle-images')
-        .upload(fileName, file);
-      
-      if (error) throw error;
-      return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
-    }
-
-    // Form Validation
-    function validateForm() {
-      let isValid = true;
-      const requiredFields = [
-        'make', 'model', 'year', 'tlc-plate', 'daily-rate', 
-        'minimum-days', 'available-from', 'location'
-      ];
-
-      // Validate required fields
-      requiredFields.forEach(fieldId => {
-        const element = document.getElementById(fieldId);
-        const errorElement = document.getElementById(`${fieldId}-error`);
-        
-        if (!element.value) {
-          errorElement.style.display = 'block';
-          isValid = false;
-        } else {
-          errorElement.style.display = 'none';
+      // Check initial auth state
+      async function checkAuthState() {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) throw error;
+          
+          if (session?.user) {
+            document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
+            document.getElementById('login-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'block';
+            document.getElementById('add-listing-form').style.display = 'grid';
+          }
+        } catch (error) {
+          console.error("Auth state check failed:", error);
         }
-      });
-
-      // Validate year range
-      const year = parseInt(document.getElementById('year').value);
-      if (year < 2000 || year > 2025) {
-        document.getElementById('year-error').style.display = 'block';
-        isValid = false;
       }
 
-      // Validate images
-      const files = document.getElementById('image-upload').files;
-      if (files.length === 0) {
-        document.getElementById('image-upload-error').style.display = 'block';
-        isValid = false;
-      } else if (files.length > 10) {
-        document.getElementById('image-upload-error').textContent = 'Maximum 10 photos allowed';
-        document.getElementById('image-upload-error').style.display = 'block';
-        isValid = false;
-      }
-
-      // Validate TLC inspection checkbox
-      if (!document.getElementById('tlc_inspection').checked) {
-        document.getElementById('tlc-inspection-error').style.display = 'block';
-        isValid = false;
-      }
-
-      // Validate reCAPTCHA
-      const recaptchaResponse = grecaptcha.getResponse();
-      if (!recaptchaResponse) {
-        document.getElementById('recaptcha-error').style.display = 'block';
-        isValid = false;
-      }
-
-      return isValid;
-    }
-
-    // Form Submission
-    document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      if (!validateForm()) {
-        return;
-      }
-
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Processing...';
-      
-      try {
-        // Upload all images
-        const files = document.getElementById('image-upload').files;
-        const imageUrls = [];
-        
-        for (let i = 0; i < files.length; i++) {
-          const url = await uploadImage(files[i]);
-          imageUrls.push(url);
+      // Login handler
+      async function handleLogin() {
+        try {
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.href }
+          });
+          if (error) throw error;
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Login failed: " + error.message);
         }
+      }
+
+      // Logout handler
+      async function handleLogout() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.reload();
+        } catch (error) {
+          console.error("Logout error:", error);
+          alert("Logout failed: " + error.message);
+        }
+      }
+
+      // Image Upload Handler
+      async function uploadImage(file) {
+        const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+        const { data, error } = await supabase.storage
+          .from('vehicle-images')
+          .upload(fileName, file);
         
-        // Calculate weekly/monthly rates if not provided
-        const dailyRate = parseFloat(document.getElementById('daily-rate').value);
-        const weeklyRate = document.getElementById('weekly-rate').value 
-          ? parseFloat(document.getElementById('weekly-rate').value)
-          : dailyRate * 5; // Default calculation
-        
-        const monthlyRate = document.getElementById('monthly-rate').value 
-          ? parseFloat(document.getElementById('monthly-rate').value)
-          : dailyRate * 20; // Default calculation
-
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not authenticated");
-
-        // Submit to Supabase
-        const { error } = await supabase.from('rental_listings').insert([{
-          make: document.getElementById('make').value,
-          model: document.getElementById('model').value,
-          year: parseInt(document.getElementById('year').value),
-          tlc_plate: document.getElementById('tlc-plate').value,
-          daily_rate: Math.round(dailyRate * 100), // Convert to cents
-          weekly_rate: Math.round(weeklyRate * 100),
-          monthly_rate: Math.round(monthlyRate * 100),
-          minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
-          available_from: document.getElementById('available-from').value,
-          available_to: document.getElementById('available-to').value || null,
-          included_mileage: parseInt(document.getElementById('included-mileage').value),
-          excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
-          location: document.getElementById('location').value,
-          photos: imageUrls,
-          tlc_inspection: document.getElementById('tlc_inspection').checked,
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          user_id: user.id
-        }]);
-
         if (error) throw error;
-        window.location.href = "thank-you.html";
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Failed to add listing: " + error.message);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Listing';
-        grecaptcha.reset();
+        return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
       }
+
+      // Form Validation
+      function validateForm() {
+        let isValid = true;
+        const requiredFields = [
+          'make', 'model', 'year', 'tlc-plate', 'daily-rate', 
+          'minimum-days', 'available-from', 'location'
+        ];
+
+        requiredFields.forEach(fieldId => {
+          const element = document.getElementById(fieldId);
+          const errorElement = document.getElementById(`${fieldId}-error`);
+          
+          if (!element.value) {
+            errorElement.style.display = 'block';
+            isValid = false;
+          } else {
+            errorElement.style.display = 'none';
+          }
+        });
+
+        const year = parseInt(document.getElementById('year').value);
+        if (year < 2000 || year > 2025) {
+          document.getElementById('year-error').style.display = 'block';
+          isValid = false;
+        }
+
+        const files = document.getElementById('image-upload').files;
+        if (files.length === 0) {
+          document.getElementById('image-upload-error').style.display = 'block';
+          isValid = false;
+        } else if (files.length > 10) {
+          document.getElementById('image-upload-error').textContent = 'Maximum 10 photos allowed';
+          document.getElementById('image-upload-error').style.display = 'block';
+          isValid = false;
+        }
+
+        if (!document.getElementById('tlc_inspection').checked) {
+          document.getElementById('tlc-inspection-error').style.display = 'block';
+          isValid = false;
+        }
+
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+          document.getElementById('recaptcha-error').style.display = 'block';
+          isValid = false;
+        }
+
+        return isValid;
+      }
+
+      // Form Submission
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+          return;
+        }
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+        
+        try {
+          const files = document.getElementById('image-upload').files;
+          const imageUrls = [];
+          
+          for (let i = 0; i < files.length; i++) {
+            const url = await uploadImage(files[i]);
+            imageUrls.push(url);
+          }
+          
+          const dailyRate = parseFloat(document.getElementById('daily-rate').value);
+          const weeklyRate = document.getElementById('weekly-rate').value 
+            ? parseFloat(document.getElementById('weekly-rate').value)
+            : dailyRate * 5;
+          
+          const monthlyRate = document.getElementById('monthly-rate').value 
+            ? parseFloat(document.getElementById('monthly-rate').value)
+            : dailyRate * 20;
+
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) throw new Error("User not authenticated");
+
+          const { error } = await supabase.from('rental_listings').insert([{
+            make: document.getElementById('make').value,
+            model: document.getElementById('model').value,
+            year: parseInt(document.getElementById('year').value),
+            tlc_plate: document.getElementById('tlc-plate').value,
+            daily_rate: Math.round(dailyRate * 100),
+            weekly_rate: Math.round(weeklyRate * 100),
+            monthly_rate: Math.round(monthlyRate * 100),
+            minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
+            available_from: document.getElementById('available-from').value,
+            available_to: document.getElementById('available-to').value || null,
+            included_mileage: parseInt(document.getElementById('included-mileage').value),
+            excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
+            location: document.getElementById('location').value,
+            photos: imageUrls,
+            tlc_inspection: document.getElementById('tlc_inspection').checked,
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: user.id
+          }]);
+
+          if (error) throw error;
+          window.location.href = "thank-you.html";
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Failed to add listing: " + error.message);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Listing';
+          grecaptcha.reset();
+        }
+      }
+
+      // Initialize the page
+      await checkAuthState();
+      
+      // Set up event listeners
+      document.getElementById('login-btn').addEventListener('click', handleLogin);
+      document.getElementById('logout-btn').addEventListener('click', handleLogout);
+      document.getElementById('add-listing-form').addEventListener('submit', handleFormSubmit);
     });
   </script>
 </body>
