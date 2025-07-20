@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - FleetLinkr</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .policy-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 { 
+      color: #0074D9;
+      border-bottom: 2px solid #0074D9;
+      padding-bottom: 0.5rem;
+    }
+    h2 {
+      color: #0056b3;
+      margin-top: 2rem;
+    }
+    ul { padding-left: 1.8rem; }
+    a { color: #0074D9; }
+    .highlight { background-color: #f8f9fa; padding: 1rem; border-left: 4px solid #0074D9; }
+  </style>
+</head>
+<body>
+  <!-- Add this navigation to all pages -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/">Home</a>
+      <a href="/privacy" class="active">Privacy Policy</a>
+      <a href="/terms">Terms of Service</a>
+    </div>
+  </nav>
+
+  <div class="policy-container">
+    <h1>Privacy Policy for FleetLinkr</h1>
+    <p><em>Last updated: <span id="current-date"></span></em></p>
+    
+    <div class="highlight">
+      <p><strong>NYC TLC Compliance Notice:</strong> FleetLinkr adheres to New York City Taxi and Limousine Commission regulations regarding data collection for vehicle listings and driver verification.</p>
+    </div>
+
+    <h2>1. Information Collection</h2>
+    <p>We collect the following <strong>TLC-required data</strong>:</p>
+    <ul>
+      <li><strong>Driver Information</strong>: TLC license number, expiration date</li>
+      <li><strong>Vehicle Information</strong>: Make, model, year, TLC plate number, inspection status</li>
+      <li><strong>Rental Records</strong>: Dates, durations, and parties involved in transactions</li>
+    </ul>
+
+    <h2>2. Data Use & Sharing</h2>
+    <p>Data may be shared with:</p>
+    <ul>
+      <li>NYC TLC for compliance audits</li>
+      <li>Insurance providers for verification</li>
+      <li>Law enforcement if required by subpoena</li>
+    </ul>
+
+    <h2>3. Data Retention</h2>
+    <p>We retain TLC-related records for <strong>3 years</strong> as required by NYC Administrative Code §19-507.</p>
+
+    <h2>4. Your Rights</h2>
+    <p>Under NYC's Local Law 245, you may:</p>
+    <ul>
+      <li>Request access to your TLC license data</li>
+      <li>Dispute inaccurate vehicle information</li>
+      <li>File complaints about data misuse</li>
+    </ul>
+
+    <h2>5. Contact Information</h2>
+    <p><strong>TLC Compliance Officer</strong><br>
+    Email: <a href="mailto:tlc-compliance@fleetlinkr.com">tlc-compliance@fleetlinkr.com</a><br>
+    Phone: (646) 996-5468<br>
+    Mail: 123 TLC Plaza, New York, NY 10001</p>
+  </div>
+
+  <!-- Footer with policy links -->
+  <footer>
+    <div class="container">
+      <a href="/privacy">Privacy Policy</a> | 
+      <a href="/terms">Terms of Service</a> | 
+      <a href="/contact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Auto-update date
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    });
+  </script>
+</body>
+</html>
