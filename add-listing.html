@@ -300,12 +300,21 @@
       if (typeof supabase === 'undefined') {
         throw new Error('Supabase not loaded');
       }
+      
+      // Replace your current Supabase initialization with this
+const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
 
-      // Initialize Supabase client
-      const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+// Initialize with proper error handling
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    flowType: 'pkce', // Recommended for OAuth
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
+      
       // Check auth state
       const { data: { session }, error } = await supabaseClient.auth.getSession();
       if (error) throw error;
@@ -318,20 +327,25 @@
       }
 
       // Login handler
-      document.getElementById('login-btn').addEventListener('click', async () => {
-        try {
-          const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-              redirectTo: window.location.origin, // Redirects back to your app after login
+       document.getElementById('login-btn').addEventListener('click', async () => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href, // Redirect back to current page
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent' // Forces fresh login each time
         }
-      });  
-          if (error) throw error;
-        } catch (error) {
-          console.error("Login error:", error);
-          alert("Login failed: " + error.message);
-        }
-      });
+      }
+    });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Login failed. Please try again.");
+  }
+});
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
