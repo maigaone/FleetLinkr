@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal - FleetLinkr</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0074D9; border-bottom: 2px solid #0074D9; padding-bottom: 10px; }
+    h2 { color: #0056b3; margin-top: 25px; }
+    .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; border-radius: 4px; margin-bottom: 20px; }
+    .tab button { background-color: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 10px 16px; transition: 0.3s; }
+    .tab button:hover { background-color: #ddd; }
+    .tab button.active { background-color: #0074D9; color: white; }
+    .tabcontent { display: none; animation: fadeEffect 0.5s; }
+    @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
+    .highlight { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #0074D9; margin: 15px 0; }
+    ul { padding-left: 20px; }
+    a { color: #0074D9; text-decoration: none; }
+    footer { margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
+    #current-date { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="tab">
+    <button class="tablinks active" onclick="openTab(event, 'Privacy')">Privacy Policy</button>
+    <button class="tablinks" onclick="openTab(event, 'Terms')">Terms of Use</button>
+  </div>
+
+  <!-- Privacy Policy Tab -->
+  <div id="Privacy" class="tabcontent" style="display: block;">
+    <h1>Privacy Policy for FleetLinkr</h1>
+    <p><em>Last updated: <span id="current-date"></span></em></p>
+    
+    <div class="highlight">
+      <p><strong>NYC TLC Compliance Notice:</strong> FleetLinkr adheres to New York City Taxi and Limousine Commission regulations regarding data collection for vehicle listings and driver verification.</p>
+    </div>
+
+    <h2>1. Information Collection</h2>
+    <p>We collect the following <strong>TLC-required data</strong>:</p>
+    <ul>
+      <li><strong>Driver Information</strong>: TLC license number, expiration date</li>
+      <li><strong>Vehicle Information</strong>: Make, model, year, TLC plate number, inspection status</li>
+      <li><strong>Rental Records</strong>: Dates, durations, and parties involved in transactions</li>
+    </ul>
+
+    <h2>2. Data Use & Sharing</h2>
+    <p>Data may be shared with:</p>
+    <ul>
+      <li>NYC TLC for compliance audits</li>
+      <li>Insurance providers for verification</li>
+      <li>Law enforcement if required by subpoena</li>
+    </ul>
+
+    <h2>3. Data Retention</h2>
+    <p>We retain TLC-related records for <strong>3 years</strong> as required by NYC Administrative Code §19-507.</p>
+
+    <h2>4. Your Rights</h2>
+    <p>Under NYC's Local Law 245, you may:</p>
+    <ul>
+      <li>Request access to your TLC license data</li>
+      <li>Dispute inaccurate vehicle information</li>
+      <li>File complaints about data misuse</li>
+    </ul>
+
+    <h2>5. Contact Information</h2>
+    <p><strong>TLC Compliance Officer</strong><br>
+    Email: <a href="mailto:tlc-compliance@fleetlinkr.com">tlc-compliance@fleetlinkr.com</a><br>
+    Phone: (646) 996-5468<br>
+    Mail: 123 TLC Plaza, New York, NY 10001</p>
+  </div>
+
+  <!-- Terms of Use Tab -->
+  <div id="Terms" class="tabcontent">
+    <h1>FleetLinkr Terms of Use</h1>
+    <p><em>Effective Date: <span id="terms-date"></span></em></p>
+
+    <h2>1. Eligibility</h2>
+    <p>You must be at least 18 years old and capable of entering into a legally binding agreement to use FleetLinkr.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>FleetLinkr provides a SaaS-based logistics platform that connects TLC rental dealerships, vehicle owners, and drivers.</p>
+
+    <h2>3. User Accounts</h2>
+    <p>You are responsible for maintaining the confidentiality of your login credentials and all activities under your account.</p>
+
+    <h2>4. User Conduct</h2>
+    <p>You agree not to use the platform for unlawful purposes, violate others' rights, post fraudulent content, or transmit malware.</p>
+
+    <h2>5. Payment and Fees</h2>
+    <p>You agree to pay all applicable fees for paid services. Payments are non-refundable unless stated otherwise.</p>
+
+    <h2>6. Termination</h2>
+    <p>FleetLinkr may terminate your access for violating these Terms or for harmful conduct.</p>
+
+    <h2>7. Intellectual Property</h2>
+    <p>All content is the property of FleetLinkr or its licensors. You may not modify or distribute without permission.</p>
+
+    <h2>8. Disclaimers</h2>
+    <p>Service is provided "as is" without warranties. FleetLinkr is not liable for inaccuracies or interruptions.</p>
+
+    <h2>9. Limitation of Liability</h2>
+    <p>FleetLinkr is not liable for indirect or consequential damages. Total liability is limited to the amount paid by you.</p>
+
+    <h2>10. Governing Law</h2>
+    <p>These Terms are governed by New York State law.</p>
+
+    <h2>11. Contact</h2>
+    <p>Email: <a href="mailto:support@fleetlinkr.com">support@fleetlinkr.com</a></p>
+  </div>
+
+  <footer>
+    <a href="/privacy">Privacy Policy</a> | 
+    <a href="/terms">Terms of Service</a> | 
+    <a href="/contact">Contact</a>
+  </footer>
+
+  <script>
+    // Tab functionality
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    // Auto-update dates
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    });
+    document.getElementById('terms-date').textContent = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    });
+  </script>
+</body>
+</html>
