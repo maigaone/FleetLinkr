@@ -322,19 +322,25 @@
         }
 
         // Login handler - UPDATED WITH CORRECT REDIRECT
-        document.getElementById('login-btn').addEventListener('click', async () => {
-          try {
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'google',
-              options: {
-                redirectTo: 'https://fleetlinkr.com/add-listing.html'
-,
-                queryParams: {
-                  access_type: 'offline',
-                  prompt: 'consent'
-                }
-              }
-            });
+         document.getElementById('login-btn').addEventListener('click', async () => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://fleetlinkr.com/add-listing.html',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
+      }
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Login failed. Please try again or contact support.\nError: " + error.message);
+  }
+});
+      
             if (error) throw error;
           } catch (error) {
             console.error("Login error:", error);
