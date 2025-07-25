@@ -345,16 +345,25 @@
 
 
       // Logout handler
-      document.getElementById('logout-btn').addEventListener('click', async () => {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.reload();
-        } catch (error) {
-          console.error("Logout error:", error);
-          alert("Logout failed: " + error.message);
+     document.getElementById('login-btn').addEventListener('click', async () => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://fleetlinkr.com/add-listing.html',  // Redirect back to your listing page
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
         }
-      });
+      }
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Login failed. Please try again or contact support.\nError: " + error.message);
+  }
+});
+
 
       // Helper function to update UI
       function updateUIForLoggedInUser(user) {
@@ -486,11 +495,6 @@
         }
       });
 
-    } catch (error) {
-      console.error("Initialization error:", error);
-      alert("Application initialization failed. Please refresh the page.");
-    }
-  });
   </script>
 
 <footer>
