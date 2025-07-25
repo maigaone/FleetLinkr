@@ -422,47 +422,38 @@
         return isValid;
       }
 
-      // Form Submission
+            // Form Submission
       document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        if (!validateForm()) {
-          return;
-        }
+        if (!validateForm()) return;
 
         const submitBtn = e.target.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing...';
         
         try {
+          // Upload images
           const files = document.getElementById('image-upload').files;
-          const imageUrls = [];
-          
-          for (let i = 0; i < files.length; i++) {
-            const url = await uploadImage(files[i]);
-            imageUrls.push(url);
-          }
-          
-          const dailyRate = parseFloat(document.getElementById('daily-rate').value);
-          const weeklyRate = document.getElementById('weekly-rate').value 
-            ? parseFloat(document.getElementById('weekly-rate').value)
-            : dailyRate * 5;
-          
-          const monthlyRate = document.getElementById('monthly-rate').value 
-            ? parseFloat(document.getElementById('monthly-rate').value)
-            : dailyRate * 20;
+          const imageUrls = await Promise.all(
+            Array.from(files).map(file => uploadImage(file))
+          );
 
-          const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+          // Get current user
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
           if (userError || !user) throw new Error("User not authenticated");
 
-          const { error } = await supabaseClient.from('rental_listings').insert([{
+          // Prepare listing data
+          const listingData = {
             make: document.getElementById('make').value,
             model: document.getElementById('model').value,
             year: parseInt(document.getElementById('year').value),
             tlc_plate: document.getElementById('tlc-plate').value,
-            daily_rate: Math.round(dailyRate * 100),
-            weekly_rate: Math.round(weeklyRate * 100),
-            monthly_rate: Math.round(monthlyRate * 100),
+            daily_rate: Math.round(parseFloat(document.getElementById('daily-rate').value )* 100),
+            weekly_rate: Math.round(parseFloat(document.getElementById('weekly-rate').value || 
+              document.getElementById('daily-rate').value * 5) * 100),
+            monthly_rate: Math.round(parseFloat(document.getElementById('monthly-rate').value || 
+              document.getElementById('daily-rate').value * 20) * 100),
             minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
             available_from: document.getElementById('available-from').value,
             available_to: document.getElementById('available-to').value || null,
@@ -472,12 +463,15 @@
             photos: imageUrls,
             tlc_inspection: document.getElementById('tlc_inspection').checked,
             status: 'active',
+            user_id: user.id,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            user_id: user.id
-          }]);
+            updated_at: new Date().toISOString()
+          };
 
+          // Insert listing
+          const { error } = await supabase.from('rental_listings').insert([listingData]);
           if (error) throw error;
+          
           window.location.href = "thank-you.html";
         } catch (error) {
           console.error("Error:", error);
@@ -494,8 +488,7 @@
       alert("Application initialization failed. Please refresh the page.");
     }
   });
-</script> 
-
+</script>
 <footer>
     <a href="/privacy-policy">Privacy Policy</a> | 
     <a href="/terms-of-service">Terms of Service</a> | 
