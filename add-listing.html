@@ -296,8 +296,9 @@
     <a href="/contact">Contact</a>
   </div>
 </footer>
-<script>
-    // Initialize Supabase as a global variable
+
+     <script>
+    // Initialize Supabase
     const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
     
@@ -312,24 +313,12 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // Check auth state
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        // Check initial auth state
+        await checkAuthState();
         
-        if (session?.user) {
-          updateUIForLoggedInUser(session.user);
-        }
-
-        // Add auth state listener
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (session?.user) {
-            updateUIForLoggedInUser(session.user);
-          } else {
-            document.getElementById('auth-message').textContent = 'Please login to create listings';
-            document.getElementById('login-btn').style.display = 'inline-block';
-            document.getElementById('logout-btn').style.display = 'none';
-            document.getElementById('add-listing-form').style.display = 'none';
-          }
+        // Set up auth state listener
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          await checkAuthState();
         });
 
         // Login handler
@@ -364,13 +353,38 @@
           }
         });
 
-        // Helper function to update UI
+        // Helper function to check auth state
+        async function checkAuthState() {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) {
+            console.error("Session error:", error);
+            return;
+          }
+          
+          if (session?.user) {
+            updateUIForLoggedInUser(session.user);
+          } else {
+            updateUIForLoggedOutUser();
+          }
+        }
+
+        // Helper function to update UI for logged in user
         function updateUIForLoggedInUser(user) {
+          console.log("User logged in:", user);
           document.getElementById('auth-message').textContent = `Welcome, ${user.email || 'user'}`;
           document.getElementById('login-btn').style.display = 'none';
           document.getElementById('logout-btn').style.display = 'inline-block';
           document.getElementById('add-listing-form').style.display = 'grid';
         }
+
+        // Helper function to update UI for logged out user
+        function updateUIForLoggedOutUser() {
+          document.getElementById('auth-message').textContent = 'Please login to create listings';
+          document.getElementById('login-btn').style.display = 'inline-block';
+          document.getElementById('logout-btn').style.display = 'none';
+          document.getElementById('add-listing-form').style.display = 'none';
+        }
+
 
         // Image Upload Handler
         async function uploadImage(file) {
