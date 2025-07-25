@@ -123,21 +123,6 @@
   <!-- Load Supabase first -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-   <script>
-    // Initialize Supabase as a global variable
-    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-    
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: {
-        flowType: 'pkce',
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
-      }
-    });
-  </script>
 </head>
 <body>
   <!-- Consistent Header/Navigation -->
@@ -313,20 +298,30 @@
 </footer>
 
 <script>
-
-
-      // Check auth state
-         document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      // Check auth state
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      
-      if (session?.user) {
-        updateUIForLoggedInUser(session.user);
+    // Initialize Supabase as a global variable
+    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+    
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        flowType: 'pkce',
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
       }
+    });
 
-      // Login handler - UPDATED WITH CORRECT REDIRECT
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Check auth state
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        if (session?.user) {
+          updateUIForLoggedInUser(session.user);
+        }
+
+        // Login handler - UPDATED WITH CORRECT REDIRECT
         document.getElementById('login-btn').addEventListener('click', async () => {
           try {
             const { error } = await supabase.auth.signInWithOAuth({
@@ -346,12 +341,6 @@
           }
         });
 
-    if (error) throw error;
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("Login failed. Please try again or contact support.");
-  }
-});
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -500,7 +489,7 @@
       alert("Application initialization failed. Please refresh the page.");
     }
   });
-</script>
+
 <footer>
     <a href="/privacy-policy">Privacy Policy</a> | 
     <a href="/terms-of-service">Terms of Service</a> | 
@@ -511,6 +500,8 @@
     <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
     <p>© 2025 FleetLinkr. All rights reserved.</p>
   </footer>
+
+</script>
  
 </body>
 </html>
