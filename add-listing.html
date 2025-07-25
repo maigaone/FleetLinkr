@@ -326,20 +326,26 @@
         updateUIForLoggedInUser(session.user);
       }
 
-      // Login handler
+      // Login handler - UPDATED WITH CORRECT REDIRECT
         document.getElementById('login-btn').addEventListener('click', async () => {
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        // Explicitly use Supabase's default callback URL
-        redirectTo: 'https://dndeljolayctbafmizcl.supabase.co/auth/v1/callback',
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
-        }
-      }
-    });
+          try {
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                redirectTo: 'https://dndeljolayctbafmizcl.supabase.co/auth/v1/callback',
+                queryParams: {
+                  access_type: 'offline',
+                  prompt: 'consent'
+                }
+              }
+            });
+            if (error) throw error;
+          } catch (error) {
+            console.error("Login error:", error);
+            alert("Login failed. Please try again or contact support.\nError: " + error.message);
+          }
+        });
+
     if (error) throw error;
   } catch (error) {
     console.error("Login error:", error);
