@@ -123,6 +123,22 @@
   <!-- Load Supabase first -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+   <script>
+    // Initialize Supabase as a global variable
+    window.supabaseClient = supabase.createClient(
+      "https://dndeljolayctbafmizcl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w",
+      {
+        auth: {
+          flowType: 'pkce',
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      }
+    );
+  </script>
 </head>
 <body>
   <!-- Consistent Header/Navigation -->
@@ -298,21 +314,11 @@
 </footer>
 
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      // Initialize Supabase with proper configuration
-      const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-      
-      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: {
-          flowType: 'pkce',
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true
-        }
-      });
 
+
+      // Check auth state
+         document.addEventListener('DOMContentLoaded', async () => {
+    try {
       // Check auth state
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
@@ -322,7 +328,7 @@
       }
 
       // Login handler
-      document.getElementById('login-btn').addEventListener('click', async () => {
+         document.getElementById('login-btn').addEventListener('click', async () => {
         try {
           const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -340,6 +346,7 @@
           alert("Login failed. Please try again.");
         }
       });
+
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
