@@ -319,19 +319,24 @@
 
       // Login handler
       document.getElementById('login-btn').addEventListener('click', async () => {
-        try {
-          const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-              redirectTo: window.location.origin, // Redirects back to your app after login
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href, // Redirect back to current page
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent' // Forces fresh login each time
         }
-      });  
-          if (error) throw error;
-        } catch (error) {
-          console.error("Login error:", error);
-          alert("Login failed: " + error.message);
-        }
-      });
+      }
+    });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Login failed. Please try again.");
+  }
+});
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
