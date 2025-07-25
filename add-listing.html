@@ -321,57 +321,48 @@
           updateUIForLoggedInUser(session.user);
         }
 
-        // Login handler - UPDATED WITH CORRECT REDIRECT
-         document.getElementById('login-btn').addEventListener('click', async () => {
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://fleetlinkr.com/add-listing.html',
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
+        // Login handler
+        document.getElementById('login-btn').addEventListener('click', async () => {
+          try {
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                redirectTo: window.location.href, // Redirect back to same page
+                queryParams: {
+                  access_type: 'offline',
+                  prompt: 'consent'
+                }
+              }
+            });
+            if (error) throw error;
+          } catch (error) {
+            console.error("Login error:", error);
+            alert("Login failed. Please try again or contact support.\nError: " + error.message);
+          }
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            window.location.reload();
+          } catch (error) {
+            console.error("Logout error:", error);
+            alert("Logout failed: " + error.message);
+          }
+        });
+
+        // Helper function to update UI
+        function updateUIForLoggedInUser(user) {
+          document.getElementById('auth-message').textContent = `Welcome, ${user.email || 'user'}`;
+          document.getElementById('login-btn').style.display = 'none';
+          document.getElementById('logout-btn').style.display = 'inline-block';
+          document.getElementById('add-listing-form').style.display = 'grid';
         }
-      }
-    });
-    if (error) throw error;
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("Login failed. Please try again or contact support.\nError: " + error.message);
-  }
-});
-      
-           
+   
 
 
-      // Logout handler
-     document.getElementById('login-btn').addEventListener('click', async () => {
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://fleetlinkr.com/add-listing.html',  // Redirect back to your listing page
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
-        }
-      }
-    });
-    if (error) throw error;
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("Login failed. Please try again or contact support.\nError: " + error.message);
-  }
-});
-
-
-      // Helper function to update UI
-      function updateUIForLoggedInUser(user) {
-        document.getElementById('auth-message').textContent = `Welcome, ${user.email || 'user'}`;
-        document.getElementById('login-btn').style.display = 'none';
-        document.getElementById('logout-btn').style.display = 'block';
-        document.getElementById('add-listing-form').style.display = 'grid';
-      }
 
       // Image Upload Handler
       async function uploadImage(file) {
@@ -495,8 +486,6 @@
         }
       });
 
-  </script>
-
 <footer>
     <a href="/privacy-policy">Privacy Policy</a> | 
     <a href="/terms-of-service">Terms of Service</a> | 
@@ -509,6 +498,13 @@
   </footer>
 
 
+      } catch (error) {
+        console.error("Initialization error:", error);
+        alert("Application initialization failed. Please refresh the page.");
+      }
+    });
+
+</script>
  
 </body>
 </html>
