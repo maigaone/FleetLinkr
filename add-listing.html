@@ -119,6 +119,8 @@
       background: #005ea6;
     }
   </style>
+
+  <!-- Load Supabase first -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
@@ -165,20 +167,14 @@
     </div>
   </nav>
 
-  <div id="auth-section" class="auth-section">
+ <div id="auth-section" class="auth-section">
      <div id="auth-message">Please login to create listings</div>
-     <button id="login-btn" class="auth-btn">Login</button>
+     <button id="login-btn" class="auth-btn">Login with Google</button>
      <button id="logout-btn" class="auth-btn" style="display:none;">Logout</button>
   </div>
+
   <!-- Main content above -->
-<footer>
-  <div class="container">
-    &copy; 2023 FleetLinkr | 
-    <a href="/privacy">Privacy Policy</a> | 
-    <a href="/terms">Terms of Service</a> | 
-    <a href="/contact">Contact</a>
-  </div>
-</footer>
+
 </body>
   <main class="main-content">
     <div class="add-listing-container">
@@ -292,56 +288,63 @@
     </div>
   </main>
 
- <script>
-  // Wait for DOM and all scripts to be ready
+  <footer>
+  <div class="container">
+    &copy; 2023 FleetLinkr | 
+    <a href="/privacy">Privacy Policy</a> | 
+    <a href="/terms">Terms of Service</a> | 
+    <a href="/contact">Contact</a>
+  </div>
+</footer>
+
+<script>
   document.addEventListener('DOMContentLoaded', async () => {
     try {
-      // First, make sure Supabase is loaded
-      if (typeof supabase === 'undefined') {
-        throw new Error('Supabase not loaded');
-      }
-
-      // Initialize Supabase client
+      // Initialize Supabase with proper configuration
       const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
       const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      
+      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+          flowType: 'pkce',
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      });
 
       // Check auth state
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-      if (error) throw error;
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
       
       if (session?.user) {
-        document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
-        document.getElementById('login-btn').style.display = 'none';
-        document.getElementById('logout-btn').style.display = 'block';
-        document.getElementById('add-listing-form').style.display = 'grid';
+        updateUIForLoggedInUser(session.user);
       }
 
       // Login handler
       document.getElementById('login-btn').addEventListener('click', async () => {
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href, // Redirect back to current page
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent' // Forces fresh login each time
+        try {
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.href,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent'
+              }
+            }
+          });
+          if (error) throw error;
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Login failed. Please try again.");
         }
-      }
-    });
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("Login failed. Please try again.");
-  }
-});
+      });
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
         try {
-          const { error } = await supabaseClient.auth.signOut();
+          const { error } = await supabase.auth.signOut();
           if (error) throw error;
           window.location.reload();
         } catch (error) {
@@ -350,10 +353,18 @@
         }
       });
 
+      // Helper function to update UI
+      function updateUIForLoggedInUser(user) {
+        document.getElementById('auth-message').textContent = `Welcome, ${user.email || 'user'}`;
+        document.getElementById('login-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'block';
+        document.getElementById('add-listing-form').style.display = 'grid';
+      }
+
       // Image Upload Handler
       async function uploadImage(file) {
         const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        const { data, error } = await supabaseClient.storage
+        const { data, error } = await supabase.storage
           .from('vehicle-images')
           .upload(fileName, file);
         
