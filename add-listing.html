@@ -124,202 +124,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
-   <script>
-    // Initialize Supabase as a global variable
-    window.supabaseClient = supabase.createClient(
-      "https://dndeljolayctbafmizcl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w",
-      {
-        auth: {
-          flowType: 'pkce',
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true
-        }
-      }
-    );
-  </script>
 </head>
+
 <body>
-  <!-- Consistent Header/Navigation -->
-  <header class="site-header">
-    <div class="header-container">
-      <div class="logo-container">
-        <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img" width="150" height="60">
-        <div class="logo-text">
-          <span class="logo-main">FleetLinkr</span>
-          <span class="logo-sub">NYC</span>
-        </div>
-      </div>
-    </div>
-  </header>
 
-  <nav class="navbar" aria-label="Main navigation">
-    <div class="navbar-container">
-      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
-        <span class="hamburger">☰</span>
-        <span class="close">✕</span>
-        <span class="sr-only">Menu</span>
-      </button>
-      <ul class="navbar-links" id="primary-nav">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="drivers.html">For Drivers</a></li>
-        <li><a href="dealerships.html">For Dealerships</a></li>
-        <li><a href="garages.html">For Garages</a></li>
-        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
-        <li><a href="insurance.html">Insurance</a></li>
-        <li><a href="view-listings.html">Listings</a></li>
-        <li><a href="add-listing.html" class="active">Add Listing</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
+  <script>
+  // Initialize Supabase as soon as the script loads
+  const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+  
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+      flowType: 'pkce',
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
 
-  <nav class="navbar">
-    <div class="container">
-      <a href="/">Home</a>
-      <a href="/privacy" class="active">Privacy Policy</a>
-      <a href="/terms">Terms of Service</a>
-    </div>
-  </nav>
-
- <div id="auth-section" class="auth-section">
-     <div id="auth-message">Please login to create listings</div>
-     <button id="login-btn" class="auth-btn">Login with Google</button>
-     <button id="logout-btn" class="auth-btn" style="display:none;">Logout</button>
-  </div>
-
-  <!-- Main content above -->
-
-</body>
-  <main class="main-content">
-    <div class="add-listing-container">
-      <h1>Add New Vehicle Listing</h1>
-      
-      <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data" style="display:none;">
-        <!-- Vehicle Information -->
-        <div class="form-group">
-          <label for="make">Make*</label>
-          <input type="text" id="make" required>
-          <div id="make-error" class="error-message">Please enter the vehicle make</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="model">Model*</label>
-          <input type="text" id="model" required>
-          <div id="model-error" class="error-message">Please enter the vehicle model</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="year">Year*</label>
-          <input type="number" id="year" min="2000" max="2025" required>
-          <div id="year-error" class="error-message">Please enter a valid year (2000-2025)</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="tlc-plate">TLC Plate #*</label>
-          <input type="text" id="tlc-plate" required>
-          <div id="tlc-plate-error" class="error-message">Please enter the TLC plate number</div>
-        </div>
-
-        <!-- Rental Details -->
-        <div class="form-group">
-          <label for="daily-rate">Daily Rate ($)*</label>
-          <input type="number" id="daily-rate" min="1" required>
-          <div id="daily-rate-error" class="error-message">Please enter a valid daily rate</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="weekly-rate">Weekly Rate ($)</label>
-          <input type="number" id="weekly-rate" min="1">
-        </div>
-        
-        <div class="form-group">
-          <label for="monthly-rate">Monthly Rate ($)</label>
-          <input type="number" id="monthly-rate" min="1">
-        </div>
-        
-        <div class="form-group">
-          <label for="minimum-days">Minimum Rental Days*</label>
-          <input type="number" id="minimum-days" min="1" value="1" required>
-          <div id="minimum-days-error" class="error-message">Please enter minimum rental days</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="available-from">Available From*</label>
-          <input type="date" id="available-from" required>
-          <div id="available-from-error" class="error-message">Please select a start date</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="available-to">Available To</label>
-          <input type="date" id="available-to">
-        </div>
-        
-        <div class="form-group">
-          <label for="included-mileage">Included Mileage (per day)</label>
-          <input type="number" id="included-mileage" min="0" value="100">
-        </div>
-        
-        <div class="form-group">
-          <label for="excess-fee">Excess Mileage Fee ($/mile)</label>
-          <input type="number" id="excess-fee" min="0" step="0.01" value="0.50">
-        </div>
-
-        <!-- Location and Photos -->
-        <div class="form-group">
-          <label for="location">Location*</label>
-          <select id="location" required>
-            <option value="">Select...</option>
-            <option value="Manhattan">Manhattan</option>
-            <option value="Brooklyn">Brooklyn</option>
-            <option value="Queens">Queens</option>
-            <option value="Bronx">Bronx</option>
-            <option value="Staten Island">Staten Island</option>
-          </select>
-          <div id="location-error" class="error-message">Please select a location</div>
-        </div>
-        
-        <div class="form-group full-width">
-          <label for="image-upload">Vehicle Photos (Max 10)*</label>
-          <input type="file" id="image-upload" accept="image/*" multiple required class="file-upload">
-          <div id="image-upload-error" class="error-message">Please upload at least one photo</div>
-        </div>
-
-        <!-- TLC Inspection -->
-        <div class="form-group full-width">
-          <label>
-            <input type="checkbox" id="tlc_inspection" required checked> 
-            I confirm this vehicle passes TLC inspection.*
-          </label>
-          <div id="tlc-inspection-error" class="error-message">You must confirm TLC inspection status</div>
-        </div>
-
-        <!-- reCAPTCHA -->
-        <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
-        <div id="recaptcha-error" class="error-message" style="text-align: center;">Please complete the reCAPTCHA</div>
-        
-        <button type="submit" class="submit-btn">Submit Listing</button>
-      </form>
-    </div>
-  </main>
-
-  <footer>
-  <div class="container">
-    &copy; 2023 FleetLinkr | 
-    <a href="/privacy">Privacy Policy</a> | 
-    <a href="/terms">Terms of Service</a> | 
-    <a href="/contact">Contact</a>
-  </div>
-</footer>
-
-<script>
-
-
-      // Check auth state
-         document.addEventListener('DOMContentLoaded', async () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     try {
-      // Check auth state
+      // Check auth state using the initialized supabase client
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
       
@@ -328,7 +153,7 @@
       }
 
       // Login handler
-         document.getElementById('login-btn').addEventListener('click', async () => {
+      document.getElementById('login-btn').addEventListener('click', async () => {
         try {
           const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -346,7 +171,6 @@
           alert("Login failed. Please try again.");
         }
       });
-
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -429,7 +253,7 @@
         return isValid;
       }
 
-            // Form Submission
+      // Form Submission
       document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -456,7 +280,7 @@
             model: document.getElementById('model').value,
             year: parseInt(document.getElementById('year').value),
             tlc_plate: document.getElementById('tlc-plate').value,
-            daily_rate: Math.round(parseFloat(document.getElementById('daily-rate').value )* 100),
+            daily_rate: Math.round(parseFloat(document.getElementById('daily-rate').value) * 100),
             weekly_rate: Math.round(parseFloat(document.getElementById('weekly-rate').value || 
               document.getElementById('daily-rate').value * 5) * 100),
             monthly_rate: Math.round(parseFloat(document.getElementById('monthly-rate').value || 
@@ -465,7 +289,7 @@
             available_from: document.getElementById('available-from').value,
             available_to: document.getElementById('available-to').value || null,
             included_mileage: parseInt(document.getElementById('included-mileage').value),
-            excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
+            excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value )* 100),
             location: document.getElementById('location').value,
             photos: imageUrls,
             tlc_inspection: document.getElementById('tlc_inspection').checked,
@@ -495,17 +319,9 @@
       alert("Application initialization failed. Please refresh the page.");
     }
   });
-</script>
-<footer>
-    <a href="/privacy-policy">Privacy Policy</a> | 
-    <a href="/terms-of-service">Terms of Service</a> | 
-    <a href="/contact">Contact Us</a>
-    <div class="footer-cta">
-      <a href="contact.html" class="btn">Get in Touch</a>
-    </div>
-    <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
-    <p>© 2025 FleetLinkr. All rights reserved.</p>
-  </footer>
+
+
+ </script>
  
 </body>
 </html>
