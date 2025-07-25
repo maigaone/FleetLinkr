@@ -327,25 +327,25 @@
       }
 
       // Login handler
-         document.getElementById('login-btn').addEventListener('click', async () => {
-        try {
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: window.location.href,
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent'
-              }
-            }
-          });
-          if (error) throw error;
-        } catch (error) {
-          console.error("Login error:", error);
-          alert("Login failed. Please try again.");
+        document.getElementById('login-btn').addEventListener('click', async () => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        // Explicitly use Supabase's default callback URL
+        redirectTo: 'https://dndeljolayctbafmizcl.supabase.co/auth/v1/callback',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
         }
-      });
-
+      }
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Login failed. Please try again or contact support.");
+  }
+});
 
       // Logout handler
       document.getElementById('logout-btn').addEventListener('click', async () => {
