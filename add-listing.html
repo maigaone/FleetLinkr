@@ -305,6 +305,12 @@
       }
     });
 
+    console.log("Supabase initialized with URL:", SUPABASE_URL);
+supabase.auth.getSession().then(({data: { session }}) => {
+  console.log("Initial session check:", session);
+});
+    
+  
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         // Check initial auth state
