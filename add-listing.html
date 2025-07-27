@@ -310,7 +310,20 @@ supabase.auth.getSession().then(({data: { session }}) => {
   console.log("Initial session check:", session);
 });
     
-  
+// Immediately try to detect session from URL if present (needed after OAuth redirect)
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user) {
+    console.log("Restored session after redirect:", session);
+    // Set form to visible immediately
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
+      document.getElementById('login-btn').style.display = 'none';
+      document.getElementById('logout-btn').style.display = 'inline-block';
+      document.getElementById('add-listing-form').style.display = 'grid';
+    });
+  }
+});
+
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         // Check initial auth state
@@ -320,6 +333,7 @@ supabase.auth.getSession().then(({data: { session }}) => {
         supabase.auth.onAuthStateChange(async (event, session) => {
           await checkAuthState();
         });
+       localStorage.setItem("fleetlinkr_redirecting", "true");
 
         // Login handler
         document.getElementById('login-btn').addEventListener('click', async () => {
