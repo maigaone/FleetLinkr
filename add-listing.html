@@ -310,25 +310,28 @@
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         // Check initial auth state immediately
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          console.log("Initial session found:", session.user);
-          await handleUserProfile(session.user);
-          updateUIForLoggedInUser(session.user);
-        } else {
-          updateUIForLoggedOutUser();
-        }
-        
-        // Set up auth state listener
-        supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('Auth state changed:', event, session);
-          if (session?.user) {
-            await handleUserProfile(session.user);
-            updateUIForLoggedInUser(session.user);
-          } else {
-            updateUIForLoggedOutUser();
-          }
-        });
+        setTimeout(async () => {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  console.log("Delayed session check:", session);
+
+  if (session?.user) {
+    await handleUserProfile(session.user);
+    updateUIForLoggedInUser(session.user);
+  } else {
+    updateUIForLoggedOutUser();
+  }
+
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth state changed:', event, session);
+    if (session?.user) {
+      await handleUserProfile(session.user);
+      updateUIForLoggedInUser(session.user);
+    } else {
+      updateUIForLoggedOutUser();
+    }
+  });
+}, 300); // 300ms is usually enough
+
 
         // Login handler
         document.getElementById('login-btn').addEventListener('click', async () => {
@@ -572,6 +575,19 @@
       }
     });
 </script>
+
+<!-- Profile Completion Modal -->
+<div id="profile-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999;">
+  <div style="background:white; max-width:500px; margin:10% auto; padding:2rem; border-radius:8px; text-align:left;">
+    <h2>Complete Your Profile</h2>
+    <p>Before adding a listing, please complete your profile.</p>
+    <label for="profile-name">Full Name*</label>
+    <input type="text" id="profile-name" style="width:100%; margin-bottom:1rem;" required>
+    <label for="profile-phone">Phone Number*</label>
+    <input type="tel" id="profile-phone" style="width:100%; margin-bottom:1rem;" placeholder="+1234567890" required>
+    <button id="save-profile-btn" style="background:#0074D9; color:white; padding:0.75rem 1.5rem; border:none; border-radius:4px;">Save Profile</button>
+  </div>
+</div>
 
  
 </body>
