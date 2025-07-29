@@ -306,37 +306,33 @@
     });
 
     console.log("Supabase initialized with URL:", SUPABASE_URL);
-supabase.auth.getSession().then(({data: { session }}) => {
-  console.log("Initial session check:", session);
-});
-    
-// Immediately try to detect session from URL if present (needed after OAuth redirect)
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) {
-    console.log("Restored session after redirect:", session);
-    // Set form to visible immediately
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('auth-message').textContent = `Welcome, ${session.user.email}`;
-      document.getElementById('login-btn').style.display = 'none';
-      document.getElementById('logout-btn').style.display = 'inline-block';
-      document.getElementById('add-listing-form').style.display = 'grid';
-    });
-  }
-});
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // Check initial auth state
-        await checkAuthState();
+        // Check initial auth state immediately
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log("Initial session found:", session.user);
+          await handleUserProfile(session.user);
+          updateUIForLoggedInUser(session.user);
+        } else {
+          updateUIForLoggedOutUser();
+        }
         
         // Set up auth state listener
         supabase.auth.onAuthStateChange(async (event, session) => {
-          await checkAuthState();
+          console.log('Auth state changed:', event, session);
+          if (session?.user) {
+            await handleUserProfile(session.user);
+            updateUIForLoggedInUser(session.user);
+          } else {
+            updateUIForLoggedOutUser();
+          }
         });
-       localStorage.setItem("fleetlinkr_redirecting", "true");
 
         // Login handler
         document.getElementById('login-btn').addEventListener('click', async () => {
+          console.log("Login button clicked");
           try {
             const { error } = await supabase.auth.signInWithOAuth({
               provider: 'google',
@@ -348,7 +344,11 @@ supabase.auth.getSession().then(({ data: { session } }) => {
                 }
               }
             });
-            if (error) throw error;
+            if (error) {
+              console.error("Login error:", error);
+              throw error;
+            }
+            console.log("Login initiated successfully");
           } catch (error) {
             console.error("Login error:", error);
             alert("Login failed. Please try again or contact support.\nError: " + error.message);
@@ -367,24 +367,67 @@ supabase.auth.getSession().then(({ data: { session } }) => {
           }
         });
 
-        // Helper function to check auth state
-        async function checkAuthState() {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) {
-            console.error("Session error:", error);
-            return;
-          }
-          
-          if (session?.user) {
-            updateUIForLoggedInUser(session.user);
-          } else {
-            updateUIForLoggedOutUser();
-          }
-        }
+        // Handle user profile creation/check
+        async function handleUserProfile(user) {
+  console.log("Checking user profile for:", user.id);
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) {
+    console.log("Creating new profile...");
+    const { error: insertError } = await supabase
+      .from('profiles')
+      .insert([{
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || '',
+        created_at: new Date().toISOString()
+      }]);
+    if (insertError) throw new Error("Failed to create user profile");
+    console.log("Profile created successfully.");
+  } else if (!profile.full_name || !profile.phone) {
+    console.log("Profile incomplete. Showing modal.");
+    document.getElementById('profile-modal').style.display = 'block';
+
+    document.getElementById('save-profile-btn').addEventListener('click', async () => {
+      const fullName = document.getElementById('profile-name').value.trim();
+      const phone = document.getElementById('profile-phone').value.trim();
+      
+      if (!fullName || !phone) {
+        alert("Both fields are required.");
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          phone: phone,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        alert("Failed to update profile: " + updateError.message);
+        return;
+      }
+
+      document.getElementById('profile-modal').style.display = 'none';
+      document.getElementById('add-listing-form').style.display = 'grid';
+    });
+
+    // Prevent form from showing until profile is updated
+    return false;
+  }
+}
+
 
         // Helper function to update UI for logged in user
         function updateUIForLoggedInUser(user) {
-          console.log("User logged in:", user);
+          console.log("Updating UI for logged in user:", user.email);
           document.getElementById('auth-message').textContent = `Welcome, ${user.email || 'user'}`;
           document.getElementById('login-btn').style.display = 'none';
           document.getElementById('logout-btn').style.display = 'inline-block';
@@ -393,13 +436,14 @@ supabase.auth.getSession().then(({ data: { session } }) => {
 
         // Helper function to update UI for logged out user
         function updateUIForLoggedOutUser() {
+          console.log("Updating UI for logged out user");
           document.getElementById('auth-message').textContent = 'Please login to create listings';
           document.getElementById('login-btn').style.display = 'inline-block';
           document.getElementById('logout-btn').style.display = 'none';
           document.getElementById('add-listing-form').style.display = 'none';
         }
 
-
+        // [Rest of your existing code for image upload, form validation, and form submission remains exactly the same]
         // Image Upload Handler
         async function uploadImage(file) {
           const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
