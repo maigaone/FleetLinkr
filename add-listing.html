@@ -373,25 +373,43 @@
         // Handle user profile creation/check
         async function handleUserProfile(user) {
   console.log("Checking user profile for:", user.id);
+  
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
 
+  if (profileError) {
+    console.warn("Profile fetch error or not found:", profileError);
+  }
+
   if (!profile) {
     console.log("Creating new profile...");
+    const fullName =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email.split('@')[0];
+
     const { error: insertError } = await supabase
       .from('profiles')
       .insert([{
         id: user.id,
         email: user.email,
-        full_name: user.user_metadata?.full_name || '',
+        full_name: fullName,
         created_at: new Date().toISOString()
       }]);
-    if (insertError) throw new Error("Failed to create user profile");
-    console.log("Profile created successfully.");
-  } else if (!profile.full_name || !profile.phone) {
+    if (insertError) {
+      console.error("Insert profile error:", insertError);
+      alert("Failed to create user profile.");
+    } else {
+      console.log("Profile created.");
+      document.getElementById('profile-modal').style.display = 'block';
+    }
+    return;
+  }
+
+  if (!profile.full_name || !profile.phone) {
     console.log("Profile incomplete. Showing modal.");
     document.getElementById('profile-modal').style.display = 'block';
 
@@ -422,9 +440,11 @@
       document.getElementById('add-listing-form').style.display = 'grid';
     });
 
-    // Prevent form from showing until profile is updated
-    return false;
+    return;
   }
+
+  // If profile is complete
+  document.getElementById('add-listing-form').style.display = 'grid';
 }
 
 
