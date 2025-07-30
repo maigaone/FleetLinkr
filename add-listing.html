@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +6,7 @@
   <title>FleetLinkr - Add Listing</title>
   <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
     /* Add these styles to your existing styles.css or keep them here */
     .add-listing-container {
@@ -122,67 +121,77 @@
       background: #005ea6;
     }
   </style>
-
 </head>
 <body>
+  <!-- Auth UI -->
   <div id="auth-section">
     <div id="auth-message">Please login to create listings</div>
     <button id="login-btn">Login with Google</button>
     <button id="logout-btn" style="display:none;">Logout</button>
   </div>
 
-  <form id="add-listing-form" style="display:none;">
-    <input type="text" id="make" placeholder="Make" required />
-    <input type="text" id="model" placeholder="Model" required />
-    <input type="number" id="year" placeholder="Year" required />
-    <input type="number" id="daily-rate" placeholder="Daily Rate" required />
-    <input type="file" id="image-upload" accept="image/*" multiple required />
-    <button type="submit">Submit Listing</button>
-  </form>
-
+  <!-- Profile Completion Modal -->
   <div id="profile-modal" style="display:none;">
     <h3>Complete Your Profile</h3>
     <input type="text" id="profile-name" placeholder="Full Name" required />
-    <input type="tel" id="profile-phone" placeholder="Phone Number" required />
+    <input type="tel" id="profile-phone" placeholder="+1234567890" required />
     <button id="save-profile-btn">Save</button>
   </div>
 
+  <!-- Add Listing Form -->
+  <form id="add-listing-form" style="display:none;" enctype="multipart/form-data">
+    <h2>Add a Rental Listing</h2>
+    <input type="text" id="make" placeholder="Make" required />
+    <input type="text" id="model" placeholder="Model" required />
+    <input type="number" id="year" placeholder="Year" min="2000" max="2026" required />
+    <input type="number" id="daily-rate" placeholder="Daily Rate $" min="1" required />
+    <input type="file" id="image-upload" accept="image/*" multiple required />
+    <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY_HERE"></div>
+    <button type="submit">Submit Listing</button>
+  </form>
+
   <script>
-    const supabase = window.supabase.createClient(
-      "https://dndeljolayctbafmizcl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
-    );
+    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+    const SUPABASE_KEY = "YOUR_PUBLIC_SUPABASE_KEY";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     document.addEventListener("DOMContentLoaded", async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
 
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
         if (!profile || !profile.full_name || !profile.phone) {
           document.getElementById("profile-modal").style.display = "block";
           document.getElementById("save-profile-btn").onclick = async () => {
-            const fullName = document.getElementById("profile-name").value;
-            const phone = document.getElementById("profile-phone").value;
+            const fullName = document.getElementById("profile-name").value.trim();
+            const phone = document.getElementById("profile-phone").value.trim();
+            if (!fullName || !phone) return alert("All fields are required");
+
             await supabase.from("profiles").update({
               full_name: fullName,
               phone: phone,
               updated_at: new Date().toISOString()
             }).eq("id", user.id);
+
             document.getElementById("profile-modal").style.display = "none";
             document.getElementById("add-listing-form").style.display = "block";
           };
         } else {
           document.getElementById("add-listing-form").style.display = "block";
         }
+
         document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
         document.getElementById("login-btn").style.display = "none";
-        document.getElementById("logout-btn").style.display = "inline";
+        document.getElementById("logout-btn").style.display = "inline-block";
       }
 
-      supabase.auth.onAuthStateChange(async (_, session) => {
-        location.reload();
-      });
+      supabase.auth.onAuthStateChange(() => location.reload());
 
       document.getElementById("login-btn").onclick = async () => {
         await supabase.auth.signInWithOAuth({
@@ -198,28 +207,39 @@
 
       document.getElementById("add-listing-form").onsubmit = async (e) => {
         e.preventDefault();
+
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) return alert("Please complete the reCAPTCHA.");
+
         const files = document.getElementById("image-upload").files;
-        const urls = await Promise.all([...files].map(async (file) => {
-          const fileName = `rental/${Date.now()}-${file.name}`;
-          await supabase.storage.from("vehicle-images").upload(fileName, file);
-          return `${supabase.storageUrl}/vehicle-images/${fileName}`;
+        if (files.length === 0) return alert("Please upload at least one image.");
+        if (files.length > 10) return alert("Maximum 10 images allowed.");
+
+        const imageUrls = await Promise.all([...files].map(async (file) => {
+          const fileName = `rentals/${Date.now()}-${file.name}`;
+          const { error } = await supabase.storage.from("vehicle-images").upload(fileName, file);
+          if (error) throw error;
+          return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
         }));
 
+        const userId = (await supabase.auth.getUser()).data.user.id;
         const listing = {
           make: document.getElementById("make").value,
           model: document.getElementById("model").value,
           year: +document.getElementById("year").value,
           daily_rate: +document.getElementById("daily-rate").value,
-          photos: urls,
-          owner_id: session.user.id,
+          photos: imageUrls,
+          owner_id: userId,
           status: "active",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
 
-        await supabase.from("rental_listings").insert(listing);
-        alert("Listing added successfully!");
-        location.reload();
+        const { error } = await supabase.from("rental_listings").insert([listing]);
+        if (error) return alert("Failed to submit listing: " + error.message);
+
+        alert("Listing submitted!");
+        location.href = "thank-you.html";
       };
     });
   </script>
