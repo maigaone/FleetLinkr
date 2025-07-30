@@ -8,134 +8,47 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
-    /* Add these styles to your existing styles.css or keep them here */
-    .add-listing-container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    .add-listing-form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-    
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    
-    .form-group.full-width {
-      grid-column: span 2;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #333;
-    }
-    
-    input, textarea, select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-    
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-    
-    .file-upload {
-      border: 2px dashed #ddd;
-      padding: 2rem;
-      text-align: center;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .file-upload:hover {
-      border-color: #0074D9;
-    }
-    
-    .submit-btn {
-      grid-column: span 2;
-      background: #0074D9;
-      color: white;
-      padding: 1rem;
-      border: none;
-      border-radius: 4px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    
-    .submit-btn:hover {
-      background: #005ea6;
-    }
-    
-    h1 {
-      color: #0074D9;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-
-    .g-recaptcha {
-      grid-column: span 2;
-      margin: 1rem 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .error-message {
-      color: #d9534f;
-      font-size: 0.9rem;
-      margin-top: 0.25rem;
-      display: none;
-    }
-
-    .auth-section {
-      text-align: center;
-      padding: 1rem;
-      background: #f8f9fa;
-      margin-bottom: 1rem;
-    }
-
-    .auth-btn {
-      background: #0074D9;
-      color: white;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 0 0.5rem;
-    }
-
-    .auth-btn:hover {
-      background: #005ea6;
-    }
+    /* Existing styles */
+    .add-listing-container { max-width: 800px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .add-listing-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group.full-width { grid-column: span 2; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333; }
+    input, textarea, select { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+    textarea { min-height: 120px; resize: vertical; }
+    .file-upload { border: 2px dashed #ddd; padding: 2rem; text-align: center; border-radius: 4px; cursor: pointer; }
+    .file-upload:hover { border-color: #0074D9; }
+    .submit-btn { grid-column: span 2; background: #0074D9; color: white; padding: 1rem; border: none; border-radius: 4px; font-size: 1.1rem; cursor: pointer; transition: background 0.3s; }
+    .submit-btn:hover { background: #005ea6; }
+    h1 { color: #0074D9; margin-bottom: 2rem; text-align: center; }
+    .g-recaptcha { grid-column: span 2; margin: 1rem 0; display: flex; justify-content: center; }
+    .auth-section, .signup-section { text-align: center; padding: 1rem; background: #f8f9fa; margin-bottom: 1rem; }
+    .auth-btn { background: #0074D9; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.5rem; }
+    .auth-btn:hover { background: #005ea6; }
+    #profile-modal { text-align: center; background: #f1f1f1; padding: 1rem; margin: 1rem auto; width: 80%; border-radius: 8px; }
   </style>
 </head>
 <body>
   <!-- Auth UI -->
-  <div id="auth-section">
-    <div id="auth-message">Please login to create listings</div>
-    <button id="login-btn">Login with Google</button>
-    <button id="logout-btn" style="display:none;">Logout</button>
+  <div class="signup-section" id="signup-section">
+    <h2>Create an Account</h2>
+    <input type="email" id="signup-email" placeholder="Email" required />
+    <input type="password" id="signup-password" placeholder="Password" required />
+    <button class="auth-btn" id="signup-btn">Sign Up</button>
+    <h2>or Login</h2>
+    <input type="email" id="login-email" placeholder="Email" required />
+    <input type="password" id="login-password" placeholder="Password" required />
+    <button class="auth-btn" id="login-btn">Login</button>
+    <button class="auth-btn" id="logout-btn" style="display:none;">Logout</button>
+    <p id="auth-message"></p>
   </div>
 
   <!-- Profile Completion Modal -->
   <div id="profile-modal" style="display:none;">
     <h3>Complete Your Profile</h3>
     <input type="text" id="profile-name" placeholder="Full Name" required />
-    <input type="tel" id="profile-phone" placeholder="+1234567890" required />
-    <button id="save-profile-btn">Save</button>
+    <input type="tel" id="profile-phone" placeholder="Phone" required />
+    <button class="auth-btn" id="save-profile-btn">Save</button>
   </div>
 
   <!-- Add Listing Form -->
@@ -147,7 +60,7 @@
     <input type="number" id="daily-rate" placeholder="Daily Rate $" min="1" required />
     <input type="file" id="image-upload" accept="image/*" multiple required />
     <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY_HERE"></div>
-    <button type="submit">Submit Listing</button>
+    <button class="submit-btn" type="submit">Submit Listing</button>
   </form>
 
   <script>
@@ -155,49 +68,41 @@
     const SUPABASE_KEY = "YOUR_PUBLIC_SUPABASE_KEY";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    document.addEventListener("DOMContentLoaded", async () => {
+    async function checkSessionAndLoadUI() {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
 
       if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+        document.getElementById("logout-btn").style.display = "inline-block";
+        document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
+
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
         if (!profile || !profile.full_name || !profile.phone) {
           document.getElementById("profile-modal").style.display = "block";
-          document.getElementById("save-profile-btn").onclick = async () => {
-            const fullName = document.getElementById("profile-name").value.trim();
-            const phone = document.getElementById("profile-phone").value.trim();
-            if (!fullName || !phone) return alert("All fields are required");
-
-            await supabase.from("profiles").update({
-              full_name: fullName,
-              phone: phone,
-              updated_at: new Date().toISOString()
-            }).eq("id", user.id);
-
-            document.getElementById("profile-modal").style.display = "none";
-            document.getElementById("add-listing-form").style.display = "block";
-          };
         } else {
           document.getElementById("add-listing-form").style.display = "block";
         }
-
-        document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
-        document.getElementById("login-btn").style.display = "none";
-        document.getElementById("logout-btn").style.display = "inline-block";
       }
+    }
 
-      supabase.auth.onAuthStateChange(() => location.reload());
+    document.addEventListener("DOMContentLoaded", async () => {
+      await checkSessionAndLoadUI();
+
+      document.getElementById("signup-btn").onclick = async () => {
+        const email = document.getElementById("signup-email").value.trim();
+        const password = document.getElementById("signup-password").value.trim();
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) alert("Signup failed: " + error.message);
+        else alert("Signup successful. Please check your email to confirm.");
+      };
 
       document.getElementById("login-btn").onclick = async () => {
-        await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo: window.location.href }
-        });
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value.trim();
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert("Login failed: " + error.message);
+        else location.reload();
       };
 
       document.getElementById("logout-btn").onclick = async () => {
@@ -205,9 +110,18 @@
         location.reload();
       };
 
+      document.getElementById("save-profile-btn").onclick = async () => {
+        const fullName = document.getElementById("profile-name").value.trim();
+        const phone = document.getElementById("profile-phone").value.trim();
+        if (!fullName || !phone) return alert("All fields are required");
+        const userId = (await supabase.auth.getUser()).data.user.id;
+        await supabase.from("profiles").upsert({ id: userId, full_name: fullName, phone, updated_at: new Date().toISOString() });
+        document.getElementById("profile-modal").style.display = "none";
+        document.getElementById("add-listing-form").style.display = "block";
+      };
+
       document.getElementById("add-listing-form").onsubmit = async (e) => {
         e.preventDefault();
-
         const recaptchaResponse = grecaptcha.getResponse();
         if (!recaptchaResponse) return alert("Please complete the reCAPTCHA.");
 
@@ -245,3 +159,4 @@
   </script>
 </body>
 </html>
+
