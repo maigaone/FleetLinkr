@@ -1,10 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FleetLinkr - Add New Listing</title>
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FleetLinkr - Add Listing</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     /* Add these styles to your existing styles.css or keep them here */
     .add-listing-container {
@@ -120,495 +123,105 @@
     }
   </style>
 
-  <!-- Load Supabase first -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-  <!-- Consistent Header/Navigation -->
-  <header class="site-header">
-    <div class="header-container">
-      <div class="logo-container">
-        <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img" width="150" height="60">
-        <div class="logo-text">
-          <span class="logo-main">FleetLinkr</span>
-          <span class="logo-sub">NYC</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <nav class="navbar" aria-label="Main navigation">
-    <div class="navbar-container">
-      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
-        <span class="hamburger">☰</span>
-        <span class="close">✕</span>
-        <span class="sr-only">Menu</span>
-      </button>
-      <ul class="navbar-links" id="primary-nav">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="drivers.html">For Drivers</a></li>
-        <li><a href="dealerships.html">For Dealerships</a></li>
-        <li><a href="garages.html">For Garages</a></li>
-        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
-        <li><a href="insurance.html">Insurance</a></li>
-        <li><a href="view-listings.html">Listings</a></li>
-        <li><a href="add-listing.html" class="active">Add Listing</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
-
- <div id="auth-section" class="auth-section">
-     <div id="auth-message">Please login to create listings</div>
-     <button id="login-btn" class="auth-btn">Login with Google</button>
-     <button id="logout-btn" class="auth-btn" style="display:none;">Logout</button>
+  <div id="auth-section">
+    <div id="auth-message">Please login to create listings</div>
+    <button id="login-btn">Login with Google</button>
+    <button id="logout-btn" style="display:none;">Logout</button>
   </div>
 
-  <!-- Main content above -->
+  <form id="add-listing-form" style="display:none;">
+    <input type="text" id="make" placeholder="Make" required />
+    <input type="text" id="model" placeholder="Model" required />
+    <input type="number" id="year" placeholder="Year" required />
+    <input type="number" id="daily-rate" placeholder="Daily Rate" required />
+    <input type="file" id="image-upload" accept="image/*" multiple required />
+    <button type="submit">Submit Listing</button>
+  </form>
 
-</body>
-  <main class="main-content">
-    <div class="add-listing-container">
-      <h1>Add New Vehicle Listing</h1>
-      
-      <form id="add-listing-form" class="add-listing-form" enctype="multipart/form-data" style="display:none;">
-        <!-- Vehicle Information -->
-        <div class="form-group">
-          <label for="make">Make*</label>
-          <input type="text" id="make" required>
-          <div id="make-error" class="error-message">Please enter the vehicle make</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="model">Model*</label>
-          <input type="text" id="model" required>
-          <div id="model-error" class="error-message">Please enter the vehicle model</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="year">Year*</label>
-          <input type="number" id="year" min="2000" max="2025" required>
-          <div id="year-error" class="error-message">Please enter a valid year (2000-2025)</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="tlc-plate">TLC Plate #*</label>
-          <input type="text" id="tlc-plate" required>
-          <div id="tlc-plate-error" class="error-message">Please enter the TLC plate number</div>
-        </div>
+  <div id="profile-modal" style="display:none;">
+    <h3>Complete Your Profile</h3>
+    <input type="text" id="profile-name" placeholder="Full Name" required />
+    <input type="tel" id="profile-phone" placeholder="Phone Number" required />
+    <button id="save-profile-btn">Save</button>
+  </div>
 
-        <!-- Rental Details -->
-        <div class="form-group">
-          <label for="daily-rate">Daily Rate ($)*</label>
-          <input type="number" id="daily-rate" min="1" required>
-          <div id="daily-rate-error" class="error-message">Please enter a valid daily rate</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="weekly-rate">Weekly Rate ($)</label>
-          <input type="number" id="weekly-rate" min="1">
-        </div>
-        
-        <div class="form-group">
-          <label for="monthly-rate">Monthly Rate ($)</label>
-          <input type="number" id="monthly-rate" min="1">
-        </div>
-        
-        <div class="form-group">
-          <label for="minimum-days">Minimum Rental Days*</label>
-          <input type="number" id="minimum-days" min="1" value="1" required>
-          <div id="minimum-days-error" class="error-message">Please enter minimum rental days</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="available-from">Available From*</label>
-          <input type="date" id="available-from" required>
-          <div id="available-from-error" class="error-message">Please select a start date</div>
-        </div>
-        
-        <div class="form-group">
-          <label for="available-to">Available To</label>
-          <input type="date" id="available-to">
-        </div>
-        
-        <div class="form-group">
-          <label for="included-mileage">Included Mileage (per day)</label>
-          <input type="number" id="included-mileage" min="0" value="100">
-        </div>
-        
-        <div class="form-group">
-          <label for="excess-fee">Excess Mileage Fee ($/mile)</label>
-          <input type="number" id="excess-fee" min="0" step="0.01" value="0.50">
-        </div>
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://dndeljolayctbafmizcl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
+    );
 
-        <!-- Location and Photos -->
-        <div class="form-group">
-          <label for="location">Location*</label>
-          <select id="location" required>
-            <option value="">Select...</option>
-            <option value="Manhattan">Manhattan</option>
-            <option value="Brooklyn">Brooklyn</option>
-            <option value="Queens">Queens</option>
-            <option value="Bronx">Bronx</option>
-            <option value="Staten Island">Staten Island</option>
-          </select>
-          <div id="location-error" class="error-message">Please select a location</div>
-        </div>
-        
-        <div class="form-group full-width">
-          <label for="image-upload">Vehicle Photos (Max 10)*</label>
-          <input type="file" id="image-upload" accept="image/*" multiple required class="file-upload">
-          <div id="image-upload-error" class="error-message">Please upload at least one photo</div>
-        </div>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
 
-        <!-- TLC Inspection -->
-        <div class="form-group full-width">
-          <label>
-            <input type="checkbox" id="tlc_inspection" required checked> 
-            I confirm this vehicle passes TLC inspection.*
-          </label>
-          <div id="tlc-inspection-error" class="error-message">You must confirm TLC inspection status</div>
-        </div>
-
-        <!-- reCAPTCHA -->
-        <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
-        <div id="recaptcha-error" class="error-message" style="text-align: center;">Please complete the reCAPTCHA</div>
-        
-        <button type="submit" class="submit-btn">Submit Listing</button>
-      </form>
-    </div>
-  </main>
-
- <footer>
-    <a href="/privacy-policy">Privacy Policy</a> | 
-    <a href="/terms-of-service">Terms of Service</a> | 
-    <a href="/contact">Contact Us</a>
-    <div class="footer-cta">
-      <a href="contact.html" class="btn">Get in Touch</a>
-    </div>
-    <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
-    <p>© 2025 FleetLinkr. All rights reserved.</p>
-  </footer>
-
-     <script>
-    // Initialize Supabase
-    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-    
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: {
-        flowType: 'pkce',
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
-      }
-    });
-
-    console.log("Supabase initialized with URL:", SUPABASE_URL);
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // Check initial auth state immediately
-        setTimeout(async () => {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  console.log("Delayed session check:", session);
-
-  if (session?.user) {
-    await handleUserProfile(session.user);
-    updateUIForLoggedInUser(session.user);
-  } else {
-    updateUIForLoggedOutUser();
-  }
-
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log('Auth state changed:', event, session);
-    if (session?.user) {
-      await handleUserProfile(session.user);
-      updateUIForLoggedInUser(session.user);
-    } else {
-      updateUIForLoggedOutUser();
-    }
-  });
-}, 300); // 300ms is usually enough
-
-
-        // Login handler
-        document.getElementById('login-btn').addEventListener('click', async () => {
-          console.log("Login button clicked");
-          try {
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: 'google',
-              options: {
-                redirectTo: window.location.href,
-                queryParams: {
-                  access_type: 'offline',
-                  prompt: 'consent'
-                }
-              }
-            });
-            if (error) {
-              console.error("Login error:", error);
-              throw error;
-            }
-            console.log("Login initiated successfully");
-          } catch (error) {
-            console.error("Login error:", error);
-            alert("Login failed. Please try again or contact support.\nError: " + error.message);
-          }
-        });
-
-        // Logout handler
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-          try {
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
-            window.location.reload();
-          } catch (error) {
-            console.error("Logout error:", error);
-            alert("Logout failed: " + error.message);
-          }
-        });
-
-        // Handle user profile creation/check
-        async function handleUserProfile(user) {
-  console.log("Checking user profile for:", user.id);
-  
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  if (profileError) {
-    console.warn("Profile fetch error or not found:", profileError);
-  }
-
-  if (!profile) {
-    console.log("Creating new profile...");
-    const fullName =
-      user.user_metadata?.full_name ||
-      user.user_metadata?.name ||
-      user.email.split('@')[0];
-
-    const { error: insertError } = await supabase
-      .from('profiles')
-      .insert([{
-        id: user.id,
-        email: user.email,
-        full_name: fullName,
-        created_at: new Date().toISOString()
-      }]);
-    if (insertError) {
-      console.error("Insert profile error:", insertError);
-      alert("Failed to create user profile.");
-    } else {
-      console.log("Profile created.");
-      document.getElementById('profile-modal').style.display = 'block';
-    }
-    return;
-  }
-
-  if (!profile.full_name || !profile.phone) {
-    console.log("Profile incomplete. Showing modal.");
-    document.getElementById('profile-modal').style.display = 'block';
-
-    document.getElementById('save-profile-btn').addEventListener('click', async () => {
-      const fullName = document.getElementById('profile-name').value.trim();
-      const phone = document.getElementById('profile-phone').value.trim();
-      
-      if (!fullName || !phone) {
-        alert("Both fields are required.");
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          phone: phone,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (updateError) {
-        alert("Failed to update profile: " + updateError.message);
-        return;
-      }
-
-      document.getElementById('profile-modal').style.display = 'none';
-      document.getElementById('add-listing-form').style.display = 'grid';
-    });
-
-    return;
-  }
-
-  // If profile is complete
-  document.getElementById('add-listing-form').style.display = 'grid';
-}
-
-
-        // Helper function to update UI for logged in user
-        function updateUIForLoggedInUser(user) {
-          console.log("Updating UI for logged in user:", user.email);
-          document.getElementById('auth-message').textContent = `Welcome, ${user.email || 'user'}`;
-          document.getElementById('login-btn').style.display = 'none';
-          document.getElementById('logout-btn').style.display = 'inline-block';
-          document.getElementById('add-listing-form').style.display = 'grid';
-        }
-
-        // Helper function to update UI for logged out user
-        function updateUIForLoggedOutUser() {
-          console.log("Updating UI for logged out user");
-          document.getElementById('auth-message').textContent = 'Please login to create listings';
-          document.getElementById('login-btn').style.display = 'inline-block';
-          document.getElementById('logout-btn').style.display = 'none';
-          document.getElementById('add-listing-form').style.display = 'none';
-        }
-
-        // [Rest of your existing code for image upload, form validation, and form submission remains exactly the same]
-        // Image Upload Handler
-        async function uploadImage(file) {
-          const fileName = `rentals/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-          const { data, error } = await supabase.storage
-            .from('vehicle-images')
-            .upload(fileName, file);
-          
-          if (error) throw error;
-          return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
-        }
-
-        // Form Validation
-        function validateForm() {
-          let isValid = true;
-          const requiredFields = [
-            'make', 'model', 'year', 'tlc-plate', 'daily-rate', 
-            'minimum-days', 'available-from', 'location'
-          ];
-
-          requiredFields.forEach(fieldId => {
-            const element = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}-error`);
-            
-            if (!element.value) {
-              errorElement.style.display = 'block';
-              isValid = false;
-            } else {
-              errorElement.style.display = 'none';
-            }
-          });
-
-          const year = parseInt(document.getElementById('year').value);
-          if (year < 2000 || year > 2025) {
-            document.getElementById('year-error').style.display = 'block';
-            isValid = false;
-          }
-
-          const files = document.getElementById('image-upload').files;
-          if (files.length === 0) {
-            document.getElementById('image-upload-error').style.display = 'block';
-            isValid = false;
-          } else if (files.length > 10) {
-            document.getElementById('image-upload-error').textContent = 'Maximum 10 photos allowed';
-            document.getElementById('image-upload-error').style.display = 'block';
-            isValid = false;
-          }
-
-          if (!document.getElementById('tlc_inspection').checked) {
-            document.getElementById('tlc-inspection-error').style.display = 'block';
-            isValid = false;
-          }
-
-          const recaptchaResponse = grecaptcha.getResponse();
-          if (!recaptchaResponse) {
-            document.getElementById('recaptcha-error').style.display = 'block';
-            isValid = false;
-          }
-
-          return isValid;
-        }
-
-        // Form Submission
-        document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          
-          if (!validateForm()) return;
-
-          const submitBtn = e.target.querySelector('button[type="submit"]');
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Processing...';
-          
-          try {
-            // Upload images
-            const files = document.getElementById('image-upload').files;
-            const imageUrls = await Promise.all(
-              Array.from(files).map(file => uploadImage(file))
-            );
-
-            // Get current user
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError || !user) throw new Error("User not authenticated");
-
-            // Prepare listing data
-            const listingData = {
-              make: document.getElementById('make').value,
-              model: document.getElementById('model').value,
-              year: parseInt(document.getElementById('year').value),
-              tlc_plate: document.getElementById('tlc-plate').value,
-              daily_rate: Math.round(parseFloat(document.getElementById('daily-rate').value) * 100),
-              weekly_rate: Math.round(parseFloat(document.getElementById('weekly-rate').value || 
-                document.getElementById('daily-rate').value * 5) * 100),
-              monthly_rate: Math.round(parseFloat(document.getElementById('monthly-rate').value || 
-                document.getElementById('daily-rate').value * 20) * 100),
-              minimum_rental_days: parseInt(document.getElementById('minimum-days').value),
-              available_from: document.getElementById('available-from').value,
-              available_to: document.getElementById('available-to').value || null,
-              included_mileage: parseInt(document.getElementById('included-mileage').value),
-              excess_mileage_fee: Math.round(parseFloat(document.getElementById('excess-fee').value) * 100),
-              location: document.getElementById('location').value,
-              photos: imageUrls,
-              tlc_inspection: document.getElementById('tlc_inspection').checked,
-              status: 'active',
-              user_id: user.id,
-              created_at: new Date().toISOString(),
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+        if (!profile || !profile.full_name || !profile.phone) {
+          document.getElementById("profile-modal").style.display = "block";
+          document.getElementById("save-profile-btn").onclick = async () => {
+            const fullName = document.getElementById("profile-name").value;
+            const phone = document.getElementById("profile-phone").value;
+            await supabase.from("profiles").update({
+              full_name: fullName,
+              phone: phone,
               updated_at: new Date().toISOString()
-            };
-
-            // Insert listing
-            const { error } = await supabase.from('rental_listings').insert([listingData]);
-            if (error) throw error;
-            
-            window.location.href = "thank-you.html";
-          } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to add listing: " + error.message);
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Listing';
-            grecaptcha.reset();
-          }
-        });
-
-      } catch (error) {
-        console.error("Initialization error:", error);
-        alert("Application initialization failed. Please refresh the page.");
+            }).eq("id", user.id);
+            document.getElementById("profile-modal").style.display = "none";
+            document.getElementById("add-listing-form").style.display = "block";
+          };
+        } else {
+          document.getElementById("add-listing-form").style.display = "block";
+        }
+        document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("logout-btn").style.display = "inline";
       }
+
+      supabase.auth.onAuthStateChange(async (_, session) => {
+        location.reload();
+      });
+
+      document.getElementById("login-btn").onclick = async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.href }
+        });
+      };
+
+      document.getElementById("logout-btn").onclick = async () => {
+        await supabase.auth.signOut();
+        location.reload();
+      };
+
+      document.getElementById("add-listing-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const files = document.getElementById("image-upload").files;
+        const urls = await Promise.all([...files].map(async (file) => {
+          const fileName = `rental/${Date.now()}-${file.name}`;
+          await supabase.storage.from("vehicle-images").upload(fileName, file);
+          return `${supabase.storageUrl}/vehicle-images/${fileName}`;
+        }));
+
+        const listing = {
+          make: document.getElementById("make").value,
+          model: document.getElementById("model").value,
+          year: +document.getElementById("year").value,
+          daily_rate: +document.getElementById("daily-rate").value,
+          photos: urls,
+          owner_id: session.user.id,
+          status: "active",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        await supabase.from("rental_listings").insert(listing);
+        alert("Listing added successfully!");
+        location.reload();
+      };
     });
-</script>
-
-<!-- Profile Completion Modal -->
-<div id="profile-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999;">
-  <div style="background:white; max-width:500px; margin:10% auto; padding:2rem; border-radius:8px; text-align:left;">
-    <h2>Complete Your Profile</h2>
-    <p>Before adding a listing, please complete your profile.</p>
-    <label for="profile-name">Full Name*</label>
-    <input type="text" id="profile-name" style="width:100%; margin-bottom:1rem;" required>
-    <label for="profile-phone">Phone Number*</label>
-    <input type="tel" id="profile-phone" style="width:100%; margin-bottom:1rem;" placeholder="+1234567890" required>
-    <button id="save-profile-btn" style="background:#0074D9; color:white; padding:0.75rem 1.5rem; border:none; border-radius:4px;">Save Profile</button>
-  </div>
-</div>
-
- 
+  </script>
 </body>
 </html>
