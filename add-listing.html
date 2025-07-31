@@ -138,6 +138,8 @@
         document.getElementById("add-listing-form").style.display = "block";
       };
 
+      <!-- Truncated for brevity -->
+
       document.getElementById("add-listing-form").onsubmit = async (e) => {
         e.preventDefault();
         const recaptchaResponse = grecaptcha.getResponse();
@@ -155,6 +157,19 @@
         }));
 
         const userId = (await supabase.auth.getUser()).data.user.id;
+
+        // ✅ Ensure user profile exists before inserting listing
+        const { data: profileCheck, error: profileError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", userId)
+          .single();
+
+        if (profileError || !profileCheck) {
+          alert("You must complete your profile before submitting a listing.");
+          return;
+        }
+
         const listing = {
           make: document.getElementById("make").value,
           model: document.getElementById("model").value,
@@ -184,6 +199,7 @@
         alert("Listing submitted!");
         location.href = "thank-you.html";
       };
+
     });
   </script>
 </body>
