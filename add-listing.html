@@ -112,17 +112,9 @@
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) return alert("Signup failed: " + error.message);
 
-        // ✅ Attempt to insert placeholder profile with email and role
         const userId = data.user?.id;
         if (userId) {
-          const { data: existingProfile } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("id", userId)
-            .single();
-          if (!existingProfile) {
-            await supabase.from("profiles").insert({ id: userId, email, full_name: '', phone: '', role: 'user' });
-          }
+          await supabase.from("profiles").upsert({ id: userId, email, full_name: '', phone: '', role: 'user' });
         }
 
         alert("Signup successful. Please check your email to confirm.");
@@ -134,17 +126,9 @@
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) return alert("Login failed: " + error.message);
 
-        // ✅ Ensure profile exists on login with email and role
         const userId = data.user?.id;
         if (userId) {
-          const { data: existingProfile } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("id", userId)
-            .single();
-          if (!existingProfile) {
-            await supabase.from("profiles").insert({ id: userId, email, full_name: '', phone: '', role: 'user' });
-          }
+          await supabase.from("profiles").upsert({ id: userId, email, full_name: '', phone: '', role: 'user' });
         }
 
         location.reload();
