@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
-    /* ===Existing styles===*/
     .add-listing-container { max-width: 800px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .add-listing-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
     .form-group { margin-bottom: 1rem; }
@@ -58,6 +57,13 @@
     <input type="text" id="model" placeholder="Model" required />
     <input type="number" id="year" placeholder="Year" min="2000" max="2026" required />
     <input type="number" id="daily-rate" placeholder="Daily Rate $" min="1" required />
+    <label for="tlc-inspection">TLC Inspection</label>
+    <select id="tlc-inspection" required>
+      <option value="">Select...</option>
+      <option value="valid">Valid</option>
+      <option value="expired">Expired</option>
+      <option value="not-required">Not Required</option>
+    </select>
     <input type="file" id="image-upload" accept="image/*" multiple required />
     <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
     <button class="submit-btn" type="submit">Submit Listing</button>
@@ -142,6 +148,7 @@
           model: document.getElementById("model").value,
           year: +document.getElementById("year").value,
           daily_rate: +document.getElementById("daily-rate").value,
+          tlc_inspection: document.getElementById("tlc-inspection").value,
           photos: imageUrls,
           owner_id: userId,
           status: "active",
@@ -159,4 +166,5 @@
   </script>
 </body>
 </html>
+
 
