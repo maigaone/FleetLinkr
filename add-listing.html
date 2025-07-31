@@ -106,27 +106,50 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       await checkSessionAndLoadUI();
-
-      document.getElementById("signup-btn").onclick = async () => {
+     document.getElementById("signup-btn").onclick = async () => {
         const email = document.getElementById("signup-email").value.trim();
         const password = document.getElementById("signup-password").value.trim();
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) alert("Signup failed: " + error.message);
-        else alert("Signup successful. Please check your email to confirm.");
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) return alert("Signup failed: " + error.message);
+
+        // ✅ Attempt to insert placeholder profile with email and role
+        const userId = data.user?.id;
+        if (userId) {
+          const { data: existingProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", userId)
+            .single();
+          if (!existingProfile) {
+            await supabase.from("profiles").insert({ id: userId, email, full_name: '', phone: '', role: 'user' });
+          }
+        }
+
+        alert("Signup successful. Please check your email to confirm.");
       };
 
-      document.getElementById("login-btn").onclick = async () => {
+     document.getElementById("login-btn").onclick = async () => {
         const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-password").value.trim();
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) alert("Login failed: " + error.message);
-        else location.reload();
-      };
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) return alert("Login failed: " + error.message);
 
-      document.getElementById("logout-btn").onclick = async () => {
-        await supabase.auth.signOut();
+        // ✅ Ensure profile exists on login with email and role
+        const userId = data.user?.id;
+        if (userId) {
+          const { data: existingProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", userId)
+            .single();
+          if (!existingProfile) {
+            await supabase.from("profiles").insert({ id: userId, email, full_name: '', phone: '', role: 'user' });
+          }
+        }
+
         location.reload();
       };
+
 
       document.getElementById("save-profile-btn").onclick = async () => {
         const fullName = document.getElementById("profile-name").value.trim();
