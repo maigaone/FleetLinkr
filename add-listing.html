@@ -42,7 +42,7 @@
     <p id="auth-message"></p>
   </div>
 
-  <!-- == Profile Completion Modal == -->
+  <!-- Profile Completion Modal -->
   <div id="profile-modal" style="display:none;">
     <h3>Complete Your Profile</h3>
     <input type="text" id="profile-name" placeholder="Full Name" required />
@@ -57,12 +57,24 @@
     <input type="text" id="model" placeholder="Model" required />
     <input type="number" id="year" placeholder="Year" min="2000" max="2026" required />
     <input type="number" id="daily-rate" placeholder="Daily Rate $" min="1" required />
+    <input type="number" id="weekly-rate" placeholder="Weekly Rate $" />
+    <input type="number" id="monthly-rate" placeholder="Monthly Rate $" />
+    <input type="number" id="minimum-rental-days" placeholder="Minimum Rental Days" min="1" required />
+    <input type="date" id="available-from" placeholder="Available From" required />
+    <input type="date" id="available-to" placeholder="Available To" />
+    <input type="number" id="included-mileage" placeholder="Included Mileage" />
+    <input type="number" id="excess-mileage-fee" placeholder="Excess Mileage Fee" />
+    <input type="text" id="location" placeholder="Location" required />
     <label for="tlc-inspection">TLC Inspection</label>
     <select id="tlc-inspection" required>
       <option value="">Select...</option>
-      <option value="valid">Valid</option>
-      <option value="expired">Expired</option>
-      <option value="not-required">Not Required</option>
+      <option value="true">Valid</option>
+      <option value="false">Expired</option>
+    </select>
+    <textarea id="description" placeholder="Additional Details or Description..."></textarea>
+    <select id="contact-method">
+      <option value="profile">Use Profile Contact</option>
+      <option value="custom">Custom Contact Info</option>
     </select>
     <input type="file" id="image-upload" accept="image/*" multiple required />
     <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
@@ -133,7 +145,7 @@
 
         const files = document.getElementById("image-upload").files;
         if (files.length === 0) return alert("Please upload at least one image.");
-        if (files.length > 10) return alert("Maximum 10 images allowed.");
+        if (files.length > 20) return alert("Maximum 20 images allowed.");
 
         const imageUrls = await Promise.all([...files].map(async (file) => {
           const fileName = `rentals/${Date.now()}-${file.name}`;
@@ -148,7 +160,17 @@
           model: document.getElementById("model").value,
           year: +document.getElementById("year").value,
           daily_rate: +document.getElementById("daily-rate").value,
-          tlc_inspection: document.getElementById("tlc-inspection").value,
+          weekly_rate: +document.getElementById("weekly-rate").value || null,
+          monthly_rate: +document.getElementById("monthly-rate").value || null,
+          minimum_rental_days: +document.getElementById("minimum-rental-days").value,
+          available_from: document.getElementById("available-from").value,
+          available_to: document.getElementById("available-to").value || null,
+          included_mileage: +document.getElementById("included-mileage").value || 100,
+          excess_mileage_fee: +document.getElementById("excess-mileage-fee").value || 50,
+          location: document.getElementById("location").value,
+          tlc_inspection: document.getElementById("tlc-inspection").value === "true",
+          description: document.getElementById("description").value,
+          contact_method: document.getElementById("contact-method").value || "profile",
           photos: imageUrls,
           owner_id: userId,
           status: "active",
@@ -166,5 +188,6 @@
   </script>
 </body>
 </html>
+
 
 
