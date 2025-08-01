@@ -82,132 +82,200 @@
   </form>
 
   <script>
-    const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    document.addEventListener("DOMContentLoaded", async () => {
+  // Initialize Supabase
+  const SUPABASE_URL = "https://dndeljolayctbafmizcl.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+  // Common headers for Supabase requests
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  };
 
-    async function checkSessionAndLoadUI() {
-      const { data: { session } } = await supabase.auth.getSession();
+  async function checkSessionAndLoadUI() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      
       const user = session?.user;
-
       if (user) {
         document.getElementById("logout-btn").style.display = "inline-block";
         document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
 
-        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+        // Check if profile exists
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-        if (!profile || !profile.full_name || !profile.phone) {
+        if (profileError || !profile || !profile.full_name || !profile.phone) {
           document.getElementById("profile-modal").style.display = "block";
+          // Pre-fill email if available
+          if (user.email) {
+            document.getElementById("profile-email").value = user.email;
+          }
         } else {
           document.getElementById("add-listing-form").style.display = "block";
         }
       }
+    } catch (error) {
+      console.error("Session check error:", error);
     }
+  }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      await checkSessionAndLoadUI();
-     document.getElementById("signup-btn").onclick = async () => {
-        const email = document.getElementById("signup-email").value.trim();
-        const password = document.getElementById("signup-password").value.trim();
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) return alert("Signup failed: " + error.message);
-
-        const userId = data.user?.id;
-        if (userId) {
-          await supabase.from("profiles").upsert({ id: userId, email, full_name: '', phone: '', role: 'user' });
+  // Signup handler
+  document.getElementById("signup-btn").onclick = async () => {
+    try {
+      const email = document.getElementById("signup-email").value.trim();
+      const password = document.getElementById("signup-password").value.trim();
+      
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            full_name: '',
+            phone: ''
+          }
         }
+      });
+      
+      if (error) throw error;
+      
+      alert("Signup successful. Please check your email to confirm.");
+    } catch (error) {
+      alert("Signup failed: " + error.message);
+    }
+  };
 
-        alert("Signup successful. Please check your email to confirm.");
-      };
+  // Login handler
+  document.getElementById("login-btn").onclick = async () => {
+    try {
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value.trim();
+      
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
+      if (error) throw error;
+      location.reload();
+    } catch (error) {
+      alert("Login failed: " + error.message);
+    }
+  };
 
-     document.getElementById("login-btn").onclick = async () => {
-        const email = document.getElementById("login-email").value.trim();
-        const password = document.getElementById("login-password").value.trim();
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) return alert("Login failed: " + error.message);
-
-        const userId = data.user?.id;
-        if (userId) {
-          await supabase.from("profiles").upsert({ id: userId, email, full_name: '', phone: '', role: 'user' });
-        }
-
-        location.reload();
-      };
-
-
-      document.getElementById("save-profile-btn").onclick = async () => {
-        const fullName = document.getElementById("profile-name").value.trim();
-        const phone = document.getElementById("profile-phone").value.trim();
-        if (!fullName || !phone) return alert("All fields are required");
-        const userId = (await supabase.auth.getUser()).data.user.id;
-        await supabase.from("profiles").upsert({ id: userId, full_name: fullName, phone, updated_at: new Date().toISOString() });
-        document.getElementById("profile-modal").style.display = "none";
-        document.getElementById("add-listing-form").style.display = "block";
-      };
-
-      <!-- Truncated for brevity -->
-
-      document.getElementById("add-listing-form").onsubmit = async (e) => {
-        e.preventDefault();
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) return alert("Please complete the reCAPTCHA.");
-
-        const files = document.getElementById("image-upload").files;
-        if (files.length === 0) return alert("Please upload at least one image.");
-        if (files.length > 20) return alert("Maximum 20 images allowed.");
-
-        const imageUrls = await Promise.all([...files].map(async (file) => {
-          const fileName = `rentals/${Date.now()}-${file.name}`;
-          const { error } = await supabase.storage.from("vehicle-images").upload(fileName, file);
-          if (error) throw error;
-          return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
-        }));
-
-        const userId = (await supabase.auth.getUser()).data.user.id;
-
-        // ✅ Ensure user profile exists before inserting listing
-        const { data: profileCheck, error: profileError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", userId)
-          .single();
-
-        if (profileError || !profileCheck) {
-          alert("You must complete your profile before submitting a listing.");
-          return;
-        }
-
-        const listing = {
-          make: document.getElementById("make").value,
-          model: document.getElementById("model").value,
-          year: +document.getElementById("year").value,
-          daily_rate: +document.getElementById("daily-rate").value,
-          weekly_rate: +document.getElementById("weekly-rate").value || null,
-          monthly_rate: +document.getElementById("monthly-rate").value || null,
-          minimum_rental_days: +document.getElementById("minimum-rental-days").value,
-          available_from: document.getElementById("available-from").value,
-          available_to: document.getElementById("available-to").value || null,
-          included_mileage: +document.getElementById("included-mileage").value || 100,
-          excess_mileage_fee: +document.getElementById("excess-mileage-fee").value || 50,
-          location: document.getElementById("location").value,
-          tlc_inspection: document.getElementById("tlc-inspection").value === "true",
-          description: document.getElementById("description").value,
-          contact_method: document.getElementById("contact-method").value || "profile",
-          photos: imageUrls,
-          owner_id: userId,
-          status: "active",
-          created_at: new Date().toISOString(),
+  // Profile completion handler
+  document.getElementById("save-profile-btn").onclick = async () => {
+    try {
+      const fullName = document.getElementById("profile-name").value.trim();
+      const phone = document.getElementById("profile-phone").value.trim();
+      
+      if (!fullName || !phone) {
+        throw new Error("All fields are required");
+      }
+      
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .upsert({ 
+          id: user.id, 
+          full_name: fullName, 
+          phone,
           updated_at: new Date().toISOString()
-        };
+        });
+        
+      if (updateError) throw updateError;
+      
+      document.getElementById("profile-modal").style.display = "none";
+      document.getElementById("add-listing-form").style.display = "block";
+    } catch (error) {
+      alert("Error saving profile: " + error.message);
+    }
+  };
 
-        const { error } = await supabase.from("rental_listings").insert([listing]);
-        if (error) return alert("Failed to submit listing: " + error.message);
+  // Listing submission handler
+  document.getElementById("add-listing-form").onsubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (!recaptchaResponse) throw new Error("Please complete the reCAPTCHA.");
 
-        alert("Listing submitted!");
-        location.href = "thank-you.html";
+      const files = document.getElementById("image-upload").files;
+      if (files.length === 0) throw new Error("Please upload at least one image.");
+      if (files.length > 20) throw new Error("Maximum 20 images allowed.");
+
+      // Upload images
+      const imageUrls = await Promise.all([...files].map(async (file) => {
+        const fileName = `rentals/${Date.now()}-${file.name}`;
+        const { error } = await supabase.storage.from("vehicle-images").upload(fileName, file);
+        if (error) throw error;
+        return `${SUPABASE_URL}/storage/v1/object/public/vehicle-images/${fileName}`;
+      }));
+
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      // Verify profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+        
+      if (profileError || !profile) {
+        throw new Error("You must complete your profile before submitting a listing.");
+      }
+
+      // Prepare listing data
+      const listing = {
+        make: document.getElementById("make").value,
+        model: document.getElementById("model").value,
+        year: +document.getElementById("year").value,
+        daily_rate: +document.getElementById("daily-rate").value,
+        weekly_rate: document.getElementById("weekly-rate").value ? +document.getElementById("weekly-rate").value : null,
+        monthly_rate: document.getElementById("monthly-rate").value ? +document.getElementById("monthly-rate").value : null,
+        minimum_rental_days: +document.getElementById("minimum-rental-days").value,
+        available_from: document.getElementById("available-from").value,
+        available_to: document.getElementById("available-to").value || null,
+        included_mileage: document.getElementById("included-mileage").value ? +document.getElementById("included-mileage").value : 100,
+        excess_mileage_fee: document.getElementById("excess-mileage-fee").value ? +document.getElementById("excess-mileage-fee").value : 50,
+        location: document.getElementById("location").value,
+        tlc_inspection: document.getElementById("tlc-inspection").value === "true",
+        description: document.getElementById("description").value,
+        contact_method: document.getElementById("contact-method").value || "profile",
+        photos: imageUrls,
+        owner_id: user.id,
+        status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-    });
+      // Insert listing
+      const { error: insertError } = await supabase.from("rental_listings").insert([listing]);
+      if (insertError) throw insertError;
+
+      alert("Listing submitted successfully!");
+      location.href = "thank-you.html";
+    } catch (error) {
+      alert("Error submitting listing: " + error.message);
+      console.error("Listing submission error:", error);
+    }
+  };
+
+  // Initial UI check
+  await checkSessionAndLoadUI();
+});
   </script>
 </body>
 </html>
