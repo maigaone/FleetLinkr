@@ -248,7 +248,7 @@ document.getElementById("logout-btn").onclick = async () => {
 };
 
 // Listing submission handler
-document.getElementById("add-listing-form").onsubmit = async (e) => {
+ddocument.getElementById("add-listing-form").onsubmit = async (e) => {
   e.preventDefault();
   
   try {
@@ -282,7 +282,7 @@ document.getElementById("add-listing-form").onsubmit = async (e) => {
       imageUrls.push(publicUrl);
     }
 
-    // Prepare listing data
+    // Prepare listing data with proper data types
     const listing = {
       make: document.getElementById("make").value.trim(),
       model: document.getElementById("model").value.trim(),
@@ -300,6 +300,7 @@ document.getElementById("add-listing-form").onsubmit = async (e) => {
       included_mileage: document.getElementById("included-mileage").value 
         ? parseInt(document.getElementById("included-mileage").value) 
         : 100,
+      // Fixed excess_mileage_fee - ensure it matches your database schema
       excess_mileage_fee: document.getElementById("excess-mileage-fee").value 
         ? parseFloat(document.getElementById("excess-mileage-fee").value) 
         : 0.50,
