@@ -233,6 +233,109 @@
     }
   };
 
+  // Add this code inside your existing DOMContentLoaded event listener
+// Right after the profile completion handler
+
+// Logout handler
+document.getElementById("logout-btn").onclick = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    location.reload();
+  } catch (error) {
+    alert("Logout failed: " + error.message);
+  }
+};
+
+// Listing submission handler
+document.getElementById("add-listing-form").onsubmit = async (e) => {
+  e.preventDefault();
+  
+  try {
+    // Validate reCAPTCHA
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) throw new Error("Please complete the reCAPTCHA.");
+
+    // Validate files
+    const files = document.getElementById("image-upload").files;
+    if (files.length === 0) throw new Error("Please upload at least one image.");
+    if (files.length > 20) throw new Error("Maximum 20 images allowed.");
+
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+
+    // Upload images
+    const imageUrls = [];
+    for (const file of files) {
+      const fileName = `listings/${user.id}/${Date.now()}-${file.name}`;
+      const { data, error: uploadError } = await supabase.storage
+        .from("vehicle-images")
+        .upload(fileName, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from("vehicle-images")
+        .getPublicUrl(fileName);
+      
+      imageUrls.push(publicUrl);
+    }
+
+    // Prepare listing data
+    const listing = {
+      make: document.getElementById("make").value.trim(),
+      model: document.getElementById("model").value.trim(),
+      year: parseInt(document.getElementById("year").value),
+      daily_rate: parseFloat(document.getElementById("daily-rate").value),
+      weekly_rate: document.getElementById("weekly-rate").value 
+        ? parseFloat(document.getElementById("weekly-rate").value) 
+        : null,
+      monthly_rate: document.getElementById("monthly-rate").value 
+        ? parseFloat(document.getElementById("monthly-rate").value) 
+        : null,
+      minimum_rental_days: parseInt(document.getElementById("minimum-rental-days").value),
+      available_from: document.getElementById("available-from").value,
+      available_to: document.getElementById("available-to").value || null,
+      included_mileage: document.getElementById("included-mileage").value 
+        ? parseInt(document.getElementById("included-mileage").value) 
+        : 100,
+      excess_mileage_fee: document.getElementById("excess-mileage-fee").value 
+        ? parseFloat(document.getElementById("excess-mileage-fee").value) 
+        : 0.50,
+      location: document.getElementById("location").value.trim(),
+      tlc_inspection: document.getElementById("tlc-inspection").value === "true",
+      description: document.getElementById("description").value.trim(),
+      contact_method: document.getElementById("contact-method").value,
+      photos: imageUrls,
+      owner_id: user.id,
+      status: "active",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // Validate required fields
+    if (!listing.make || !listing.model || !listing.year || !listing.daily_rate || 
+        !listing.minimum_rental_days || !listing.available_from || !listing.location) {
+      throw new Error("Please fill all required fields");
+    }
+
+    // Insert listing
+    const { data, error: insertError } = await supabase
+      .from("rental_listings")
+      .insert([listing])
+      .select();
+    
+    if (insertError) throw insertError;
+
+    alert("Listing submitted successfully!");
+    window.location.href = "thank-you.html";
+  } catch (error) {
+    alert("Error submitting listing: " + error.message);
+    console.error("Listing submission error:", error);
+  }
+};
+
   // Initialize the UI
   await checkSessionAndLoadUI();
 });
