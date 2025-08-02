@@ -79,9 +79,12 @@
       <option value="custom">Custom Contact Info</option>
     </select>
     <input type="file" id="image-upload" accept="image/*" multiple required />
+    <div id="image-previews" style="display: flex; gap: 10px; margin: 10px 0;"></div>
     <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
     <button class="submit-btn" type="submit">Submit Listing</button>
   </form>
+
+  
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
@@ -261,6 +264,27 @@
         }
       });
 
+       // Add this ABOVE the form submission handler
+function validateYear(input) {
+  const year = parseInt(input.value);
+  const currentYear = new Date().getFullYear();
+  if (year < 2000 || year > currentYear) {
+    alert("Year must be between 2000 and " + currentYear);
+    return false;
+  }
+  return true;
+}
+
+// Attach validation to fields
+document.getElementById("year").addEventListener("blur", function() {
+  validateYear(this);
+});
+
+document.getElementById("daily-rate").addEventListener("blur", function() {
+  if (parseFloat(this.value) <= 0) {
+    alert("Daily rate must be positive");
+  }
+});                           
       // Listing submission handler
       document.getElementById("add-listing-form").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -295,6 +319,8 @@
             
             imageUrls.push(publicUrl);
           }
+
+          
 
           // Prepare listing data with proper data types
           const listing = {
@@ -353,6 +379,17 @@
       // Initialize the UI
       await checkSessionAndLoadUI();
     });
+
+     document.getElementById("image-upload").addEventListener("change", function(e) {
+    const previewDiv = document.getElementById("image-previews");
+    previewDiv.innerHTML = "";
+    Array.from(e.target.files).forEach(file => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.style.height = "60px";
+      previewDiv.appendChild(img);
+    });
+  });
   </script>
 </body>
 </html>

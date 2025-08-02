@@ -68,6 +68,8 @@
             <option value="Nissan">Nissan</option>
             <option value="Hyundai">Hyundai</option>
           </select>
+          <input type="number" id="min-price" placeholder="Min price ($)">
+          <input type="number" id="max-price" placeholder="Max price ($)">
           <select id="filter-location">
             <option value="">All Locations</option>
             <option value="Manhattan">Manhattan</option>
@@ -196,33 +198,20 @@
     }
 
     // Filtering and rendering (view-only)
-    function applyFilters() {
-      const searchTerm = elements.searchInput.value.toLowerCase();
-      const makeFilter = elements.filterMake.value;
-      const locationFilter = elements.filterLocation.value;
-      const rentalTypeFilter = elements.filterRentalType.value;
+   function applyFilters() {
+  const makeFilter = document.getElementById("filter-make").value;
+  const minPrice = parseFloat(document.getElementById("min-price").value) || 0;
+  const maxPrice = parseFloat(document.getElementById("max-price").value) || Infinity;
 
-      state.filteredListings = state.allListings.filter(listing => {
-        const matchesSearch = [
-          listing.make,
-          listing.model,
-          listing.description,
-          listing.location
-        ].some(field => field?.toLowerCase().includes(searchTerm));
-        
-        return matchesSearch &&
-          (!makeFilter || listing.make === makeFilter) &&
-          (!locationFilter || listing.location === locationFilter) &&
-          (!rentalTypeFilter || 
-            (rentalTypeFilter === 'daily' && listing.daily_rate) ||
-            (rentalTypeFilter === 'weekly' && listing.weekly_rate) ||
-            (rentalTypeFilter === 'monthly' && listing.monthly_rate));
-      });
-
-      state.currentPage = 1;
-      updatePagination();
-      renderListings();
-    }
+  state.filteredListings = state.allListings.filter(listing => {
+    return (
+      (!makeFilter || listing.make === makeFilter) &&
+      listing.daily_rate >= minPrice && 
+      listing.daily_rate <= maxPrice
+    );
+  });
+  renderListings();
+}
 
     function resetFilters() {
       elements.searchInput.value = '';
@@ -355,5 +344,34 @@
       </form>
     </div>
   </div>
+   <!-- Add this before </body> -->
+<div id="quick-view-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center;">
+  <div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px;">
+    <button onclick="document.getElementById('quick-view-modal').classList.add('hidden')" style="float: right;">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+  // Add to your existing <script>
+  function showQuickView(listing) {
+    const modal = document.getElementById("quick-view-modal");
+    document.getElementById("modal-content").innerHTML = `
+      <h3>${listing.make} ${listing.model}</h3>
+      <p>$${listing.daily_rate}/day</p>
+      <p>Location: ${listing.location}</p>
+    `;
+    modal.classList.remove("hidden");
+  }
+
+  // Update createListingCard() to include:
+  function createListingCard(listing) {
+    return `
+      <div class="listing-card" onclick="showQuickView(${JSON.stringify(listing).replace(/"/g, '&quot;')})">
+        <!-- ... existing card HTML ... -->
+      </div>
+    `;
+  }
+</script>
 </body>
 </html>
