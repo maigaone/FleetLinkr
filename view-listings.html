@@ -246,7 +246,7 @@
       state.filteredListings.length ? hideNoResults() : showNoResults();
     }
 
-    // Render listings
+    // == Render listings
     function renderListings() {
       const startIdx = (state.currentPage - 1) * state.itemsPerPage;
       const listingsToShow = state.filteredListings.slice(startIdx, startIdx + state.itemsPerPage);
