@@ -68,6 +68,8 @@
             <option value="Nissan">Nissan</option>
             <option value="Hyundai">Hyundai</option>
           </select>
+          <input type="number" id="min-price" placeholder="Min price ($)">
+          <input type="number" id="max-price" placeholder="Max price ($)">
           <select id="filter-location">
             <option value="">All Locations</option>
             <option value="Manhattan">Manhattan</option>
@@ -196,33 +198,20 @@
     }
 
     // Filtering and rendering (view-only)
-    function applyFilters() {
-      const searchTerm = elements.searchInput.value.toLowerCase();
-      const makeFilter = elements.filterMake.value;
-      const locationFilter = elements.filterLocation.value;
-      const rentalTypeFilter = elements.filterRentalType.value;
+   function applyFilters() {
+  const makeFilter = document.getElementById("filter-make").value;
+  const minPrice = parseFloat(document.getElementById("min-price").value) || 0;
+  const maxPrice = parseFloat(document.getElementById("max-price").value) || Infinity;
 
-      state.filteredListings = state.allListings.filter(listing => {
-        const matchesSearch = [
-          listing.make,
-          listing.model,
-          listing.description,
-          listing.location
-        ].some(field => field?.toLowerCase().includes(searchTerm));
-        
-        return matchesSearch &&
-          (!makeFilter || listing.make === makeFilter) &&
-          (!locationFilter || listing.location === locationFilter) &&
-          (!rentalTypeFilter || 
-            (rentalTypeFilter === 'daily' && listing.daily_rate) ||
-            (rentalTypeFilter === 'weekly' && listing.weekly_rate) ||
-            (rentalTypeFilter === 'monthly' && listing.monthly_rate));
-      });
-
-      state.currentPage = 1;
-      updatePagination();
-      renderListings();
-    }
+  state.filteredListings = state.allListings.filter(listing => {
+    return (
+      (!makeFilter || listing.make === makeFilter) &&
+      listing.daily_rate >= minPrice && 
+      listing.daily_rate <= maxPrice
+    );
+  });
+  renderListings();
+}
 
     function resetFilters() {
       elements.searchInput.value = '';
