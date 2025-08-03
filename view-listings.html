@@ -61,15 +61,13 @@
           <button id="search-btn">Search</button>
         </div>
         <div class="filter-controls">
-          <select id="filter-make">
-            <option value="">All Makes</option>
-            <option value="Toyota">Toyota</option>
-            <option value="Honda">Honda</option>
-            <option value="Nissan">Nissan</option>
-            <option value="Hyundai">Hyundai</option>
+          <select id="filter-type">
+            <option value="">All Vehicle Types</option>
+            <option value="Camry">Toyota Camry</option>
+            <option value="Prius">Toyota Prius</option>
+            <option value="Highlander">Toyota Highlander</option>
+            <option value="Sienna">Toyota Sienna</option>
           </select>
-          <input type="number" id="min-price" placeholder="Min price ($)">
-          <input type="number" id="max-price" placeholder="Max price ($)">
           <select id="filter-location">
             <option value="">All Locations</option>
             <option value="Manhattan">Manhattan</option>
@@ -80,9 +78,10 @@
           </select>
           <select id="filter-rental-type">
             <option value="">All Rental Types</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Lease-to-Own">Lease-to-Own</option>
           </select>
           <button id="reset-filters">Reset Filters</button>
         </div>
@@ -143,7 +142,7 @@
       pageInfo: document.getElementById('page-info'),
       searchInput: document.getElementById('search-input'),
       searchBtn: document.getElementById('search-btn'),
-      filterMake: document.getElementById('filter-make'),
+      filterType: document.getElementById('filter-type'),
       filterLocation: document.getElementById('filter-location'),
       filterRentalType: document.getElementById('filter-rental-type'),
       resetFilters: document.getElementById('reset-filters'),
@@ -160,7 +159,7 @@
     function setupEventListeners() {
       elements.searchBtn.addEventListener('click', applyFilters);
       elements.searchInput.addEventListener('keyup', (e) => e.key === 'Enter' && applyFilters());
-      elements.filterMake.addEventListener('change', applyFilters);
+      elements.filterType.addEventListener('change', applyFilters);
       elements.filterLocation.addEventListener('change', applyFilters);
       elements.filterRentalType.addEventListener('change', applyFilters);
       elements.resetFilters.addEventListener('click', resetFilters);
@@ -170,75 +169,73 @@
     }
 
     // Load listings (read-only)
-   async function loadListings() {
-  try {
-    showLoading();
-    const { data, error } = await supabase
-      .from('listings') // or your actual table name
-      .select('*')
-      .order('created_at', { ascending: false });
+    async function loadListings() {
+      try {
+        showLoading();
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
+        if (error) throw error;
+
+        state.allListings = data.map(listing => ({
+          ...listing,
+          image_urls: processImageUrls(listing.image_urls)
+        }));
+
+        state.filteredListings = [...state.allListings];
+        updatePagination();
+        renderListings();
+      } catch (error) {
+        console.error('Error loading listings:', error);
+        showError();
+      } finally {
+        hideLoading();
+      }
     }
 
-    if (!data || data.length === 0) {
-      console.warn('No listings found in database');
-      state.allListings = [];
-      state.filteredListings = [];
-      updatePagination();
-      return;
+    // Process image URLs (safe handling)
+    function processImageUrls(urls) {
+      if (!urls) return [];
+      try {
+        const parsed = typeof urls === 'string' ? JSON.parse(urls) : urls;
+        return (Array.isArray(parsed) ? parsed : [parsed])
+          .filter(url => url)
+          .map(url => getImageUrl(url));
+      } catch {
+        return [];
+      }
     }
-
-    state.allListings = data.map(listing => ({
-      ...listing,
-      image_urls: listing.photos || []
-    }));
-
-    state.filteredListings = [...state.allListings];
-    updatePagination();
-    renderListings();
-  } catch (error) {
-    console.error('Error loading listings:', error);
-    showError();
-  } finally {
-    hideLoading();
-  }
-}
 
     // Filtering and rendering (view-only)
-   function applyFilters() {
-  const searchTerm = elements.searchInput.value.toLowerCase();
-  const makeFilter = elements.filterMake.value;
-  const locationFilter = elements.filterLocation.value;
-  const rentalTypeFilter = elements.filterRentalType.value;
-  const minPrice = parseFloat(elements.minPrice.value) || 0;
-  const maxPrice = parseFloat(elements.maxPrice.value) || Infinity;
+    function applyFilters() {
+      const searchTerm = elements.searchInput.value.toLowerCase();
+      const typeFilter = elements.filterType.value;
+      const locationFilter = elements.filterLocation.value;
+      const rentalTypeFilter = elements.filterRentalType.value;
 
-  state.filteredListings = state.allListings.filter(listing => {
-    const matchesSearch = !searchTerm || 
-      (listing.make + ' ' + listing.model + ' ' + listing.description)
-        .toLowerCase().includes(searchTerm);
-    
-    return (
-      matchesSearch &&
-      (!makeFilter || listing.make === makeFilter) &&
-      (!locationFilter || listing.location === locationFilter) &&
-      (!rentalTypeFilter || listing.rental_type === rentalTypeFilter) &&
-      listing.daily_rate >= minPrice && 
-      listing.daily_rate <= maxPrice
-    );
-  });
-  
-  state.currentPage = 1;
-  updatePagination();
-  renderListings();
-}
+      state.filteredListings = state.allListings.filter(listing => {
+        const matchesSearch = [
+          listing.vehicle_type,
+          listing.tlc_plate,
+          listing.additional_details
+        ].some(field => field?.toLowerCase().includes(searchTerm));
+        
+        return matchesSearch &&
+          (!typeFilter || listing.vehicle_type === typeFilter) &&
+          (!locationFilter || listing.location === locationFilter) &&
+          (!rentalTypeFilter || listing.rental_type === rentalTypeFilter);
+      });
+
+      state.currentPage = 1;
+      updatePagination();
+      renderListings();
+    }
 
     function resetFilters() {
       elements.searchInput.value = '';
-      elements.filterMake.value = '';
+      elements.filterType.value = '';
       elements.filterLocation.value = '';
       elements.filterRentalType.value = '';
       applyFilters();
@@ -269,7 +266,7 @@
       state.filteredListings.length ? hideNoResults() : showNoResults();
     }
 
-    // == Render listings
+    // Render listings
     function renderListings() {
       const startIdx = (state.currentPage - 1) * state.itemsPerPage;
       const listingsToShow = state.filteredListings.slice(startIdx, startIdx + state.itemsPerPage);
@@ -279,62 +276,40 @@
     }
 
     function createListingCard(listing) {
-  const primaryImage = listing.image_urls?.length ? listing.image_urls[0] : '';
-  const priceDisplay = listing.daily_rate ? 
-    `$${listing.daily_rate.toLocaleString()}/day` : 
-    'Price not specified';
-
-  return `
-    <div class="listing-card" data-id="${listing.id}">
-      <div class="card-header">
-        <h3>${listing.make || ''} ${listing.model || ''} ${listing.year || ''}</h3>
-        <span class="price-badge">${priceDisplay}</span>
-      </div>
-      <div class="images">
-        ${primaryImage ? `
-          <img src="${primaryImage}" loading="lazy" alt="${listing.make} ${listing.model}" 
+      const imagesHTML = listing.image_urls?.length ?
+        listing.image_urls.map(url => `
+          <img src="${url}" loading="lazy" alt="${listing.vehicle_type}" 
                onerror="this.style.display='none'" crossorigin="anonymous">
-        ` : '<div class="no-image">No Image Available</div>'}
-      </div>
-      <div class="listing-details">
-        <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
-        <p><strong>Available From:</strong> ${listing.available_from || 'Not specified'}</p>
-        ${listing.weekly_rate ? `<p><strong>Weekly Rate:</strong> $${listing.weekly_rate.toLocaleString()}</p>` : ''}
-        ${listing.monthly_rate ? `<p><strong>Monthly Rate:</strong> $${listing.monthly_rate.toLocaleString()}</p>` : ''}
-        ${listing.description ? `<p class="details">${listing.description}</p>` : ''}
-        <div class="contact-info">
-          <button class="contact-btn">Contact Owner</button>
+        `).join('') : '<div class="no-image">No Image Available</div>';
+
+      return `
+        <div class="listing-card">
+          <div class="card-header">
+            <h3>${listing.vehicle_type || 'Vehicle'}</h3>
+            <p class="tlc-plate">${listing.tlc_plate || 'TLC Plate Not Provided'}</p>
+            <span class="price-badge">${listing.price_per_day ? `$${listing.price_per_day.toLocaleString()}/day` : 'Price not specified'}</span>
+          </div>
+          <div class="images">${imagesHTML}</div>
+          <div class="listing-details">
+            <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
+            <p><strong>Rental Type:</strong> ${listing.rental_type || 'Not specified'}</p>
+            ${listing.additional_details ? `<p class="details">${listing.additional_details}</p>` : ''}
+            <div class="contact-info">
+              <p><strong>Contact:</strong> ${listing.owner_name || 'Name not provided'}</p>
+              ${listing.phone ? `<p><strong>Phone:</strong> <span class="phone-number">${formatPhoneNumber(listing.phone)}</span></p>` : ''}
+              <button class="contact-btn">Contact Owner</button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  `;
-}
+      `;
+    }
 
-// Quick View Handler
-function setupQuickView() {
-  document.querySelectorAll('.listing-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      // Don't trigger if clicking on contact button
-      if (e.target.closest('.contact-btn')) return;
-      
-      const listingId = card.dataset.id;
-      const listing = state.allListings.find(l => l.id === listingId);
-      if (listing) showQuickView(listing);
-    });
-  });
-}
-
-// Update renderListings() to call setupQuickView
-function renderListings() {
-  const startIdx = (state.currentPage - 1) * state.itemsPerPage;
-  const listingsToShow = state.filteredListings.slice(startIdx, startIdx + state.itemsPerPage);
-  
-  elements.container.innerHTML = listingsToShow.length ? 
-    listingsToShow.map(createListingCard).join('') : '';
-  
-  setupQuickView(); // Initialize event listeners
-}
-    
+    function formatPhoneNumber(phone) {
+      if (!phone) return '';
+      const cleaned = ('' + phone).replace(/\D/g, '');
+      const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+      return match ? `(${match[1]}) ${match[2]}-${match[3]}` : phone;
+    }
 
     // UI State
     function showLoading() {
@@ -367,7 +342,8 @@ function renderListings() {
     }
   </script>
 
-  <footer>
+  <!-- Main content above -->
+<footer>
     <a href="/privacy-policy">Privacy Policy</a> | 
     <a href="/terms-of-service">Terms of Service</a> | 
     <a href="/contact">Contact Us</a>
@@ -377,6 +353,7 @@ function renderListings() {
     <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
     <p>© 2025 FleetLinkr. All rights reserved.</p>
   </footer>
+</body>
 
   <!-- Contact Modal -->
   <div id="contact-modal" class="modal hidden">
@@ -393,27 +370,5 @@ function renderListings() {
       </form>
     </div>
   </div>
-
-<script>
-  // Add to your existing <script>
-  function showQuickView(listing) {
-    const modal = document.getElementById("quick-view-modal");
-    document.getElementById("modal-content").innerHTML = `
-      <h3>${listing.make} ${listing.model}</h3>
-      <p>$${listing.daily_rate}/day</p>
-      <p>Location: ${listing.location}</p>
-    `;
-    modal.classList.remove("hidden");
-  }
-
-  // Update createListingCard() to include:
-  function createListingCard(listing) {
-    return `
-      <div class="listing-card" onclick="showQuickView(${JSON.stringify(listing).replace(/"/g, '&quot;')})">
-        <!-- ... existing card HTML ... -->
-      </div>
-    `;
-  }
-</script>
 </body>
 </html>
