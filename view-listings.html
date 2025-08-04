@@ -17,7 +17,87 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w"
     );
   </script>
+  <style>
+    /* Add these styles for the image gallery */
+    .images {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+    
+    .image-gallery {
+      display: flex;
+      transition: transform 0.3s ease;
+      height: 100%;
+    }
+    
+    .gallery-image {
+      min-width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    
+    .gallery-nav button {
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .gallery-nav button:hover {
+      background: rgba(0,0,0,0.7);
+    }
+    
+    .gallery-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+    
+    .gallery-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+    }
+    
+    .gallery-dot.active {
+      background: white;
+    }
+    
+    .no-image {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      color: #666;
+    }
+  </style>
 </head>
+
 
 <body>
   <header class="site-header">
@@ -112,7 +192,7 @@
     </div>
   </main>
 
-  <script>
+ <script>
     // URL Helper (for image display only)
     function getImageUrl(filePath) {
       if (!filePath) return '';
@@ -183,7 +263,7 @@
         state.allListings = data.map(listing => ({
           ...listing,
           // Process photos array from rental_listings
-          image_urls: Array.isArray(listing.photos) ? listing.photos : []
+          image_urls: Array.isArray(listing.photos) ? listing.photos.map(getImageUrl) : []
         }));
 
         state.filteredListings = [...state.allListings];
@@ -198,20 +278,20 @@
     }
 
     // Filtering and rendering (view-only)
-   function applyFilters() {
-  const makeFilter = document.getElementById("filter-make").value;
-  const minPrice = parseFloat(document.getElementById("min-price").value) || 0;
-  const maxPrice = parseFloat(document.getElementById("max-price").value) || Infinity;
+    function applyFilters() {
+      const makeFilter = document.getElementById("filter-make").value;
+      const minPrice = parseFloat(document.getElementById("min-price").value) || 0;
+      const maxPrice = parseFloat(document.getElementById("max-price").value) || Infinity;
 
-  state.filteredListings = state.allListings.filter(listing => {
-    return (
-      (!makeFilter || listing.make === makeFilter) &&
-      listing.daily_rate >= minPrice && 
-      listing.daily_rate <= maxPrice
-    );
-  });
-  renderListings();
-}
+      state.filteredListings = state.allListings.filter(listing => {
+        return (
+          (!makeFilter || listing.make === makeFilter) &&
+          listing.daily_rate >= minPrice && 
+          listing.daily_rate <= maxPrice
+        );
+      });
+      renderListings();
+    }
 
     function resetFilters() {
       elements.searchInput.value = '';
@@ -256,7 +336,6 @@
     }
 
     function createListingCard(listing) {
-      const primaryImage = listing.image_urls?.length ? listing.image_urls[0] : '';
       const priceDisplay = listing.daily_rate ? 
         `$${listing.daily_rate.toLocaleString()}/day` : 
         'Price not specified';
@@ -268,10 +347,7 @@
             <span class="price-badge">${priceDisplay}</span>
           </div>
           <div class="images">
-            ${primaryImage ? `
-              <img src="${primaryImage}" loading="lazy" alt="${listing.make} ${listing.model}" 
-                   onerror="this.style.display='none'" crossorigin="anonymous">
-            ` : '<div class="no-image">No Image Available</div>'}
+            ${createImageGallery(listing.image_urls || [])}
           </div>
           <div class="listing-details">
             <p><strong>Location:</strong> ${listing.location || 'Not specified'}</p>
@@ -285,6 +361,74 @@
           </div>
         </div>
       `;
+    }
+
+    function createImageGallery(imageUrls) {
+      if (!imageUrls.length) {
+        return '<div class="no-image">No Image Available</div>';
+      }
+
+      const galleryId = `gallery-${Math.random().toString(36).substr(2, 9)}`;
+      
+      return `
+        <div class="image-gallery-container">
+          <div class="image-gallery" id="${galleryId}">
+            ${imageUrls.map(url => `
+              <img src="${url}" class="gallery-image" loading="lazy" 
+                   onerror="this.style.display='none'" crossorigin="anonymous">
+            `).join('')}
+          </div>
+          ${imageUrls.length > 1 ? `
+            <div class="gallery-nav">
+              <button onclick="prevImage('${galleryId}')">❮</button>
+              <button onclick="nextImage('${galleryId}')">❯</button>
+            </div>
+            <div class="gallery-dots">
+              ${imageUrls.map((_, index) => `
+                <div class="gallery-dot ${index === 0 ? 'active' : ''}" 
+                     onclick="goToImage('${galleryId}', ${index})"></div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Gallery navigation functions
+    window.prevImage = function(galleryId) {
+      const gallery = document.getElementById(galleryId);
+      const images = gallery.querySelectorAll('.gallery-image');
+      const currentPosition = parseInt(gallery.dataset.currentPosition || '0');
+      const newPosition = (currentPosition - 1 + images.length) % images.length;
+      
+      gallery.style.transform = `translateX(-${newPosition * 100}%)`;
+      gallery.dataset.currentPosition = newPosition;
+      updateDots(galleryId, newPosition);
+    };
+
+    window.nextImage = function(galleryId) {
+      const gallery = document.getElementById(galleryId);
+      const images = gallery.querySelectorAll('.gallery-image');
+      const currentPosition = parseInt(gallery.dataset.currentPosition || '0');
+      const newPosition = (currentPosition + 1) % images.length;
+      
+      gallery.style.transform = `translateX(-${newPosition * 100}%)`;
+      gallery.dataset.currentPosition = newPosition;
+      updateDots(galleryId, newPosition);
+    };
+
+    window.goToImage = function(galleryId, position) {
+      const gallery = document.getElementById(galleryId);
+      gallery.style.transform = `translateX(-${position * 100}%)`;
+      gallery.dataset.currentPosition = position;
+      updateDots(galleryId, position);
+    };
+
+    function updateDots(galleryId, activeIndex) {
+      const dots = document.querySelectorAll(`#${galleryId} ~ .gallery-dots .gallery-dot`);
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === activeIndex);
+      });
     }
 
     // UI State
@@ -317,6 +461,7 @@
       elements.container.style.display = 'grid';
     }
   </script>
+
 
   <footer>
     <a href="/privacy-policy">Privacy Policy</a> | 
