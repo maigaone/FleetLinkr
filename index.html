@@ -1,161 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FleetLinkr - Your Trusted TLC Rental Marketplace</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0074D9">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="FleetLinkr">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="msapplication-TileColor" content="#0074D9">
-  <meta name="msapplication-config" content="/browserconfig.xml">
-
-  <!-- Favicons -->
-  <link rel="icon" href="/assets/icons/favicon.ico" sizes="any"> 
-  <link rel="icon" href="/assets/icons/favicon-32x32.png" type="image/png" sizes="32x32"> 
-  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png"> 
-
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/mobile-menu.js" defer></script>
-
-  <script>
-    // Initialize Supabase
-    window.supabase = supabase.createClient(
-      "https://dndeljolayctbafmizcl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w",
-      {
-        auth: { persistSession: true },
-        global: {
-          headers: {
-            'Prefer': 'return=representation',
-            'Content-Type': 'application/json'
-          }
-        }
-      }
-    );
-  </script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+  </style>
 </head>
-
 <body>
-  <header class="site-header">
-    <div class="header-container">
-      <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img">
-    </div>
-  </header>
-
-  <nav class="navbar" aria-label="Main navigation">
-    <div class="navbar-container">
-      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
-        <span class="hamburger">☰</span>
-        <span class="close">✕</span>
-        <span class="sr-only">Menu</span>
-      </button>
-      <ul class="navbar-links" id="primary-nav">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="drivers.html">For Drivers</a></li>
-        <li><a href="dealerships.html">For Dealerships</a></li>
-        <li><a href="garages.html">For Garages</a></li>
-        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
-        <li><a href="add-listing.html">Add Listing</a></li> <!-- Updated link -->
-        <li><a href="insurance.html">Insurance</a></li>
-        <li><a href="view-listings.html">Listings</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
-
-
-  <main class="main-content">
-    <div class="hero">
-      <h1>Your Trusted TLC Rental Marketplace</h1>
-      <p>Connecting NYC drivers with dealerships, garages, and TLC vehicle owners in one smart platform.</p>
-      <a href="contact.html" class="btn secondary">Contact Us</a>
-    </div>
-
-    <section class="section">
-      <h2>Our Services</h2>
-      <div class="features">
-        <div class="feature-card">
-          <h3>For Drivers</h3>
-          <p>Find TLC-ready vehicles for rent or lease-to-own options.</p>
-          <a href="drivers.html" class="btn">Learn More</a>
-        </div>
-        <div class="feature-card">
-          <h3>For Dealerships</h3>
-          <p>List your TLC-licensed vehicles and connect with drivers.</p>
-          <a href="dealerships.html" class="btn">Learn More</a>
-        </div>
-        <div class="feature-card">
-          <h3>For Garages</h3>
-          <p>Offer maintenance services to our network of vehicles.</p>
-          <a href="garages.html" class="btn">Learn More</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Removed the entire "List Your Vehicle" form section -->
-
-    <section class="section" id="testimonials">
-      <h2>What Our Users Say</h2>
-      <div class="testimonial">
-        <blockquote>"FleetLinkr helped me find a TLC car within hours. Highly recommended!"</blockquote>
-        <p>- Jamal A., Driver</p>
-      </div>
-      <div class="testimonial">
-        <blockquote>"We filled three TLC rentals in one week after listing on FleetLinkr."</blockquote>
-        <p>- Sarah B., Dealership Manager</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <a href="/privacy-policy">Privacy Policy</a> | 
-    <a href="/terms-of-service">Terms of Service</a> | 
-    <a href="/contact">Contact Us</a>
-    <div class="footer-cta">
-      <a href="contact.html" class="btn">Get in Touch</a>
-    </div>
-    <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
-    <p>© 2025 FleetLinkr. All rights reserved.</p>
-  </footer>
-  <!-- Main content above -->
-
-</body>
-
-  <script>
-    // PWA Installation
-    let deferredPrompt;
-    const installBtn = document.createElement('button');
-    installBtn.className = 'install-btn';
-    installBtn.textContent = 'Install App';
-    document.body.appendChild(installBtn);
-    installBtn.style.display = 'none';
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'block';
-    });
-
-    installBtn.addEventListener('click', () => {
-      installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted install');
-        }
-        deferredPrompt = null;
-      });
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js');
-      });
-    }
-  </script>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;FleetLinkr – Maintenance Mode&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="robots" content="noindex, nofollow"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>font-family: Arial, sans-serif;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>display: flex;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>height: 100vh;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>align-items: center;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>background: #f5f5f5;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.box {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>padding: 40px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>background: white;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>box-shadow: 0 0 10px rgba(0,0,0,0.1);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1">&lt;div class="box"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;h1&gt;FleetLinkr&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;p&gt;We’re currently upgrading the platform.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;p&gt;Please check back soon.&lt;/p&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
 </body>
 </html>
