@@ -1,161 +1,305 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FleetLinkr - Your Trusted TLC Rental Marketplace</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0074D9">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="FleetLinkr">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="msapplication-TileColor" content="#0074D9">
-  <meta name="msapplication-config" content="/browserconfig.xml">
-
-  <!-- Favicons -->
-  <link rel="icon" href="/assets/icons/favicon.ico" sizes="any"> 
-  <link rel="icon" href="/assets/icons/favicon-32x32.png" type="image/png" sizes="32x32"> 
-  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png"> 
-
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/mobile-menu.js" defer></script>
-
-  <script>
-    // Initialize Supabase
-    window.supabase = supabase.createClient(
-      "https://dndeljolayctbafmizcl.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuZGVsam9sYXljdGJhZm1pemNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjIxMDUsImV4cCI6MjA2NTQzODEwNX0.OiK-9-BN0NdgSF1ROmEepANA8ZMJ7kMipCpR8xJSA2w",
-      {
-        auth: { persistSession: true },
-        global: {
-          headers: {
-            'Prefer': 'return=representation',
-            'Content-Type': 'application/json'
-          }
-        }
-      }
-    );
-  </script>
-</head>
-
-<body>
-  <header class="site-header">
-    <div class="header-container">
-      <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img">
-    </div>
-  </header>
-
-  <nav class="navbar" aria-label="Main navigation">
-    <div class="navbar-container">
-      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
-        <span class="hamburger">☰</span>
-        <span class="close">✕</span>
-        <span class="sr-only">Menu</span>
-      </button>
-      <ul class="navbar-links" id="primary-nav">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="drivers.html">For Drivers</a></li>
-        <li><a href="dealerships.html">For Dealerships</a></li>
-        <li><a href="garages.html">For Garages</a></li>
-        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
-        <li><a href="add-listing.html">Add Listing</a></li> <!-- Updated link -->
-        <li><a href="insurance.html">Insurance</a></li>
-        <li><a href="view-listings.html">Listings</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
-
-
-  <main class="main-content">
-    <div class="hero">
-      <h1>Your Trusted TLC Rental Marketplace</h1>
-      <p>Connecting NYC drivers with dealerships, garages, and TLC vehicle owners in one smart platform.</p>
-      <a href="contact.html" class="btn secondary">Contact Us</a>
-    </div>
-
-    <section class="section">
-      <h2>Our Services</h2>
-      <div class="features">
-        <div class="feature-card">
-          <h3>For Drivers</h3>
-          <p>Find TLC-ready vehicles for rent or lease-to-own options.</p>
-          <a href="drivers.html" class="btn">Learn More</a>
-        </div>
-        <div class="feature-card">
-          <h3>For Dealerships</h3>
-          <p>List your TLC-licensed vehicles and connect with drivers.</p>
-          <a href="dealerships.html" class="btn">Learn More</a>
-        </div>
-        <div class="feature-card">
-          <h3>For Garages</h3>
-          <p>Offer maintenance services to our network of vehicles.</p>
-          <a href="garages.html" class="btn">Learn More</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Removed the entire "List Your Vehicle" form section -->
-
-    <section class="section" id="testimonials">
-      <h2>What Our Users Say</h2>
-      <div class="testimonial">
-        <blockquote>"FleetLinkr helped me find a TLC car within hours. Highly recommended!"</blockquote>
-        <p>- Jamal A., Driver</p>
-      </div>
-      <div class="testimonial">
-        <blockquote>"We filled three TLC rentals in one week after listing on FleetLinkr."</blockquote>
-        <p>- Sarah B., Dealership Manager</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <a href="/privacy-policy">Privacy Policy</a> | 
-    <a href="/terms-of-service">Terms of Service</a> | 
-    <a href="/contact">Contact Us</a>
-    <div class="footer-cta">
-      <a href="contact.html" class="btn">Get in Touch</a>
-    </div>
-    <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
-    <p>© 2025 FleetLinkr. All rights reserved.</p>
-  </footer>
-  <!-- Main content above -->
-
-</body>
-
-  <script>
-    // PWA Installation
-    let deferredPrompt;
-    const installBtn = document.createElement('button');
-    installBtn.className = 'install-btn';
-    installBtn.textContent = 'Install App';
-    document.body.appendChild(installBtn);
-    installBtn.style.display = 'none';
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'block';
-    });
-
-    installBtn.addEventListener('click', () => {
-      installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted install');
-        }
-        deferredPrompt = null;
-      });
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js');
-      });
-    }
-  </script>
-</body>
-</html>
+ <html lang="en">
+ <head>
+ <meta charset="utf-8"/>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+ <title>FleetLinkr - Your Trusted TLC Rental Marketplace</title>
+ <link rel="manifest" href="manifest.json">
+ <meta name="theme-color" content="#0074D9">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-title" content="FleetLinkr">
+ <meta name="mobile-web-app-capable" content="yes">
+ <meta name="msapplication-TileColor" content="#0074D9">
+ <meta name="msapplication-config" content="/browserconfig.xml">
+ 
+ <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+ <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+ <link rel="shortcut icon" href="/assets/icons/favicon.ico">
+ <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+ <link rel="manifest" href="/site.webmanifest">
+ <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#0074D9">
+ 
+ <link rel="stylesheet" href="assets/css/styles.css">
+ 
+ <!-- Load Supabase FIRST -->
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+ <script src="assets/js/mobile-menu.js" defer></script>
+ 
+ 
+ <script>
+ 
+ // Calculate scrollbar width first
+ const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+ document.documentElement.style.setProperty('--scrollbar-width', ${scrollbarWidth}px);
+ 
+ // Handle mobile viewport quirks
+ function handleViewport() {
+ document.documentElement.style.setProperty(
+ '--viewport-height',
+ ${window.innerHeight}px
+ );
+ }
+ window.addEventListener('resize', handleViewport);
+ handleViewport();
+ 
+ 
+ <!-- Initialize Supabase with proper configuration -->
+ 
+ // Initialize Supabase immediately
+ window.supabase = supabase.createClient(
+ "https://klredsqvkblbhooinwwz.supabase.co",
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8",
+ {
+ auth: { persistSession: true }, // Changed to true
+ global: {
+ headers: {
+ 'Prefer': 'return=representation',
+ 'Content-Type': 'application/json'
+ }
+ }
+ }
+ );
+ </script>
+ </head>
+ 
+ <body>
+ 
+ <header class="site-header">
+ <div class="header-container">
+ <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img">
+ </div>
+ </header>
+ 
+ 
+ <nav class="navbar" aria-label="Main navigation">
+ <div class="navbar-container">
+ <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
+ <span class="hamburger">☰</span>
+ <span class="close">✕</span>
+ <span class="sr-only">Menu</span>
+ </button>
+ <ul class="navbar-links" id="primary-nav">
+ <li><a href="index.html" class="active">Home</a></li>
+ <li><a href="drivers.html">For Drivers</a></li>
+ <li><a href="dealerships.html">For Dealerships</a></li>
+ <li><a href="garages.html">For Garages</a></li>
+ <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
+ <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
+ <li><a href="insurance.html">Insurance</a></li>
+ <li><a href="view-listings.html">Listings</a></li>
+ <li><a href="contact.html">Contact</a></li>
+ </ul>
+ </div>
+ </nav>
+ 
+ <main class="main-content">
+ <div class="hero">
+ <h1>Your Trusted TLC Rental Marketplace</h1>
+ <p>Connecting NYC drivers with dealerships, garages, and TLC vehicle owners in one smart platform.</p>
+ <a href="contact.html" class="btn secondary">Contact Us</a>
+ </div>
+ 
+ <section class="section">
+ <h2>Our Services</h2>
+ <div class="features">
+ <div class="feature-card">
+ <h3>For Drivers</h3>
+ <p>Find TLC-ready vehicles for rent or lease-to-own options.</p>
+ <a href="drivers.html" class="btn">Learn More</a>
+ </div>
+ <div class="feature-card">
+ <h3>For Dealerships</h3>
+ <p>List your TLC-licensed vehicles and connect with drivers.</p>
+ <a href="dealerships.html" class="btn">Learn More</a>
+ </div>
+ <div class="feature-card">
+ <h3>For Garages</h3>
+ <p>Offer maintenance services to our network of vehicles.</p>
+ <a href="garages.html" class="btn">Learn More</a>
+ </div>
+ </div>
+ </section>
+ 
+ <section class="section" id="list-your-vehicle">
+ <h2>List Your Vehicle</h2>
+ <form id="listing-form">
+ <input name="formType" type="hidden" value="listing"/>
+ <input name="ownerName" placeholder="Your Name" required type="text"/>
+ <input name="email" placeholder="Your Email" required type="email"/>
+ <input name="phone" placeholder="Your Phone Number" required type="tel" pattern="[0-9]{10}"/>
+ <input name="vehicleType" placeholder="Vehicle Type (e.g., Camry, Prius)" required type="text"/>
+ <input name="tlcPlate" placeholder="TLC Plate# (e.g., T010101C)" required type="text"/>
+ <input name="rentalType" placeholder="Rental Type (e.g., Weekly, Monthly)" required type="text"/>
+ <input name="location" placeholder="Location (e.g., Bronx, Brooklyn)" required type="text"/>
+ <input name="price" placeholder="Price per day ($)" required type="number" min="1">
+ <input type="file" name="images" multiple accept="image/*" class="file-input" required>
+ <textarea name="additionalDetails" placeholder="Additional details" required rows="4"></textarea>
+ <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
+ <button type="submit" id="submit-listing">Submit Listing</button>
+ <div id="loading-listing" class="loading">Submitting...</div>
+ </form>
+ </section>
+ 
+ <section class="section" id="testimonials">
+ <h2>What Our Users Say</h2>
+ <div class="testimonial">
+ <blockquote>"FleetLinkr helped me find a TLC car within hours. Highly recommended!"</blockquote>
+ <p>- Jamal A., Driver</p>
+ </div>
+ <div class="testimonial">
+ <blockquote>"We filled three TLC rentals in one week after listing on FleetLinkr."</blockquote>
+ <p>- Sarah B., Dealership Manager</p>
+ </div>
+ </section>
+ </main>
+ 
+ <footer>
+ <div class="footer-cta">
+ <a href="contact.html" class="btn">Get in Touch</a>
+ </div>
+ <p>© 2025 FleetLinkr. All rights reserved.</p>
+ <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
+ </footer>
+ <script>
+ 
+ // ========== LISTING FORM SUBMISSION ==========
+ document.getElementById('listing-form').addEventListener('submit', async (e) => {
+ e.preventDefault();
+ 
+ const submitBtn = document.getElementById('submit-listing');
+ const loading = document.getElementById('loading-listing');
+ 
+ submitBtn.disabled = true;
+ loading.style.display = 'block';
+ 
+ try {
+ // Validate required fields
+ const requiredFields = ['ownerName', 'email', 'tlcPlate', 'vehicleType'];
+ for (const field of requiredFields) {
+ if (!e.target.elements[field].value.trim()) {
+ throw new Error(Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()});
+ }
+ }
+ 
+ // Handle image uploads (implement your actual upload logic here)
+ const imageUrls = [];
+ 
+ // Get user if authenticated
+ const { data: { user } } = await supabase.auth.getUser();
+ 
+ // Submit to Supabase
+ const { data, error } = await supabase
+ .from('listings')
+ .insert({
+ owner_name: e.target.elements.ownerName.value,
+ email: e.target.elements.email.value,
+ phone: e.target.elements.phone.value,
+ vehicle_type: e.target.elements.vehicleType.value,
+ tlc_plate: e.target.elements.tlcPlate.value,
+ rental_type: e.target.elements.rentalType.value,
+ location: e.target.elements.location.value,
+ price_per_day: Number(e.target.elements.price.value),
+ additional_details: e.target.elements.additionalDetails.value,
+ image_urls: imageUrls,
+ user_id: user?.id || null
+ })
+ .select();
+ 
+ if (error) throw error;
+ window.location.href = "thank-you.html";
+ 
+ } catch (error) {
+ console.error('Submission Error:', error);
+ alert(Error: ${error.message});
+ } finally {
+ submitBtn.disabled = false;
+ loading.style.display = 'none';
+ }
+ });
+ 
+ // ========== CONTACT MODAL HANDLING ==========
+ const contactModal = document.getElementById('contact-modal');
+ const contactForm = document.getElementById('contact-form');
+ 
+ if (contactModal && contactForm) {
+ // Open modal when contact buttons are clicked
+ document.querySelectorAll('.contact-btn').forEach(btn => {
+ btn.addEventListener('click', () => {
+ if (btn.dataset.listingId) {
+ document.getElementById('listing-id').value = btn.dataset.listingId;
+ }
+ contactModal.classList.remove('hidden');
+ });
+ });
+ 
+ // Close modal
+ document.querySelector('.close-modal')?.addEventListener('click', () => {
+ contactModal.classList.add('hidden');
+ });
+ 
+ // Handle contact form submission
+ contactForm.addEventListener('submit', async (e) => {
+ e.preventDefault();
+ const submitBtn = contactForm.querySelector('button[type="submit"]');
+ 
+ try {
+ submitBtn.disabled = true;
+ 
+ const { error } = await supabase
+ .from('messages')
+ .insert({
+ name: e.target.elements.name.value,
+ email: e.target.elements.email.value,
+ message: e.target.elements.message.value,
+ listing_id: e.target.elements.listingId.value || null
+ });
+ 
+ if (error) throw error;
+ 
+ alert('Message sent successfully!');
+ contactModal.classList.add('hidden');
+ contactForm.reset();
+ 
+ } catch (error) {
+ console.error('Contact Error:', error);
+ alert('Failed to send message. Please try again.');
+ } finally {
+ submitBtn.disabled = false;
+ }
+ });
+ 
+ } 
+ // PWA Installation (unchanged)
+ let deferredPrompt;
+ const installBtn = document.createElement('button');
+ installBtn.className = 'install-btn';
+ installBtn.textContent = 'Install App';
+ document.body.appendChild(installBtn);
+ installBtn.style.display = 'none';
+ 
+ window.addEventListener('beforeinstallprompt', (e) => {
+ e.preventDefault();
+ deferredPrompt = e;
+ installBtn.style.display = 'block';
+ });
+ 
+ installBtn.addEventListener('click', () => {
+ installBtn.style.display = 'none';
+ deferredPrompt.prompt();
+ deferredPrompt.userChoice.then((choiceResult) => {
+ if (choiceResult.outcome === 'accepted') {
+ console.log('User accepted install');
+ }
+ deferredPrompt = null;
+ });
+ });
+ 
+ if ('serviceWorker' in navigator) {
+ window.addEventListener('load', () => {
+ navigator.serviceWorker.register('/service-worker.js');
+ });
+ }
+ </script>
+ </body>
+ </html>
