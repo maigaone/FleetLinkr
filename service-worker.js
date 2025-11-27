@@ -23,6 +23,15 @@ const CORE_ASSETS = [
   '/terms-of-service.html'
 ];
 
+
+// Do NOT cache gate.html (prevents lockouts)
+self.addEventListener("fetch", (event) => {
+  if (event.request.url.includes("gate.html")) {
+    return; // bypass cache
+  }
+});
+
+
 // Install: cache core assets
 self.addEventListener('install', event => {
   event.waitUntil(
