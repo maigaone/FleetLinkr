@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FleetLinkr — Access Required</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0074D9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #fff;
+}
+
+.container {
+  background: rgba(255,255,255,0.12);
+  padding: 40px;
+  text-align: center;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 380px;
+  backdrop-filter: blur(4px);
+}
+
+input {
+  width: 90%;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px 20px;
+  width: 95%;
+  border: none;
+  background: #fff;
+  color: #0074D9;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.logo {
+  width: 180px;
+  margin-bottom: 15px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <img src="assets/images/logo-new.png" class="logo" alt="FleetLinkr">
+
+  <h2>Access Restricted</h2>
+  <p>This page is under development.<br>Enter access key to continue.</p>
+
+  <input type="password" id="pass" placeholder="Enter Access Key">
+  <button onclick="checkPass()">Access</button>
+
+  <p style="margin-top:20px;font-size:13px;opacity:0.7">
+    © 2025 FleetLinkr. All rights reserved.
+  </p>
+</div>
+
+<script>
+function checkPass() {
+    const val = document.getElementById("pass").value.trim();
+
+    if (val === "Aminah@0799") {
+        document.cookie = "fl_access=granted; path=/; max-age=" + (48 * 60 * 60);
+        window.location.href = "index.html";
+    } else {
+        alert("Incorrect access key.");
+    }
+}
+</script>
+
+</body>
+</html>
