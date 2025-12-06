@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
   <style>
     .add-listing-container { max-width: 800px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .add-listing-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
@@ -21,24 +22,28 @@
     .submit-btn:hover { background: #005ea6; }
     h1 { color: #0074D9; margin-bottom: 2rem; text-align: center; }
     .g-recaptcha { grid-column: span 2; margin: 1rem 0; display: flex; justify-content: center; }
-    .auth-section, .signup-section { text-align: center; padding: 1rem; background: #f8f9fa; margin-bottom: 1rem; }
+    .auth-section,.signup-section { text-align: center; padding: 1rem; background: #f8f9fa; margin-bottom: 1rem; }
     .auth-btn { background: #0074D9; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.5rem; }
     .auth-btn:hover { background: #005ea6; }
     #profile-modal { text-align: center; background: #f1f1f1; padding: 1rem; margin: 1rem auto; width: 80%; border-radius: 8px; }
     .hidden { display: none; }
   </style>
 </head>
+
 <body>
-  <!-- Auth UI -->
+
+  <!-- Auth Section -->
   <div class="signup-section" id="signup-section">
     <h2>Create an Account</h2>
     <input type="email" id="signup-email" placeholder="Email" required />
     <input type="password" id="signup-password" placeholder="Password" required />
     <button class="auth-btn" id="signup-btn">Sign Up</button>
+
     <h2>or Login</h2>
     <input type="email" id="login-email" placeholder="Email" required />
     <input type="password" id="login-password" placeholder="Password" required />
     <button class="auth-btn" id="login-btn">Login</button>
+
     <button class="auth-btn" id="logout-btn" style="display:none;">Logout</button>
     <p id="auth-message"></p>
   </div>
@@ -46,7 +51,7 @@
   <!-- Profile Completion Modal -->
   <div id="profile-modal" class="hidden">
     <h3>Complete Your Profile</h3>
-    <input type="email" id="profile-email" placeholder="Email" required readonly />
+    <input type="email" id="profile-email" placeholder="Email" readonly />
     <input type="text" id="profile-name" placeholder="Full Name" required />
     <input type="tel" id="profile-phone" placeholder="Phone" required />
     <button class="auth-btn" id="save-profile-btn">Save</button>
@@ -55,6 +60,7 @@
   <!-- Add Listing Form -->
   <form id="add-listing-form" class="hidden" enctype="multipart/form-data">
     <h2>Add a Rental Listing</h2>
+
     <input type="text" id="make" placeholder="Make" required />
     <input type="text" id="model" placeholder="Model" required />
     <input type="number" id="year" placeholder="Year" min="2000" max="2026" required />
@@ -62,337 +68,227 @@
     <input type="number" id="weekly-rate" placeholder="Weekly Rate $" step="0.01" />
     <input type="number" id="monthly-rate" placeholder="Monthly Rate $" step="0.01" />
     <input type="number" id="minimum-rental-days" placeholder="Minimum Rental Days" min="1" required />
-    <input type="date" id="available-from" placeholder="Available From" required />
-    <input type="date" id="available-to" placeholder="Available To" />
+    <input type="date" id="available-from" required />
+    <input type="date" id="available-to" />
     <input type="number" id="included-mileage" placeholder="Included Mileage" />
     <input type="number" id="excess-mileage-fee" placeholder="Excess Mileage Fee" step="0.01" />
     <input type="text" id="location" placeholder="Location" required />
+
     <label for="tlc-inspection">TLC Inspection</label>
     <select id="tlc-inspection" required>
       <option value="">Select...</option>
       <option value="true">Valid</option>
       <option value="false">Expired</option>
     </select>
-    <textarea id="description" placeholder="Additional Details or Description..."></textarea>
+
+    <textarea id="description" placeholder="Additional Details..."></textarea>
     <select id="contact-method">
       <option value="profile">Use Profile Contact</option>
       <option value="custom">Custom Contact Info</option>
     </select>
+
     <input type="file" id="image-upload" accept="image/*" multiple required />
-    <div id="image-previews" style="display: flex; gap: 10px; margin: 10px 0;"></div>
+
+    <div id="image-previews" style="display:flex; gap:10px; margin:10px 0;"></div>
     <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
+
     <button class="submit-btn" type="submit">Submit Listing</button>
   </form>
 
-  
 
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      // Initialize Supabase
-      const SUPABASE_URL = "https://klredsqvkblbhooinwwz.supabase.co";
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // UI Elements
-      const signupSection = document.getElementById('signup-section');
-      const profileModal = document.getElementById('profile-modal');
-      const listingForm = document.getElementById('add-listing-form');
-      const logoutBtn = document.getElementById('logout-btn');
 
-      // Toggle element visibility
-      function toggleElement(element, show) {
-        element.classList.toggle('hidden', !show);
-      }
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
 
-      // Check session and load appropriate UI
-      async function checkSessionAndLoadUI() {
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) throw error;
-          
-          if (session?.user) {
-            const user = session.user;
-            toggleElement(signupSection, false);
-            toggleElement(logoutBtn, true);
-            document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
+  // Initialize Supabase
+  const supabase = window.supabase.createClient(
+    "https://klredsqvkblbhooinwwz.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8"
+  );
 
-            // Check if profile exists with required fields
-            const { data: profile, error: profileError } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", user.id)
-              .single();
+  const signupSection = document.getElementById("signup-section");
+  const profileModal = document.getElementById("profile-modal");
+  const listingForm = document.getElementById("add-listing-form");
+  const logoutBtn = document.getElementById("logout-btn");
 
-            if (profileError || !profile?.full_name || !profile?.phone) {
-              // Show profile completion modal
-              toggleElement(profileModal, true);
-              document.getElementById("profile-email").value = user.email;
-            } else {
-              // Show listing form if profile is complete
-              toggleElement(listingForm, true);
-            }
-          } else {
-            toggleElement(signupSection, true);
-            toggleElement(logoutBtn, false);
-          }
-        } catch (error) {
-          console.error("Session check error:", error);
-          alert("Error checking session: " + error.message);
-        }
-      }
-
-      // Signup handler
-      document.getElementById("signup-btn").addEventListener("click", async () => {
-        try {
-          const email = document.getElementById("signup-email").value.trim();
-          const password = document.getElementById("signup-password").value.trim();
-          
-          if (!email || !password) {
-            throw new Error("Email and password are required");
-          }
-
-          const { data, error } = await supabase.auth.signUp({ 
-            email, 
-            password,
-            options: {
-              data: {
-                email,
-                full_name: '',
-                phone: ''
-              }
-            }
-          });
-          
-          if (error) throw error;
-
-          // Create profile record
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .upsert({
-              id: data.user?.id,
-              email,
-              full_name: '',
-              phone: '',
-              role: 'user',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-          
-          if (profileError) throw profileError;
-
-          alert("Signup successful! Please check your email to confirm.");
-          location.reload();
-        } catch (error) {
-          alert("Signup failed: " + error.message);
-          console.error("Signup error:", error);
-        }
-      });
-
-      // Login handler
-      document.getElementById("login-btn").addEventListener("click", async () => {
-        try {
-          const email = document.getElementById("login-email").value.trim();
-          const password = document.getElementById("login-password").value.trim();
-          
-          if (!email || !password) {
-            throw new Error("Email and password are required");
-          }
-
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-          
-          if (error) throw error;
-          
-          // Update last login timestamp
-          await supabase
-            .from("profiles")
-            .update({ 
-              last_login: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", data.user.id);
-          
-          location.reload();
-        } catch (error) {
-          alert("Login failed: " + error.message);
-          console.error("Login error:", error);
-        }
-      });
-
-      // Profile completion handler
-      document.getElementById("save-profile-btn").addEventListener("click", async () => {
-        try {
-          const fullName = document.getElementById("profile-name").value.trim();
-          const phone = document.getElementById("profile-phone").value.trim();
-          const email = document.getElementById("profile-email").value.trim();
-          
-          if (!fullName || !phone || !email) {
-            throw new Error("All fields are required");
-          }
-          
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError) throw userError;
-
-          // Update profile with all required fields
-          const { error: updateError } = await supabase
-            .from("profiles")
-            .upsert({ 
-              id: user.id,
-              email,
-              full_name: fullName, 
-              phone,
-              updated_at: new Date().toISOString()
-            });
-            
-          if (updateError) throw updateError;
-          
-          toggleElement(profileModal, false);
-          toggleElement(listingForm, true);
-        } catch (error) {
-          alert("Error saving profile: " + error.message);
-          console.error("Profile save error:", error);
-        }
-      });
-
-      // Logout handler
-      logoutBtn.addEventListener("click", async () => {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          location.reload();
-        } catch (error) {
-          alert("Logout failed: " + error.message);
-        }
-      });
-
-       // Add this ABOVE the form submission handler
-function validateYear(input) {
-  const year = parseInt(input.value);
-  const currentYear = new Date().getFullYear();
-  if (year < 2000 || year > currentYear) {
-    alert("Year must be between 2000 and " + currentYear);
-    return false;
+  function toggle(view, show) {
+    view.classList.toggle("hidden", !show);
   }
-  return true;
-}
 
-// Attach validation to fields
-document.getElementById("year").addEventListener("blur", function() {
-  validateYear(this);
-});
+  // Check session
+  async function loadUI() {
+    const { data: { session } } = await supabase.auth.getSession();
 
-document.getElementById("daily-rate").addEventListener("blur", function() {
-  if (parseFloat(this.value) <= 0) {
-    alert("Daily rate must be positive");
+    if (!session) {
+      toggle(signupSection, true);
+      return;
+    }
+
+    const user = session.user;
+    toggle(signupSection, false);
+    toggle(logoutBtn, true);
+    document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
+
+    // Load profile
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    // Require full_name + phone
+    if (!profile?.full_name || !profile?.phone) {
+      toggle(profileModal, true);
+      document.getElementById("profile-email").value = user.email;
+    } else {
+      toggle(listingForm, true);
+    }
   }
-});                           
-      // Listing submission handler
-      document.getElementById("add-listing-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        try {
-          // Validate reCAPTCHA
-          const recaptchaResponse = grecaptcha.getResponse();
-          if (!recaptchaResponse) throw new Error("Please complete the reCAPTCHA.");
 
-          // Validate files
-          const files = document.getElementById("image-upload").files;
-          if (files.length === 0) throw new Error("Please upload at least one image.");
-          if (files.length > 20) throw new Error("Maximum 20 images allowed.");
+  // Signup
+  document.getElementById("signup-btn").addEventListener("click", async () => {
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
 
-          // Get current user
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError) throw userError;
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) return alert(error.message);
 
-          // Upload images
-          const imageUrls = [];
-          for (const file of files) {
-            const fileName = `listings/${user.id}/${Date.now()}-${file.name}`;
-            const { data, error: uploadError } = await supabase.storage
-              .from("vehicle-images")
-              .upload(fileName, file);
-            
-            if (uploadError) throw uploadError;
-            
-            const { data: { publicUrl } } = supabase.storage
-              .from("vehicle-images")
-              .getPublicUrl(fileName);
-            
-            imageUrls.push(publicUrl);
-          }
+    alert("Signup successful! Check your email to confirm.");
+  });
 
-          
+  // Login
+  document.getElementById("login-btn").addEventListener("click", async () => {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
 
-          // Prepare listing data with proper data types
-          const listing = {
-            make: document.getElementById("make").value.trim(),
-            model: document.getElementById("model").value.trim(),
-            year: parseInt(document.getElementById("year").value),
-            daily_rate: parseFloat(document.getElementById("daily-rate").value),
-            weekly_rate: document.getElementById("weekly-rate").value 
-              ? parseFloat(document.getElementById("weekly-rate").value) 
-              : null,
-            monthly_rate: document.getElementById("monthly-rate").value 
-              ? parseFloat(document.getElementById("monthly-rate").value) 
-              : null,
-            minimum_rental_days: parseInt(document.getElementById("minimum-rental-days").value),
-            available_from: document.getElementById("available-from").value,
-            available_to: document.getElementById("available-to").value || null,
-            included_mileage: document.getElementById("included-mileage").value 
-              ? parseInt(document.getElementById("included-mileage").value) 
-              : 100,
-            excess_mileage_fee: document.getElementById("excess-mileage-fee").value 
-              ? parseFloat(document.getElementById("excess-mileage-fee").value) 
-              : 0.50,
-            location: document.getElementById("location").value.trim(),
-            tlc_inspection: document.getElementById("tlc-inspection").value === "true",
-            description: document.getElementById("description").value.trim(),
-            contact_method: document.getElementById("contact-method").value,
-            photos: imageUrls,
-            owner_id: user.id,
-            status: "active",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-          // Validate required fields
-          if (!listing.make || !listing.model || !listing.year || !listing.daily_rate || 
-              !listing.minimum_rental_days || !listing.available_from || !listing.location) {
-            throw new Error("Please fill all required fields");
-          }
+    if (error) return alert(error.message);
 
-          // Insert listing
-          const { data, error: insertError } = await supabase
-            .from("rental_listings")
-            .insert([listing])
-            .select();
-          
-          if (insertError) throw insertError;
+    // Update last login
+    await supabase
+      .from("user_profiles")
+      .update({ last_login: new Date().toISOString() })
+      .eq("user_id", data.user.id);
 
-          alert("Listing submitted successfully!");
-          window.location.href = "thank-you.html";
-        } catch (error) {
-          alert("Error submitting listing: " + error.message);
-          console.error("Listing submission error:", error);
-        }
+    location.reload();
+  });
+
+  // Save profile
+  document.getElementById("save-profile-btn").addEventListener("click", async () => {
+    const fullName = document.getElementById("profile-name").value;
+    const phone = document.getElementById("profile-phone").value;
+    const email = document.getElementById("profile-email").value;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { error } = await supabase
+      .from("user_profiles")
+      .upsert({
+        user_id: user.id,
+        email,
+        full_name: fullName,
+        phone,
+        updated_at: new Date().toISOString()
       });
 
-      // Initialize the UI
-      await checkSessionAndLoadUI();
-    });
+    if (error) return alert(error.message);
 
-     document.getElementById("image-upload").addEventListener("change", function(e) {
-    const previewDiv = document.getElementById("image-previews");
-    previewDiv.innerHTML = "";
+    toggle(profileModal, false);
+    toggle(listingForm, true);
+  });
+
+  // Logout
+  logoutBtn.addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    location.reload();
+  });
+
+  // Image previews
+  document.getElementById("image-upload").addEventListener("change", (e) => {
+    const preview = document.getElementById("image-previews");
+    preview.innerHTML = "";
     Array.from(e.target.files).forEach(file => {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
       img.style.height = "60px";
-      previewDiv.appendChild(img);
+      preview.appendChild(img);
     });
   });
-  </script>
+
+  // Listing submission
+  document.getElementById("add-listing-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Validate recaptcha
+    const cap = grecaptcha.getResponse();
+    if (!cap) return alert("Please complete reCAPTCHA.");
+
+    const files = document.getElementById("image-upload").files;
+    if (files.length === 0) return alert("Please upload images.");
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Upload images
+    const urls = [];
+    for (const file of files) {
+      const path = `listings/${user.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("vehicle-images")
+        .upload(path, file);
+
+      if (uploadError) return alert(uploadError.message);
+
+      urls.push(
+        supabase.storage
+          .from("vehicle-images")
+          .getPublicUrl(path).data.publicUrl
+      );
+    }
+
+    // Prepare listing
+    const listing = {
+      owner_id: user.id,
+      make: document.getElementById("make").value,
+      model: document.getElementById("model").value,
+      year: parseInt(document.getElementById("year").value),
+      daily_rate: parseFloat(document.getElementById("daily-rate").value),
+      weekly_rate: parseFloat(document.getElementById("weekly-rate").value) || null,
+      monthly_rate: parseFloat(document.getElementById("monthly-rate").value) || null,
+      minimum_rental_days: parseInt(document.getElementById("minimum-rental-days").value),
+      available_from: document.getElementById("available-from").value,
+      available_to: document.getElementById("available-to").value || null,
+      included_mileage: parseInt(document.getElementById("included-mileage").value) || 100,
+      excess_mileage_fee: parseFloat(document.getElementById("excess-mileage-fee").value) || 0.5,
+      location: document.getElementById("location").value,
+      tlc_inspection: document.getElementById("tlc-inspection").value === "true",
+      description: document.getElementById("description").value,
+      contact_method: document.getElementById("contact-method").value,
+      photos: urls,
+      status: "active",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from("rental_listings")
+      .insert(listing);
+
+    if (error) return alert(error.message);
+
+    alert("Listing submitted!");
+    window.location.href = "thank-you.html";
+  });
+
+  await loadUI();
+
+});
+</script>
+
 </body>
 </html>
+
 
 
 
