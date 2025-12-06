@@ -333,5 +333,19 @@ if (!getCookie("fl_access")) {
  });
  }
  </script>
+
+
+ <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const url = new URL(window.location.href);
+  const type = url.searchParams.get("type");
+
+  if (type === "signup") {
+    alert("Your email has been successfully confirmed! Please log in.");
+    window.location.href = "add-listing.html"; // or login.html
+  }
+});
+</script>
+
  </body>
  </html>
