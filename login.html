@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FleetLinkr – Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .auth-card {
+      background: #ffffff;
+      padding: 2rem 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      max-width: 380px;
+      width: 100%;
+    }
+
+    .auth-card h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      color: #111827;
+      text-align: center;
+    }
+
+    .auth-card p.subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #374151;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      margin-bottom: 0.9rem;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2563eb;
+      color: #ffffff;
+      margin-top: 0.25rem;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .meta {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    .meta a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #b91c1c;
+      text-align: center;
+      min-height: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to manage your FleetLinkr listings.</p>
+
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required />
+
+      <button type="submit">Log In</button>
+    </form>
+
+    <div class="error" id="error-message"></div>
+
+    <p class="meta">
+      Don’t have an account?
+      <a href="signup.html">Create an account</a>
+    </p>
+  </div>
+
+  <script>
+    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
+
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    const form = document.getElementById("login-form");
+    const errorEl = document.getElementById("error-message");
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Already logged in? Send them to profile or dashboard
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = "profile.html";
+        return;
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errorEl.textContent = error.message;
+        return;
+      }
+
+      // Optional: update last_login in user_profiles here if you want
+
+      window.location.href = "profile.html"; // or index.html / add-listing.html
+    });
+  </script>
+</body>
+</html>

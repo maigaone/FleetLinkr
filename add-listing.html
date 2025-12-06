@@ -32,21 +32,7 @@
 
 <body>
 
-  <!-- Auth Section -->
-  <div class="signup-section" id="signup-section">
-    <h2>Create an Account</h2>
-    <input type="email" id="signup-email" placeholder="Email" required />
-    <input type="password" id="signup-password" placeholder="Password" required />
-    <button class="auth-btn" id="signup-btn">Sign Up</button>
 
-    <h2>or Login</h2>
-    <input type="email" id="login-email" placeholder="Email" required />
-    <input type="password" id="login-password" placeholder="Password" required />
-    <button class="auth-btn" id="login-btn">Login</button>
-
-    <button class="auth-btn" id="logout-btn" style="display:none;">Logout</button>
-    <p id="auth-message"></p>
-  </div>
 
   <!-- Profile Completion Modal -->
   <div id="profile-modal" class="hidden">
@@ -97,7 +83,6 @@
 
 
 
-
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -107,38 +92,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8"
   );
 
-  const signupSection = document.getElementById("signup-section");
   const profileModal = document.getElementById("profile-modal");
-  const listingForm = document.getElementById("add-listing-form");
-  const logoutBtn = document.getElementById("logout-btn");
+  const listingForm  = document.getElementById("add-listing-form");
 
   function toggle(view, show) {
+    if (!view) return;
     view.classList.toggle("hidden", !show);
   }
 
-  // Check session
-  async function loadUI() {
+  // 1. Require login: if no session, send user to login page
+  async function ensureSession() {
     const { data: { session } } = await supabase.auth.getSession();
-
     if (!session) {
-      toggle(signupSection, true);
-      return;
+      window.location.href = "login.html";
+      return null;
     }
+    return session;
+  }
+
+  async function loadUI() {
+    const session = await ensureSession();
+    if (!session) return;
 
     const user = session.user;
-    toggle(signupSection, false);
-    toggle(logoutBtn, true);
-    document.getElementById("auth-message").textContent = `Welcome, ${user.email}`;
 
-    // Load profile
-    const { data: profile } = await supabase
+    // 2. Load profile from user_profiles
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("user_id", user.id)
       .single();
 
-    // Require full_name + phone
-    if (!profile?.full_name || !profile?.phone) {
+    if (profileError && profileError.code !== "PGRST116") {
+      console.error("Error loading profile:", profileError);
+    }
+
+    // 3. If profile incomplete, show modal. Otherwise show listing form.
+    if (!profile || !profile.full_name || !profile.phone) {
       toggle(profileModal, true);
       document.getElementById("profile-email").value = user.email;
     } else {
@@ -146,42 +136,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Signup
-  document.getElementById("signup-btn").addEventListener("click", async () => {
-    const email = document.getElementById("signup-email").value;
-    const password = document.getElementById("signup-password").value;
-
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) return alert(error.message);
-
-    alert("Signup successful! Check your email to confirm.");
-  });
-
-  // Login
-  document.getElementById("login-btn").addEventListener("click", async () => {
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) return alert(error.message);
-
-    // Update last login
-    await supabase
-      .from("user_profiles")
-      .update({ last_login: new Date().toISOString() })
-      .eq("user_id", data.user.id);
-
-    location.reload();
-  });
-
-  // Save profile
+  // Save profile from modal
   document.getElementById("save-profile-btn").addEventListener("click", async () => {
-    const fullName = document.getElementById("profile-name").value;
-    const phone = document.getElementById("profile-phone").value;
-    const email = document.getElementById("profile-email").value;
+    const fullName = document.getElementById("profile-name").value.trim();
+    const phone    = document.getElementById("profile-phone").value.trim();
+    const email    = document.getElementById("profile-email").value;
+
+    if (!fullName || !phone) {
+      alert("Please enter your full name and phone number.");
+      return;
+    }
 
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
 
     const { error } = await supabase
       .from("user_profiles")
@@ -193,16 +163,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         updated_at: new Date().toISOString()
       });
 
-    if (error) return alert(error.message);
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
     toggle(profileModal, false);
     toggle(listingForm, true);
-  });
-
-  // Logout
-  logoutBtn.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    location.reload();
   });
 
   // Image previews
@@ -213,6 +180,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
       img.style.height = "60px";
+      img.style.borderRadius = "4px";
       preview.appendChild(img);
     });
   });
@@ -223,28 +191,43 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Validate recaptcha
     const cap = grecaptcha.getResponse();
-    if (!cap) return alert("Please complete reCAPTCHA.");
+    if (!cap) {
+      alert("Please complete reCAPTCHA.");
+      return;
+    }
 
     const files = document.getElementById("image-upload").files;
-    if (files.length === 0) return alert("Please upload images.");
+    if (files.length === 0) {
+      alert("Please upload images.");
+      return;
+    }
 
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
 
     // Upload images
     const urls = [];
     for (const file of files) {
       const path = `listings/${user.id}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase
+        .storage
         .from("vehicle-images")
         .upload(path, file);
 
-      if (uploadError) return alert(uploadError.message);
+      if (uploadError) {
+        alert(uploadError.message);
+        return;
+      }
 
-      urls.push(
-        supabase.storage
-          .from("vehicle-images")
-          .getPublicUrl(path).data.publicUrl
-      );
+      const publicUrl = supabase
+        .storage
+        .from("vehicle-images")
+        .getPublicUrl(path).data.publicUrl;
+
+      urls.push(publicUrl);
     }
 
     // Prepare listing
@@ -275,7 +258,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       .from("rental_listings")
       .insert(listing);
 
-    if (error) return alert(error.message);
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
     alert("Listing submitted!");
     window.location.href = "thank-you.html";
@@ -285,6 +271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 });
 </script>
+
 
 </body>
 </html>
