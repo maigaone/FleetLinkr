@@ -1,338 +1,502 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FleetLinkr - Your Trusted TLC Rental Marketplace</title>
+ <html lang="en">
+ <head>
+ <meta charset="utf-8"/>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+ <title>FleetLinkr - Your Trusted TLC Rental Marketplace</title>
+ <link rel="manifest" href="manifest.json">
+ <meta name="theme-color" content="#0074D9">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-title" content="FleetLinkr">
+ <meta name="mobile-web-app-capable" content="yes">
+ <meta name="msapplication-TileColor" content="#0074D9">
+ <meta name="msapplication-config" content="/browserconfig.xml">
+ 
+ <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+ <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+ <link rel="shortcut icon" href="/assets/icons/favicon.ico">
+ <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+ <link rel="manifest" href="/site.webmanifest">
+ <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#0074D9">
+ 
+ <link rel="stylesheet" href="assets/css/styles.css">
+ 
+ <!-- Load Supabase FIRST -->
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+ <script src="assets/js/mobile-menu.js" defer></script>
 
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0074D9">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="FleetLinkr">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="msapplication-TileColor" content="#0074D9">
-  <meta name="msapplication-config" content="/browserconfig.xml">
+ <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const supabase = window.supabase.createClient(
+    "https://klredsqvkblbhooinwwz.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8"
+  );
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-  <link rel="shortcut icon" href="/assets/icons/favicon.ico">
-  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#0074D9">
+  const { data: { session } } = await supabase.auth.getSession();
 
-  <link rel="stylesheet" href="assets/css/styles.css">
+  const myAccountLink = document.getElementById("my-account-link");
 
-  <!-- Supabase + other scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  <script src="assets/js/mobile-menu.js" defer></script>
+  // Show link only if logged in
+  if (session) {
+    myAccountLink.classList.remove("hidden");
+  }
+});
+</script>
 
-  <style>
-    .nav-link {
-      color: #ffffff;
-      background: #2563eb;
-      padding: 0.45rem 0.9rem;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: 0.2s;
-      margin-left: 0.5rem;
+ 
+ 
+ <script>
+ 
+ // Calculate scrollbar width first
+ const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+ document.documentElement.style.setProperty('--scrollbar-width', ${scrollbarWidth}px);
+ 
+ // Handle mobile viewport quirks
+ function handleViewport() {
+ document.documentElement.style.setProperty(
+ '--viewport-height',
+ ${window.innerHeight}px
+ );
+ }
+ window.addEventListener('resize', handleViewport);
+ handleViewport();
+ 
+ 
+ <!-- Initialize Supabase with proper configuration -->
+ 
+ // Initialize Supabase immediately
+ window.supabase = supabase.createClient(
+ "https://klredsqvkblbhooinwwz.supabase.co",
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8",
+ {
+ auth: { persistSession: true }, // Changed to true
+ global: {
+ headers: {
+ 'Prefer': 'return=representation',
+ 'Content-Type': 'application/json'
+ }
+ }
+ }
+ );
+ </script>
+<script>
+  (function () {
+    const ACCESS_KEY = "fleetlinkr_dev_access";  // localStorage key
+    const PASSWORD = "Aminah@0799";              // your secret
+
+    // If already unlocked in this browser, do nothing
+    if (localStorage.getItem(ACCESS_KEY) === "granted") {
+      return;
     }
-    .nav-link:hover {
-      background: #1e40af;
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
 
-  <script>
-    // Initialize Supabase globally
-    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
+    // Hide page until overlay is ready (prevents flashing content)
+    document.documentElement.style.visibility = "hidden";
 
-    window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: true },
-      global: {
-        headers: {
-          "Prefer": "return=representation",
-          "Content-Type": "application/json"
+    window.addEventListener("DOMContentLoaded", function () {
+      // Create overlay
+      const overlay = document.createElement("div");
+      overlay.id = "dev-protect-overlay";
+      overlay.innerHTML = `
+        <div class="dev-protect-inner">
+          <h1>FleetLinkr – Restricted Access</h1>
+          <p>Enter the access key to view this page.</p>
+          <form id="dev-protect-form">
+            <input
+              type="password"
+              id="dev-protect-password"
+              placeholder="Access key"
+              autocomplete="off"
+              required
+            />
+            <button type="submit">Enter</button>
+            <div id="dev-protect-message"></div>
+          </form>
+        </div>
+      `;
+
+      // Basic styles
+      const style = document.createElement("style");
+      style.textContent = `
+        #dev-protect-overlay {
+          position: fixed;
+          inset: 0;
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 99999;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
-      }
-    });
-
-    // Dev access gate using ?key= and a cookie (as in your previous version)
-    function getCookie(name) {
-      const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-      return match ? match[2] : null;
-    }
-
-    (function handleDevGate() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const key = urlParams.get("key");
-
-      if (key === "Aminah@0799") {
-        document.cookie = "fl_access=granted; path=/; max-age=" + (48 * 60 * 60);
-        window.location.href = "index.html";
-      }
-
-      if (!getCookie("fl_access")) {
-        // If you still use gate.html, keep this. If not, you can remove this redirect.
-        // window.location.href = "gate.html";
-      }
-    })();
-  </script>
-</head>
-
-<body>
-  <header class="site-header">
-    <div class="header-container">
-      <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img">
-    </div>
-  </header>
-
-  <nav class="navbar" aria-label="Main navigation">
-    <div class="navbar-container">
-      <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
-        <span class="hamburger">☰</span>
-        <span class="close">✕</span>
-        <span class="sr-only">Menu</span>
-      </button>
-      <ul class="navbar-links" id="primary-nav">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="drivers.html">For Drivers</a></li>
-        <li><a href="dealerships.html">For Dealerships</a></li>
-        <li><a href="garages.html">For Garages</a></li>
-        <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
-        <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
-        <li><a href="insurance.html">Insurance</a></li>
-        <li><a href="view-listings.html">Listings</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <a href="profile.html" id="my-account-link" class="nav-link hidden">My Account</a>
-      </ul>
-    </div>
-  </nav>
-
-  <main class="main-content">
-    <div class="hero">
-      <h1>Your Trusted TLC Rental Marketplace</h1>
-      <p>Connecting NYC drivers with dealerships, garages, and TLC vehicle owners in one smart platform.</p>
-      <a href="contact.html" class="btn secondary">Contact Us</a>
-    </div>
-
-    <section class="section">
-      <h2>Our Services</h2>
-      <div class="features">
-        <div class="feature-card">
-          <h3>For Drivers</h3>
-          <p>Find TLC-ready vehicles for rent or lease-to-own options.</p>
-          <a href="drivers.html" class="btn">Learn More</a>
-        </div>
-        <div class="feature-card">
-          <h3>For Dealerships</h3>
-          <p>List your TLC-licensed vehicles and connect with drivers.</p>
-          <a href="dealerships.html" class="btn">Learn More</a>
-        </div>
-        <div class="feature-card">
-          <h3>For Garages</h3>
-          <p>Offer maintenance services to our network of vehicles.</p>
-          <a href="garages.html" class="btn">Learn More</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="list-your-vehicle">
-      <h2>List Your Vehicle</h2>
-      <form id="listing-form">
-        <input name="formType" type="hidden" value="listing"/>
-        <input name="ownerName" placeholder="Your Name" required type="text"/>
-        <input name="email" placeholder="Your Email" required type="email"/>
-        <input name="phone" placeholder="Your Phone Number" required type="tel" pattern="[0-9]{10}"/>
-        <input name="vehicleType" placeholder="Vehicle Type (e.g., Camry, Prius)" required type="text"/>
-        <input name="tlcPlate" placeholder="TLC Plate# (e.g., T010101C)" required type="text"/>
-        <input name="rentalType" placeholder="Rental Type (e.g., Weekly, Monthly)" required type="text"/>
-        <input name="location" placeholder="Location (e.g., Bronx, Brooklyn)" required type="text"/>
-        <input name="price" placeholder="Price per day ($)" required type="number" min="1">
-        <input type="file" name="images" multiple accept="image/*" class="file-input" required>
-        <textarea name="additionalDetails" placeholder="Additional details" required rows="4"></textarea>
-        <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
-        <button type="submit" id="submit-listing">Submit Listing</button>
-        <div id="loading-listing" class="loading">Submitting...</div>
-      </form>
-    </section>
-
-    <section class="section" id="testimonials">
-      <h2>What Our Users Say</h2>
-      <div class="testimonial">
-        <blockquote>"FleetLinkr helped me find a TLC car within hours. Highly recommended!"</blockquote>
-        <p>- Jamal A., Driver</p>
-      </div>
-      <div class="testimonial">
-        <blockquote>"We filled three TLC rentals in one week after listing on FleetLinkr."</blockquote>
-        <p>- Sarah B., Dealership Manager</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="footer-cta">
-      <a href="contact.html" class="btn">Get in Touch</a>
-    </div>
-    <p>© 2025 FleetLinkr. All rights reserved.</p>
-    <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
-  </footer>
-
-  <script>
-    // Show "My Account" if logged in + handle email confirmation redirect
-    document.addEventListener("DOMContentLoaded", async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const myAccountLink = document.getElementById("my-account-link");
-
-      if (session && myAccountLink) {
-        myAccountLink.classList.remove("hidden");
-      }
-
-      const url = new URL(window.location.href);
-      const type = url.searchParams.get("type");
-
-      if (type === "signup") {
-        alert("Your email has been successfully confirmed! Please log in.");
-        window.location.href = "login.html";
-      }
-    });
-  </script>
-
-  <script>
-    // Listing form submission to Supabase (cleaned)
-    document.getElementById("listing-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const submitBtn = document.getElementById("submit-listing");
-      const loading = document.getElementById("loading-listing");
-
-      submitBtn.disabled = true;
-      loading.style.display = "block";
-
-      try {
-        const requiredFields = ["ownerName", "email", "tlcPlate", "vehicleType"];
-        for (const field of requiredFields) {
-          if (!e.target.elements[field].value.trim()) {
-            throw new Error(`Please fill in ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`);
-          }
+        #dev-protect-overlay .dev-protect-inner {
+          background: #ffffff;
+          padding: 2rem 2.5rem;
+          border-radius: 12px;
+          max-width: 380px;
+          width: 100%;
+          box-shadow: 0 10px 40px rgba(15,23,42,0.5);
+          text-align: center;
         }
+        #dev-protect-overlay h1 {
+          font-size: 1.3rem;
+          margin-bottom: 0.5rem;
+          color: #111827;
+        }
+        #dev-protect-overlay p {
+          font-size: 0.9rem;
+          color: #6b7280;
+          margin-bottom: 1.25rem;
+        }
+        #dev-protect-overlay input[type="password"] {
+          width: 100%;
+          padding: 0.6rem 0.75rem;
+          border-radius: 8px;
+          border: 1px solid #d1d5db;
+          font-size: 0.9rem;
+          margin-bottom: 0.9rem;
+          box-sizing: border-box;
+        }
+        #dev-protect-overlay input[type="password"]:focus {
+          outline: none;
+          border-color: #2563eb;
+          box-shadow: 0 0 0 1px rgba(37,99,235,0.2);
+        }
+        #dev-protect-overlay button {
+          width: 100%;
+          border: none;
+          border-radius: 8px;
+          padding: 0.6rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          cursor: pointer;
+          background: #2563eb;
+          color: #ffffff;
+        }
+        #dev-protect-overlay button:hover {
+          background: #1d4ed8;
+        }
+        #dev-protect-message {
+          margin-top: 0.5rem;
+          font-size: 0.8rem;
+          color: #b91c1c;
+          min-height: 1rem;
+        }
+      `;
 
-        const imageUrls = []; // TODO: implement actual uploads if you want
+      document.head.appendChild(style);
+      document.body.appendChild(overlay);
+      document.documentElement.style.visibility = "visible";
 
-        const { data: { user } } = await supabase.auth.getUser();
+      const form = document.getElementById("dev-protect-form");
+      const input = document.getElementById("dev-protect-password");
+      const msg = document.getElementById("dev-protect-message");
 
-        const { data, error } = await supabase
-          .from("listings")
-          .insert({
-            owner_name: e.target.elements.ownerName.value,
-            email: e.target.elements.email.value,
-            phone: e.target.elements.phone.value,
-            vehicle_type: e.target.elements.vehicleType.value,
-            tlc_plate: e.target.elements.tlcPlate.value,
-            rental_type: e.target.elements.rentalType.value,
-            location: e.target.elements.location.value,
-            price_per_day: Number(e.target.elements.price.value),
-            additional_details: e.target.elements.additionalDetails.value,
-            image_urls: imageUrls,
-            user_id: user?.id || null,
-          })
-          .select();
-
-        if (error) throw error;
-
-        window.location.href = "thank-you.html";
-      } catch (error) {
-        console.error("Submission Error:", error);
-        alert(`Error: ${error.message}`);
-      } finally {
-        submitBtn.disabled = false;
-        loading.style.display = "none";
-      }
-    });
-  </script>
-
-  <script>
-    // Contact modal + PWA install (from your previous version)
-    const contactModal = document.getElementById("contact-modal");
-    const contactForm = document.getElementById("contact-form");
-
-    if (contactModal && contactForm) {
-      document.querySelectorAll(".contact-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (btn.dataset.listingId) {
-            document.getElementById("listing-id").value = btn.dataset.listingId;
-          }
-          contactModal.classList.remove("hidden");
-        });
-      });
-
-      document.querySelector(".close-modal")?.addEventListener("click", () => {
-        contactModal.classList.add("hidden");
-      });
-
-      contactForm.addEventListener("submit", async (e) => {
+      form.addEventListener("submit", function (e) {
         e.preventDefault();
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-
-        try {
-          submitBtn.disabled = true;
-
-          const { error } = await supabase.from("messages").insert({
-            name: e.target.elements.name.value,
-            email: e.target.elements.email.value,
-            message: e.target.elements.message.value,
-            listing_id: e.target.elements.listingId.value || null,
-          });
-
-          if (error) throw error;
-
-          alert("Message sent successfully!");
-          contactModal.classList.add("hidden");
-          contactForm.reset();
-        } catch (error) {
-          console.error("Contact Error:", error);
-          alert("Failed to send message. Please try again.");
-        } finally {
-          submitBtn.disabled = false;
+        if (input.value === PASSWORD) {
+          localStorage.setItem(ACCESS_KEY, "granted");
+          overlay.remove(); // reveal page
+        } else {
+          msg.textContent = "Incorrect key. Try again.";
+          input.value = "";
+          input.focus();
         }
       });
-    }
 
-    let deferredPrompt;
-    const installBtn = document.createElement("button");
-    installBtn.className = "install-btn";
-    installBtn.textContent = "Install App";
-    document.body.appendChild(installBtn);
-    installBtn.style.display = "none";
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = "block";
+      input.focus();
     });
+  })();
+</script>
 
-    installBtn.addEventListener("click", () => {
-      installBtn.style.display = "none";
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === "accepted") {
-          console.log("User accepted install");
-        }
-        deferredPrompt = null;
-      });
-    });
 
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js");
-      });
-    }
-  </script>
-</body>
-</html>
+
+ </head>
+ 
+ <body>
+<body>
+
+<script>
+// ===============================
+// FleetLinkr Access Protection
+// ===============================
+
+// Helper to read cookies
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+// Bypass link: ?key=Aminah@0799
+const urlParams = new URLSearchParams(window.location.search);
+const key = urlParams.get("key");
+
+// If key is correct → grant access
+if (key === "Aminah@0799") {
+    document.cookie = "fl_access=granted; path=/; max-age=" + (48 * 60 * 60);
+    // Remove key from URL for security
+    window.location.href = "index.html";
+}
+
+// If cookie not present → redirect to gate.html
+if (!getCookie("fl_access")) {
+    window.location.href = "gate.html";
+}
+</script>
+
+
+ 
+ 
+ <header class="site-header">
+ <div class="header-container">
+ <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img">
+ </div>
+ </header>
+ 
+ 
+ <nav class="navbar" aria-label="Main navigation">
+ <div class="navbar-container">
+ <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
+ <span class="hamburger">☰</span>
+ <span class="close">✕</span>
+ <span class="sr-only">Menu</span>
+ </button>
+ <ul class="navbar-links" id="primary-nav">
+ <li><a href="index.html" class="active">Home</a></li>
+ <li><a href="drivers.html">For Drivers</a></li>
+ <li><a href="dealerships.html">For Dealerships</a></li>
+ <li><a href="garages.html">For Garages</a></li>
+ <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
+ <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
+ <li><a href="insurance.html">Insurance</a></li>
+ <li><a href="view-listings.html">Listings</a></li>
+ <li><a href="contact.html">Contact</a></li>
+ <a href="profile.html" id="my-account-link" class="nav-link hidden">My Account</a>
+
+ </ul>
+ </div>
+ </nav>
+ 
+ <main class="main-content">
+ <div class="hero">
+ <h1>Your Trusted TLC Rental Marketplace</h1>
+ <p>Connecting NYC drivers with dealerships, garages, and TLC vehicle owners in one smart platform.</p>
+ <a href="contact.html" class="btn secondary">Contact Us</a>
+ </div>
+ 
+ <section class="section">
+ <h2>Our Services</h2>
+ <div class="features">
+ <div class="feature-card">
+ <h3>For Drivers</h3>
+ <p>Find TLC-ready vehicles for rent or lease-to-own options.</p>
+ <a href="drivers.html" class="btn">Learn More</a>
+ </div>
+ <div class="feature-card">
+ <h3>For Dealerships</h3>
+ <p>List your TLC-licensed vehicles and connect with drivers.</p>
+ <a href="dealerships.html" class="btn">Learn More</a>
+ </div>
+ <div class="feature-card">
+ <h3>For Garages</h3>
+ <p>Offer maintenance services to our network of vehicles.</p>
+ <a href="garages.html" class="btn">Learn More</a>
+ </div>
+ </div>
+ </section>
+ 
+ <section class="section" id="list-your-vehicle">
+ <h2>List Your Vehicle</h2>
+ <form id="listing-form">
+ <input name="formType" type="hidden" value="listing"/>
+ <input name="ownerName" placeholder="Your Name" required type="text"/>
+ <input name="email" placeholder="Your Email" required type="email"/>
+ <input name="phone" placeholder="Your Phone Number" required type="tel" pattern="[0-9]{10}"/>
+ <input name="vehicleType" placeholder="Vehicle Type (e.g., Camry, Prius)" required type="text"/>
+ <input name="tlcPlate" placeholder="TLC Plate# (e.g., T010101C)" required type="text"/>
+ <input name="rentalType" placeholder="Rental Type (e.g., Weekly, Monthly)" required type="text"/>
+ <input name="location" placeholder="Location (e.g., Bronx, Brooklyn)" required type="text"/>
+ <input name="price" placeholder="Price per day ($)" required type="number" min="1">
+ <input type="file" name="images" multiple accept="image/*" class="file-input" required>
+ <textarea name="additionalDetails" placeholder="Additional details" required rows="4"></textarea>
+ <div class="g-recaptcha" data-sitekey="6LeRrGwrAAAAAHOf1H2c-iWsTfzwTbGkgF6qifXY"></div>
+ <button type="submit" id="submit-listing">Submit Listing</button>
+ <div id="loading-listing" class="loading">Submitting...</div>
+ </form>
+ </section>
+ 
+ <section class="section" id="testimonials">
+ <h2>What Our Users Say</h2>
+ <div class="testimonial">
+ <blockquote>"FleetLinkr helped me find a TLC car within hours. Highly recommended!"</blockquote>
+ <p>- Jamal A., Driver</p>
+ </div>
+ <div class="testimonial">
+ <blockquote>"We filled three TLC rentals in one week after listing on FleetLinkr."</blockquote>
+ <p>- Sarah B., Dealership Manager</p>
+ </div>
+ </section>
+ </main>
+ 
+ <footer>
+ <div class="footer-cta">
+ <a href="contact.html" class="btn">Get in Touch</a>
+ </div>
+ <p>© 2025 FleetLinkr. All rights reserved.</p>
+ <p>📩 <a href="mailto:info@FleetLinkr.com">info@FleetLinkr.com</a></p>
+ </footer>
+ <script>
+ 
+ // ========== LISTING FORM SUBMISSION ==========
+ document.getElementById('listing-form').addEventListener('submit', async (e) => {
+ e.preventDefault();
+ 
+ const submitBtn = document.getElementById('submit-listing');
+ const loading = document.getElementById('loading-listing');
+ 
+ submitBtn.disabled = true;
+ loading.style.display = 'block';
+ 
+ try {
+ // Validate required fields
+ const requiredFields = ['ownerName', 'email', 'tlcPlate', 'vehicleType'];
+ for (const field of requiredFields) {
+ if (!e.target.elements[field].value.trim()) {
+ throw new Error(Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()});
+ }
+ }
+ 
+ // Handle image uploads (implement your actual upload logic here)
+ const imageUrls = [];
+ 
+ // Get user if authenticated
+ const { data: { user } } = await supabase.auth.getUser();
+ 
+ // Submit to Supabase
+ const { data, error } = await supabase
+ .from('listings')
+ .insert({
+ owner_name: e.target.elements.ownerName.value,
+ email: e.target.elements.email.value,
+ phone: e.target.elements.phone.value,
+ vehicle_type: e.target.elements.vehicleType.value,
+ tlc_plate: e.target.elements.tlcPlate.value,
+ rental_type: e.target.elements.rentalType.value,
+ location: e.target.elements.location.value,
+ price_per_day: Number(e.target.elements.price.value),
+ additional_details: e.target.elements.additionalDetails.value,
+ image_urls: imageUrls,
+ user_id: user?.id || null
+ })
+ .select();
+ 
+ if (error) throw error;
+ window.location.href = "thank-you.html";
+ 
+ } catch (error) {
+ console.error('Submission Error:', error);
+ alert(Error: ${error.message});
+ } finally {
+ submitBtn.disabled = false;
+ loading.style.display = 'none';
+ }
+ });
+ 
+ // ========== CONTACT MODAL HANDLING ==========
+ const contactModal = document.getElementById('contact-modal');
+ const contactForm = document.getElementById('contact-form');
+ 
+ if (contactModal && contactForm) {
+ // Open modal when contact buttons are clicked
+ document.querySelectorAll('.contact-btn').forEach(btn => {
+ btn.addEventListener('click', () => {
+ if (btn.dataset.listingId) {
+ document.getElementById('listing-id').value = btn.dataset.listingId;
+ }
+ contactModal.classList.remove('hidden');
+ });
+ });
+ 
+ // Close modal
+ document.querySelector('.close-modal')?.addEventListener('click', () => {
+ contactModal.classList.add('hidden');
+ });
+ 
+ // Handle contact form submission
+ contactForm.addEventListener('submit', async (e) => {
+ e.preventDefault();
+ const submitBtn = contactForm.querySelector('button[type="submit"]');
+ 
+ try {
+ submitBtn.disabled = true;
+ 
+ const { error } = await supabase
+ .from('messages')
+ .insert({
+ name: e.target.elements.name.value,
+ email: e.target.elements.email.value,
+ message: e.target.elements.message.value,
+ listing_id: e.target.elements.listingId.value || null
+ });
+ 
+ if (error) throw error;
+ 
+ alert('Message sent successfully!');
+ contactModal.classList.add('hidden');
+ contactForm.reset();
+ 
+ } catch (error) {
+ console.error('Contact Error:', error);
+ alert('Failed to send message. Please try again.');
+ } finally {
+ submitBtn.disabled = false;
+ }
+ });
+ 
+ } 
+ // PWA Installation (unchanged)
+ let deferredPrompt;
+ const installBtn = document.createElement('button');
+ installBtn.className = 'install-btn';
+ installBtn.textContent = 'Install App';
+ document.body.appendChild(installBtn);
+ installBtn.style.display = 'none';
+ 
+ window.addEventListener('beforeinstallprompt', (e) => {
+ e.preventDefault();
+ deferredPrompt = e;
+ installBtn.style.display = 'block';
+ });
+ 
+ installBtn.addEventListener('click', () => {
+ installBtn.style.display = 'none';
+ deferredPrompt.prompt();
+ deferredPrompt.userChoice.then((choiceResult) => {
+ if (choiceResult.outcome === 'accepted') {
+ console.log('User accepted install');
+ }
+ deferredPrompt = null;
+ });
+ });
+ 
+ if ('serviceWorker' in navigator) {
+ window.addEventListener('load', () => {
+ navigator.serviceWorker.register('/service-worker.js');
+ });
+ }
+ </script>
+
+
+ <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const url = new URL(window.location.href);
+  const type = url.searchParams.get("type");
+
+  if (type === "signup") {
+    alert("Your email has been successfully confirmed! Please log in.");
+    window.location.href = "add-listing.html"; // or login.html
+  }
+});
+</script>
+
+ </body>
+ </html>
