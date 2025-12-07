@@ -148,8 +148,16 @@
         return;
       }
 
-      successEl.textContent = "Signup successful! Please check your email to confirm your account.";
+      successEl.textContent =
+        "Signup successful! Please check your email to confirm your account.";
+      form.reset();
+
+      // Redirect to login page after 2.5 seconds
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2500);
     });
   </script>
 </body>
 </html>
+

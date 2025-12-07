@@ -1,70 +1,202 @@
-<!-- Create new file profile.html -->
-<div class="profile-container">
-  <h2>Your Profile</h2>
-  <form id="profile-form">
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="profile-email" disabled>
-    </div>
-    <div class="form-group">
-      <label for="profile-name">Full Name</label>
-      <input type="text" id="profile-name" required>
-    </div>
-    <div class="form-group">
-      <label for="profile-phone">Phone</label>
-      <input type="tel" id="profile-phone" required>
-    </div>
-    <button type="submit">Save Profile</button>
-  </form>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FleetLinkr – Your Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<script>
-  document.addEventListener('DOMContentLoaded', async () => {
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    // 1. Check if logged in
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (!user) {
-      window.location.href = "login.html";
-      return;
+  <style>
+    body {
+      margin: 0;
+      background: #f5f7fb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-
-    // 2. Fetch profile from the correct table: user_profiles
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    // 3. Fill the form
-    document.getElementById('profile-email').value = user.email;
-
-    if (profile) {
-      document.getElementById('profile-name').value = profile.full_name || "";
-      document.getElementById('profile-phone').value = profile.phone || "";
+    .profile-container {
+      background: #ffffff;
+      padding: 2rem 2.5rem;
+      border-radius: 12px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
     }
+    .profile-container h2 {
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+      font-size: 1.5rem;
+      color: #111827;
+      text-align: center;
+    }
+    .profile-subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #374151;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.2);
+    }
+    .profile-actions {
+      margin-top: 0.75rem;
+    }
+    .profile-actions button {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .profile-actions button:hover {
+      background: #1d4ed8;
+    }
+    .profile-message {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 1rem;
+    }
+    .profile-message.success {
+      color: #065f46;
+    }
+    .profile-message.error {
+      color: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <h2>Your Profile</h2>
+    <p class="profile-subtitle">
+      Keep your contact details up to date for your listings.
+    </p>
 
-    // 4. Save profile update
-    document.getElementById('profile-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    <form id="profile-form">
+      <div class="form-group">
+        <label for="profile-email">Email</label>
+        <input type="email" id="profile-email" disabled />
+      </div>
+      <div class="form-group">
+        <label for="profile-name">Full Name</label>
+        <input type="text" id="profile-name" required />
+      </div>
+      <div class="form-group">
+        <label for="profile-phone">Phone</label>
+        <input type="tel" id="profile-phone" required />
+      </div>
+      <div class="profile-actions">
+        <button type="submit">Save Profile</button>
+      </div>
+      <div id="profile-message" class="profile-message"></div>
+    </form>
+  </div>
 
-      const updates = {
-        user_id: user.id,
-        email: user.email,
-        full_name: document.getElementById('profile-name').value,
-        phone: document.getElementById('profile-phone').value,
-        updated_at: new Date()
-      };
+  <script>
+    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
 
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .upsert(updates);
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-      if (updateError) {
-        alert("Error updating profile: " + updateError.message);
+    document.addEventListener("DOMContentLoaded", async () => {
+      const messageEl = document.getElementById("profile-message");
+
+      // 1. Check if logged in
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "login.html";
         return;
       }
 
-      alert('Profile updated!');
+      // 2. Load profile from user_profiles
+      const { data: profile, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      document.getElementById("profile-email").value = user.email || "";
+
+      if (profile) {
+        document.getElementById("profile-name").value = profile.full_name || "";
+        document.getElementById("profile-phone").value = profile.phone || "";
+      }
+
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("Error loading profile:", profileError);
+        messageEl.textContent = "Error loading profile.";
+        messageEl.classList.add("error");
+      }
+
+      // 3. Save profile
+      document
+        .getElementById("profile-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          messageEl.textContent = "";
+          messageEl.className = "profile-message";
+
+          const fullName = document.getElementById("profile-name").value.trim();
+          const phone = document.getElementById("profile-phone").value.trim();
+
+          if (!fullName || !phone) {
+            messageEl.textContent = "Please fill in all fields.";
+            messageEl.classList.add("error");
+            return;
+          }
+
+          const updates = {
+            user_id: user.id,
+            email: user.email,
+            full_name: fullName,
+            phone,
+            updated_at: new Date().toISOString(),
+          };
+
+          const { error: updateError } = await supabase
+            .from("user_profiles")
+            .upsert(updates);
+
+          if (updateError) {
+            console.error("Profile update error:", updateError);
+            messageEl.textContent =
+              "Error updating profile: " + updateError.message;
+            messageEl.classList.add("error");
+            return;
+          }
+
+          messageEl.textContent = "Profile saved successfully.";
+          messageEl.classList.add("success");
+        });
     });
-  });
-</script>
+  </script>
+</body>
+</html>
+
