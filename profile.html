@@ -194,6 +194,12 @@
 
           messageEl.textContent = "Profile saved successfully.";
           messageEl.classList.add("success");
+
+          // Redirect after 1.5 seconds
+        setTimeout(() => {
+        window.location.href = "add-listing.html";  // ← change to add-listing.html if preferred
+        }, 1500);
+
         });
     });
   </script>
