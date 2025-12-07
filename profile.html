@@ -17,6 +17,7 @@
       justify-content: center;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
     .profile-container {
       background: #ffffff;
       padding: 2rem 2.5rem;
@@ -24,7 +25,21 @@
       max-width: 420px;
       width: 100%;
       box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      position: relative;
+      overflow: hidden;
     }
+
+    /* Top progress bar */
+    .progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: #2563eb;
+      transition: width 0.4s ease;
+    }
+
     .profile-container h2 {
       margin-top: 0;
       margin-bottom: 0.75rem;
@@ -32,15 +47,18 @@
       color: #111827;
       text-align: center;
     }
+
     .profile-subtitle {
       font-size: 0.9rem;
       color: #6b7280;
       text-align: center;
       margin-bottom: 1.5rem;
     }
+
     .form-group {
       margin-bottom: 1rem;
     }
+
     .form-group label {
       display: block;
       font-size: 0.85rem;
@@ -48,6 +66,7 @@
       margin-bottom: 0.25rem;
       color: #374151;
     }
+
     .form-group input {
       width: 100%;
       padding: 0.6rem 0.75rem;
@@ -56,15 +75,14 @@
       font-size: 0.9rem;
       box-sizing: border-box;
     }
+
     .form-group input:focus {
       outline: none;
       border-color: #2563eb;
       box-shadow: 0 0 0 1px rgba(37,99,235,0.2);
     }
-    .profile-actions {
-      margin-top: 0.75rem;
-    }
-    .profile-actions button {
+
+    .save-btn {
       width: 100%;
       border: none;
       border-radius: 8px;
@@ -74,26 +92,81 @@
       cursor: pointer;
       background: #2563eb;
       color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    .profile-actions button:hover {
-      background: #1d4ed8;
+
+    .save-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
+
+    /* Spinner */
+    .spinner {
+      border: 2px solid #ffffff30;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
     .profile-message {
-      margin-top: 0.75rem;
+      margin-top: 1rem;
       font-size: 0.85rem;
       text-align: center;
       min-height: 1rem;
     }
+
+    .profile-message.error {
+      color: #b91c1c;
+    }
+
     .profile-message.success {
       color: #065f46;
     }
-    .profile-message.error {
-      color: #b91c1c;
+
+    /* Checkmark animation */
+    .checkmark-container {
+      display: none;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .checkmark {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pop 0.3s ease-out forwards;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.3); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .checkmark svg {
+      width: 28px;
+      height: 28px;
+      color: white;
     }
   </style>
 </head>
 <body>
+
   <div class="profile-container">
+    <div class="progress-bar" id="progress-bar"></div>
+
     <h2>Your Profile</h2>
     <p class="profile-subtitle">
       Keep your contact details up to date for your listings.
@@ -101,106 +174,136 @@
 
     <form id="profile-form">
       <div class="form-group">
-        <label for="profile-email">Email</label>
+        <label>Email</label>
         <input type="email" id="profile-email" disabled />
       </div>
+
       <div class="form-group">
-        <label for="profile-name">Full Name</label>
+        <label>Full Name</label>
         <input type="text" id="profile-name" required />
       </div>
+
       <div class="form-group">
-        <label for="profile-phone">Phone</label>
+        <label>Phone</label>
         <input type="tel" id="profile-phone" required />
       </div>
-      <div class="profile-actions">
-        <button type="submit">Save Profile</button>
-      </div>
+
+      <button type="submit" class="save-btn" id="save-btn">
+        Save Profile
+      </button>
+
       <div id="profile-message" class="profile-message"></div>
+
+      <div class="checkmark-container" id="checkmark-container">
+        <div class="checkmark">
+          <svg viewBox="0 0 24 24">
+            <path fill="currentColor" d="M9 16.2l-3.5-3.5L4 14.2l5 5 12-12-1.5-1.5z"/>
+          </svg>
+        </div>
+      </div>
     </form>
   </div>
 
   <script>
     const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
+    const supabaseAnonKey =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
 
     const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
     document.addEventListener("DOMContentLoaded", async () => {
       const messageEl = document.getElementById("profile-message");
+      const saveBtn = document.getElementById("save-btn");
+      const progressBar = document.getElementById("progress-bar");
+      const checkmarkContainer = document.getElementById("checkmark-container");
+
+      let profileWasIncomplete = false;
 
       // 1. Check if logged in
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         window.location.href = "login.html";
         return;
       }
 
-      // 2. Load profile from user_profiles
+      document.getElementById("profile-email").value = user.email || "";
+
+      // 2. Load profile
       const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
 
-      document.getElementById("profile-email").value = user.email || "";
-
-      if (profile) {
-        document.getElementById("profile-name").value = profile.full_name || "";
-        document.getElementById("profile-phone").value = profile.phone || "";
+      if (!profile || !profile.full_name || !profile.phone) {
+        profileWasIncomplete = true;
       }
 
-      if (profileError && profileError.code !== "PGRST116") {
-        console.error("Error loading profile:", profileError);
-        messageEl.textContent = "Error loading profile.";
-        messageEl.classList.add("error");
+      if (profile) {
+        document.getElementById("profile-name").value =
+          profile.full_name || "";
+        document.getElementById("profile-phone").value =
+          profile.phone || "";
       }
 
       // 3. Save profile
-      document
-        .getElementById("profile-form")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          messageEl.textContent = "";
-          messageEl.className = "profile-message";
+      document.getElementById("profile-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        messageEl.textContent = "";
+        checkmarkContainer.style.display = "none";
 
-          const fullName = document.getElementById("profile-name").value.trim();
-          const phone = document.getElementById("profile-phone").value.trim();
+        const fullName = document.getElementById("profile-name").value.trim();
+        const phone = document.getElementById("profile-phone").value.trim();
 
-          if (!fullName || !phone) {
-            messageEl.textContent = "Please fill in all fields.";
-            messageEl.classList.add("error");
-            return;
-          }
+        if (!fullName || !phone) {
+          messageEl.textContent = "Please fill in all fields.";
+          messageEl.classList.add("error");
+          return;
+        }
 
-          const updates = {
-            user_id: user.id,
-            email: user.email,
-            full_name: fullName,
-            phone,
-            updated_at: new Date().toISOString(),
-          };
+        // Start loading animation
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
+        progressBar.style.width = "50%";
 
-          const { error: updateError } = await supabase
-            .from("user_profiles")
-            .upsert(updates);
+        const updates = {
+          user_id: user.id,
+          email: user.email,
+          full_name: fullName,
+          phone,
+          updated_at: new Date().toISOString(),
+        };
 
-          if (updateError) {
-            console.error("Profile update error:", updateError);
-            messageEl.textContent =
-              "Error updating profile: " + updateError.message;
-            messageEl.classList.add("error");
-            return;
-          }
+        const { error: updateError } = await supabase
+          .from("user_profiles")
+          .upsert(updates);
 
-          messageEl.textContent = "Profile saved successfully.";
-          messageEl.classList.add("success");
+        if (updateError) {
+          progressBar.style.width = "0%";
+          messageEl.textContent = "Error: " + updateError.message;
+          messageEl.classList.add("error");
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = "Save Profile";
+          return;
+        }
 
-          // Redirect after 1.5 seconds
+        // Success animations
+        progressBar.style.width = "100%";
+        messageEl.textContent = "Profile saved successfully.";
+        messageEl.classList.add("success");
+        checkmarkContainer.style.display = "flex";
+
+        // Delay redirect
         setTimeout(() => {
-        window.location.href = "add-listing.html";  // ← change to add-listing.html if preferred
+          if (profileWasIncomplete) {
+            window.location.href = "index.html";
+          } else {
+            progressBar.style.width = "0%";
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = "Save Profile";
+          }
         }, 1500);
-
-        });
+      });
     });
   </script>
 </body>
