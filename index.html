@@ -62,6 +62,27 @@
  }
  );
  </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const supabase = window.supabase.createClient(
+    "https://klredsqvkblbhooinwwz.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8"
+  );
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const myAccountLink = document.getElementById("my-account-link");
+
+  // Show link only if logged in
+  if (session) {
+    myAccountLink.classList.remove("hidden");
+  }
+});
+</script>
+
+
+
 <script>
   (function () {
     const ACCESS_KEY = "fleetlinkr_dev_access";  // localStorage key

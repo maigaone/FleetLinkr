@@ -99,6 +99,22 @@ header {
 /* Navigation - Enhanced for Mobile */
 /* ================ */
 
+.nav-link {
+  color: #ffffff;
+  background: #2563eb;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.nav-link:hover {
+  background: #1e40af;
+}
+.hidden {
+  display: none;
+}
 
 .navbar {
   background-color: var(--dark-color);
