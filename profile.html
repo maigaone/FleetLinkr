@@ -29,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* Top progress bar */
     .progress-bar {
       position: absolute;
       top: 0;
@@ -103,7 +102,6 @@
       cursor: not-allowed;
     }
 
-    /* Spinner */
     .spinner {
       border: 2px solid #ffffff30;
       border-top: 2px solid #ffffff;
@@ -132,7 +130,6 @@
       color: #065f46;
     }
 
-    /* Checkmark animation */
     .checkmark-container {
       display: none;
       justify-content: center;
@@ -217,9 +214,6 @@
       const progressBar = document.getElementById("progress-bar");
       const checkmarkContainer = document.getElementById("checkmark-container");
 
-      let profileWasIncomplete = false;
-
-      // 1. Check if logged in
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         window.location.href = "login.html";
@@ -228,28 +222,27 @@
 
       document.getElementById("profile-email").value = user.email || "";
 
-      // 2. Load profile
       const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
 
-      if (!profile || !profile.full_name || !profile.phone) {
-        profileWasIncomplete = true;
-      }
-
       if (profile) {
-        document.getElementById("profile-name").value =
-          profile.full_name || "";
-        document.getElementById("profile-phone").value =
-          profile.phone || "";
+        document.getElementById("profile-name").value = profile.full_name || "";
+        document.getElementById("profile-phone").value = profile.phone || "";
       }
 
-      // 3. Save profile
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("Error loading profile:", profileError);
+        messageEl.textContent = "Error loading profile.";
+        messageEl.classList.add("error");
+      }
+
       document.getElementById("profile-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         messageEl.textContent = "";
+        messageEl.className = "profile-message";
         checkmarkContainer.style.display = "none";
 
         const fullName = document.getElementById("profile-name").value.trim();
@@ -261,7 +254,6 @@
           return;
         }
 
-        // Start loading animation
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
         progressBar.style.width = "50%";
@@ -287,21 +279,13 @@
           return;
         }
 
-        // Success animations
         progressBar.style.width = "100%";
         messageEl.textContent = "Profile saved successfully.";
         messageEl.classList.add("success");
         checkmarkContainer.style.display = "flex";
 
-        // Delay redirect
         setTimeout(() => {
-          if (profileWasIncomplete) {
-            window.location.href = "add-listing.html";
-          } else {
-            progressBar.style.width = "0%";
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = "Save Profile";
-          }
+          window.location.href = "add-listing.html";
         }, 1500);
       });
     });
