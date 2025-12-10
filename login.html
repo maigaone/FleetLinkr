@@ -131,43 +131,46 @@
       <a href="signup.html">Create an account</a>
     </p>
   </div>
-
-  <script>
-    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
-
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+<script>
+    // Use centralized config
+    const supabase = window.supabase.createClient(
+        "https://klredsqvkblbhooinwwz.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8",
+        {
+            auth: { persistSession: true }
+        }
+    );
 
     const form = document.getElementById("login-form");
     const errorEl = document.getElementById("error-message");
 
     document.addEventListener("DOMContentLoaded", async () => {
-      // Already logged in? Send them to profile or dashboard
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        window.location.href = "profile.html";
-        return;
-      }
+        // Already logged in? Send them to index page
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            window.location.href = "index.html";
+            return;
+        }
     });
 
     form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorEl.textContent = "";
+        e.preventDefault();
+        errorEl.textContent = "";
 
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        errorEl.textContent = error.message;
-        return;
-      }
+        if (error) {
+            errorEl.textContent = error.message;
+            return;
+        }
 
-      // Optional: update last_login in user_profiles here if you want
-
-      window.location.href = "profile.html"; // or index.html / add-listing.html
+        // Redirect to index page after successful login
+        window.location.href = "index.html";
     });
-  </script>
+</script>
+ 
 </body>
 </html>

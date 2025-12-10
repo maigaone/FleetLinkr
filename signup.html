@@ -44,8 +44,10 @@
       margin-bottom: 0.25rem;
       color: #374151;
     }
+    input[type="text"],
     input[type="email"],
-    input[type="password"] {
+    input[type="password"],
+    input[type="tel"] {
       width: 100%;
       padding: 0.6rem 0.75rem;
       border-radius: 8px;
@@ -105,6 +107,12 @@
     <p class="subtitle">Sign up and list your TLC vehicles on FleetLinkr.</p>
 
     <form id="signup-form">
+      <label for="full-name">Full Name</label>
+      <input id="full-name" type="text" autocomplete="name" required />
+
+      <label for="phone">Phone Number</label>
+      <input id="phone" type="tel" autocomplete="tel" required />
+
       <label for="email">Email</label>
       <input id="email" type="email" autocomplete="email" required />
 
@@ -127,7 +135,9 @@
     const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
 
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: true }
+    });
 
     const form = document.getElementById("signup-form");
     const errorEl = document.getElementById("error-message");
@@ -138,27 +148,68 @@
       errorEl.textContent = "";
       successEl.textContent = "";
 
+      const fullName = document.getElementById("full-name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      const { error } = await supabase.auth.signUp({ email, password });
-
-      if (error) {
-        errorEl.textContent = error.message;
+      // Basic validation
+      if (!fullName || !phone || !email || !password) {
+        errorEl.textContent = "All fields are required";
         return;
       }
 
-      successEl.textContent =
-        "Signup successful! Please check your email to confirm your account.";
-      form.reset();
+      try {
+        // Step 1: Create auth user
+        const { data: authData, error: authError } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              phone: phone
+            }
+          }
+        });
 
-      // Redirect to login page after 2.5 seconds
-      setTimeout(() => {
-        window.location.href = "login.html";
-      }, 2500);
+        if (authError) {
+          errorEl.textContent = authError.message;
+          return;
+        }
+
+        // Step 2: Create profile in user_profiles table
+        if (authData.user) {
+          const { error: profileError } = await supabase
+            .from("user_profiles")
+            .upsert({
+              user_id: authData.user.id,
+              email: email,
+              full_name: fullName,
+              phone: phone,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (profileError) {
+            errorEl.textContent = "Account created but profile setup failed: " + profileError.message;
+            return;
+          }
+        }
+
+        // Success message
+        successEl.textContent = "Account created successfully! Redirecting to login...";
+        form.reset();
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 2000);
+
+      } catch (error) {
+        errorEl.textContent = "An unexpected error occurred: " + error.message;
+      }
     });
   </script>
 </body>
 </html>
-
 

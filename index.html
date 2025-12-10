@@ -71,12 +71,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   );
 
   const { data: { session } } = await supabase.auth.getSession();
-
   const myAccountLink = document.getElementById("my-account-link");
 
-  // Show link only if logged in
   if (session) {
     myAccountLink.classList.remove("hidden");
+    myAccountLink.href = "profile.html"; // Link to profile page
+  } else {
+    myAccountLink.classList.add("hidden");
   }
 });
 </script>
