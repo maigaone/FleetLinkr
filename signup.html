@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sign Up – FleetLinkr</title>
+  <title>FleetLinkr – Sign Up</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -10,218 +10,152 @@
   <style>
     body {
       margin: 0;
-      background: #f1f5f9;
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7fb;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
     }
-
-    .card {
-      background: white;
+    .auth-card {
+      background: #ffffff;
       padding: 2rem 2.5rem;
-      border-radius: 14px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      max-width: 380px;
       width: 100%;
-      max-width: 420px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
     }
-
-    h2 {
-      text-align: center;
-      margin-top: 0;
+    .auth-card h1 {
+      font-size: 1.6rem;
       margin-bottom: 0.5rem;
-      font-size: 1.65rem;
-      color: #0f172a;
-    }
-
-    .subtitle {
+      color: #111827;
       text-align: center;
-      color: #64748b;
-      margin-bottom: 1.8rem;
+    }
+    .auth-card p.subtitle {
       font-size: 0.9rem;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 1.5rem;
     }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
     label {
       display: block;
-      color: #334155;
       font-size: 0.85rem;
       font-weight: 600;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.25rem;
+      color: #374151;
     }
-
-    input {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
-      padding: 0.7rem;
-      padding-left: 2.4rem;
-      border: 1px solid #cbd5e1;
+      padding: 0.6rem 0.75rem;
       border-radius: 8px;
-      font-size: 0.92rem;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      margin-bottom: 0.9rem;
       box-sizing: border-box;
     }
-
-    input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
-    }
-
-    .icon {
-      position: relative;
-    }
-
-    .icon svg {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 18px;
-      height: 18px;
-      color: #64748b;
-    }
-
     button {
       width: 100%;
-      background: #2563eb;
       border: none;
-      padding: 0.75rem;
       border-radius: 8px;
-      font-size: 1rem;
-      color: white;
+      padding: 0.7rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 0.5rem;
+      background: #2563eb;
+      color: #ffffff;
+      margin-top: 0.25rem;
     }
-
     button:hover {
       background: #1d4ed8;
     }
-
-    .message {
-      margin-top: 1rem;
-      text-align: center;
-      font-size: 0.9rem;
-      min-height: 1.2rem;
-    }
-    .error { color: #b91c1c; }
-    .success { color: #047857; }
-
-    .login-link {
-      margin-top: 1rem;
-      text-align: center;
+    .meta {
+      margin-top: 0.75rem;
       font-size: 0.85rem;
+      text-align: center;
+      color: #6b7280;
     }
-    .login-link a {
+    .meta a {
       color: #2563eb;
       text-decoration: none;
       font-weight: 600;
     }
+    .meta a:hover {
+      text-decoration: underline;
+    }
+    .error {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #b91c1c;
+      text-align: center;
+      min-height: 1.1rem;
+    }
+    .success {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: #065f46;
+      text-align: center;
+      min-height: 1.1rem;
+    }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h2>Create your account</h2>
-    <p class="subtitle">Join FleetLinkr to list and manage your TLC rentals</p>
+  <div class="auth-card">
+    <h1>Create account</h1>
+    <p class="subtitle">Sign up and list your TLC vehicles on FleetLinkr.</p>
 
     <form id="signup-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required />
 
-      <div class="form-group icon">
-        <label>Full Name</label>
-        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5s-5 2.3-5 5s2.3 5 5 5m0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg>
-        <input id="full-name" type="text" required />
-      </div>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="new-password" required />
 
-      <div class="form-group icon">
-        <label>Phone (international format)</label>
-        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 15.5c-1.25 0-2.45-.2-3.55-.57c-.35-.1-.75 0-1.05.22l-2.2 1.67c-2.65-1.4-4.75-3.5-6.15-6.15l1.67-2.2c.25-.3.32-.7.22-1.05C9.2 6.45 9 5.25 9 4c0-.55-.45-1-1-1H4C3.45 3 3 3.45 3 4c0 9.39 7.61 17 17 17c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1"/></svg>
-        <input id="phone" type="tel" placeholder="+1 347 555 1122" required />
-      </div>
-
-      <div class="form-group icon">
-        <label>Email</label>
-        <svg viewBox="0 0 24 24"><path fill="currentColor" d="m12 13l-8-5V6l8 5l8-5v2l-8 5Z"/><path fill="currentColor" d="M4 8v10h16V8l-8 5l-8-5Z"/></svg>
-        <input id="email" type="email" required />
-      </div>
-
-      <div class="form-group icon">
-        <label>Password</label>
-        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 17q.825 0 1.413-.587T14 15q0-.825-.587-1.412T12 13q-.825 0-1.412.588T10 15q0 .825.588 1.413T12 17m-6 5q-.825 0-1.412-.587T4 20V10q0-.825.588-1.412T6 8h1V6q0-2.075 1.463-3.537T12 1q2.075 0 3.537 1.463T17 6v2h1q.825 0 1.413.588T20 10v10q0 .825-.587 1.413T18 22H6m3-14h6V6q0-1.25-.875-2.125T12 3Q10.75 3 9.875 3.875T9 6v2Z"/></svg>
-        <input id="password" type="password" required />
-      </div>
-
-      <button type="submit">Create Account</button>
-
-      <div id="message" class="message"></div>
+      <button type="submit">Sign Up</button>
     </form>
 
-    <div class="login-link">
-      Already have an account? <a href="login.html">Login</a>
-    </div>
-  </div>
+    <div class="error" id="error-message"></div>
+    <div class="success" id="success-message"></div>
 
+    <p class="meta">
+      Already have an account?
+      <a href="login.html">Back to login</a>
+    </p>
+  </div>
 
   <script>
     const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-    const supabaseAnonKey =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
 
     const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    document.getElementById("signup-form").addEventListener("submit", async (e) => {
+    const form = document.getElementById("signup-form");
+    const errorEl = document.getElementById("error-message");
+    const successEl = document.getElementById("success-message");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      errorEl.textContent = "";
+      successEl.textContent = "";
 
-      const fullName = document.getElementById("full-name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("message");
+      const password = document.getElementById("password").value;
 
-      msg.textContent = "";
-
-      if (!fullName || !phone || !email || !password) {
-        msg.textContent = "Please fill in all fields.";
-        msg.className = "message error";
-        return;
-      }
-
-      msg.textContent = "Creating your account...";
-      msg.className = "message";
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password
-      });
+      const { error } = await supabase.auth.signUp({ email, password });
 
       if (error) {
-        msg.textContent = error.message;
-        msg.className = "message error";
+        errorEl.textContent = error.message;
         return;
       }
 
-      if (!data.user) {
-        msg.textContent = "Signup failed. Try again.";
-        msg.className = "message error";
-        return;
-      }
+      successEl.textContent =
+        "Signup successful! Please check your email to confirm your account.";
+      form.reset();
 
-      await supabase.from("user_profiles").insert({
-        user_id: data.user.id,
-        email,
-        full_name: fullName,
-        phone
-      });
-
-      msg.textContent = "Account created! Redirecting...";
-      msg.className = "message success";
-
+      // Redirect to login page after 2.5 seconds
       setTimeout(() => {
-        window.location.href = "add-listing.html";
-      }, 1500);
+        window.location.href = "login.html";
+      }, 2500);
     });
   </script>
 </body>

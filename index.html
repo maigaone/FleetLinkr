@@ -65,14 +65,10 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
-  const { data: { session } } = await window.supabase.auth.getSession();
-
-  const myAccountLink = document.getElementById("my-account-link");
-
-  if (session) {
-    myAccountLink.classList.remove("hidden");
-  }
-});
+  const supabase = window.supabase.createClient(
+    "https://klredsqvkblbhooinwwz.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8"
+  );
 
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -94,6 +90,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 <body>
 
+<script>
+// ===============================
+// FleetLinkr Access Protection
+// ===============================
+
+// Helper to read cookies
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+// Bypass link: ?key=Aminah@0799
+const urlParams = new URLSearchParams(window.location.search);
+const key = urlParams.get("key");
+
+// If key is correct → grant access
+if (key === "Aminah@0799") {
+    document.cookie = "fl_access=granted; path=/; max-age=" + (48 * 60 * 60);
+    // Remove key from URL for security
+    window.location.href = "index.html";
+}
+
+// If cookie not present → redirect to gate.html
+if (!getCookie("fl_access")) {
+    window.location.href = "gate.html";
+}
+</script>
 
 
  
