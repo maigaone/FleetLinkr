@@ -135,9 +135,19 @@
     const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtscmVkc3F2a2JsYmhvb2lud3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjIzMzEsImV4cCI6MjA3OTQ5ODMzMX0.b8TLcQcA-5YyNo1jcL0L7bov29Q_0ocQXlqCU1ocOk8";
 
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: true }
-    });
+ const supabase = window.supabase.createClient(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: { persistSession: true },
+    global: {
+      headers: {
+        'apiKey': supabaseAnonKey,
+        'Content-Type': 'application/json'
+      }
+    }
+  }
+);
 
     const form = document.getElementById("signup-form");
     const errorEl = document.getElementById("error-message");
