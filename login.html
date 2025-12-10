@@ -166,6 +166,14 @@
             errorEl.textContent = error.message;
             return;
         }
+        if (data.user) {
+  // Update last_login timestamp
+  await supabase
+    .from("user_profiles")
+    .update({ last_login: new Date().toISOString() })
+    .eq("user_id", data.user.id);
+}
+
 
         // Redirect to index page after successful login
         window.location.href = "index.html";
