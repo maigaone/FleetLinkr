@@ -154,30 +154,75 @@
     });
 
     form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorEl.textContent = "";
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    // Handle email not confirmed gracefully
+    if (error.message.includes('Email not confirmed')) {
+      errorEl.innerHTML = `
+        Please confirm your email first. Check your inbox for the confirmation link.<br>
+        <a href="#" id="resend-confirmation" style="color: #2563eb; font-size: 0.8rem;">
+          Resend confirmation email
+        </a>
+      `;
+      
+      document.getElementById('resend-confirmation')?.addEventListener('click', async (e) => {
         e.preventDefault();
-        errorEl.textContent = "";
-
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (error) {
-            errorEl.textContent = error.message;
-            return;
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: email
+        });
+        if (!resendError) {
+          alert('Confirmation email resent! Please check your inbox.');
         }
-        if (data.user) {
-  // Update last_login timestamp
-  await supabase
-    .from("user_profiles")
-    .update({ last_login: new Date().toISOString() })
-    .eq("user_id", data.user.id);
-}
+      });
+    } else {
+      errorEl.textContent = error.message;
+    }
+    return;
+  }
 
+  if (data.user) {
+    // Check if we have a pending profile to create
+    const tempProfile = JSON.parse(localStorage.getItem('temp_profile') || '{}');
+    
+    if (tempProfile.user_id === data.user.id) {
+      // Create the profile now that user is confirmed
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .upsert({
+          user_id: data.user.id,
+          email: tempProfile.email,
+          full_name: tempProfile.full_name,
+          phone: tempProfile.phone,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
 
-        // Redirect to index page after successful login
-        window.location.href = "index.html";
-    });
+      if (!profileError) {
+        // Clean up temporary data
+        localStorage.removeItem('temp_profile');
+        localStorage.removeItem('pending_email');
+      }
+    }
+
+    // Update last_login
+    await supabase
+      .from("user_profiles")
+      .update({ last_login: new Date().toISOString() })
+      .eq("user_id", data.user.id);
+
+    // Redirect to index page
+    window.location.href = "index.html";
+  }
+});
+  
 </script>
  
 </body>
