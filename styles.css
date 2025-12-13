@@ -1437,7 +1437,7 @@ footer a:hover {
 }
 
 /* ================ */
-/* Add Listing Button Styles - ADD TO END OF FILE */
+/* Add Listing Button Styles */
 /* ================ */
 
 /* Option 1: Nav Highlight Button */
@@ -1500,31 +1500,28 @@ footer a:hover {
   display: inline;
 }
 
-/* Auth Navigation Updates */
+/* ================ */
+/* Auth Navigation Styles */
+/* ================ */
+
+/* Auth Links Container */
 .auth-links {
   margin-left: auto;
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
-.auth-btn {
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
+/* Login Button */
 .login-btn {
   background: #f3f4f6;
   color: #374151;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
   border: 1px solid #d1d5db;
+  transition: all 0.2s ease;
 }
 
 .login-btn:hover {
@@ -1532,43 +1529,50 @@ footer a:hover {
   color: #111827;
 }
 
-.profile-btn {
+/* Sign Up Button */
+.signup-btn {
   background: #2563eb;
   color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-.profile-btn:hover {
+.signup-btn:hover {
   background: #1d4ed8;
 }
 
+/* Logout Button */
 .logout-btn {
   background: #fef2f2;
   color: #991b1b;
-  border: 1px solid #fecaca;
   padding: 0.4rem 0.8rem;
-  font-size: 0.8rem;
-  margin-left: 0.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid #fecaca;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  cursor: pointer;
 }
 
 .logout-btn:hover {
   background: #fee2e2;
 }
 
+/* User Greeting */
 .user-greeting {
   color: #6b7280;
   font-size: 0.9rem;
   margin-right: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-.user-greeting::before {
-  content: "👤";
-  font-size: 0.9rem;
-}
+/* ================ */
+/* Mobile Responsive */
+/* ================ */
 
-/* Mobile responsive for FAB */
 @media (max-width: 768px) {
   .fab {
     bottom: 1.5rem;
@@ -1581,26 +1585,7 @@ footer a:hover {
     width: auto;
     padding: 0 1.2rem;
   }
-}
-
-/* Fix for My Account link positioning */
-#my-account-link {
-  background: #2563eb;
-  color: white !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: 6px;
-  margin-left: 0.5rem;
-  font-weight: 600;
-  display: inline-block;
-  text-decoration: none;
-}
-
-#my-account-link:hover {
-  background: #1d4ed8;
-}
-
-/* Mobile responsive for auth */
-@media (max-width: 768px) {
+  
   .auth-links {
     margin-left: 0;
     margin-top: 1rem;

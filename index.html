@@ -69,6 +69,9 @@
 // ==========================================
 
 async function updateAuthNavigation() {
+  // Use the global supabase client
+  const supabase = window.supabase;
+  
   const myAccountLink = document.getElementById('my-account-link');
   const navAddListing = document.getElementById('nav-add-listing');
   const fabAddListing = document.getElementById('fab-add-listing');
@@ -114,6 +117,7 @@ function setupLogoutHandler() {
   document.addEventListener('click', async (e) => {
     if (e.target.id === 'logout-btn' || e.target.closest('#logout-btn')) {
       e.preventDefault();
+      const supabase = window.supabase;
       await supabase.auth.signOut();
       window.location.reload();
     }
@@ -125,24 +129,28 @@ function setupLogoutHandler() {
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Use the already initialized supabase from window.supabase
-  const supabase = window.supabase;
-  
-  // Initialize auth navigation
-  await updateAuthNavigation();
-  
-  // Setup logout handler
-  setupLogoutHandler();
-  
-  // Listen for auth state changes (login/logout)
-  supabase.auth.onAuthStateChange(() => {
-    updateAuthNavigation();
-  });
+  // Wait a moment for supabase to be fully initialized
+  setTimeout(async () => {
+    const supabase = window.supabase;
+    
+    if (!supabase) {
+      console.error('Supabase not initialized');
+      return;
+    }
+    
+    // Initialize auth navigation
+    await updateAuthNavigation();
+    
+    // Setup logout handler
+    setupLogoutHandler();
+    
+    // Listen for auth state changes (login/logout)
+    supabase.auth.onAuthStateChange(() => {
+      updateAuthNavigation();
+    });
+  }, 100); // Small delay to ensure supabase is ready
 });
 </script>
-
-
-
 
 
  </head>
@@ -187,7 +195,6 @@ if (!getCookie("fl_access")) {
  </div>
  </header>
  
- 
  <nav class="navbar" aria-label="Main navigation">
   <div class="navbar-container">
     <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
@@ -210,11 +217,14 @@ if (!getCookie("fl_access")) {
       
       <li><a href="contact.html">Contact</a></li>
       
-      <!-- Keep existing My Account link -->
-      <li><a href="profile.html" id="my-account-link" class="hidden">My Account</a></li>
+      <!-- Auth Links Container -->
+      <li class="auth-links" id="auth-links-container">
+        <!-- Will be populated by JavaScript -->
+      </li>
     </ul>
   </div>
 </nav>
+
  
  <main class="main-content">
  <div class="hero">
