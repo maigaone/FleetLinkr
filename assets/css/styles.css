@@ -1604,3 +1604,20 @@ footer a:hover {
     text-align: center;
   }
 }
+
+@media (max-width: 768px) {
+  .mobile-auth-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .mobile-auth-links .login-btn,
+  .mobile-auth-links .signup-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+}
