@@ -65,42 +65,80 @@
 
 <script>
 // ==========================================
-// Auth Navigation Management
+// Auth Navigation Management - IMPROVED VERSION
 // ==========================================
 
 async function updateAuthNavigation() {
-  // Use the global supabase client
   const supabase = window.supabase;
   
+  // Target containers
+  const authContainer = document.getElementById('auth-links-container');
+  const mobileAuthLinks = document.querySelector('.mobile-auth-links');
   const myAccountLink = document.getElementById('my-account-link');
   const navAddListing = document.getElementById('nav-add-listing');
   const fabAddListing = document.getElementById('fab-add-listing');
   
   const { data: { user } } = await supabase.auth.getUser();
   
-  // Handle My Account link
-  if (myAccountLink) {
+  // ===== DESKTOP AUTH LINKS =====
+  if (authContainer) {
     if (user) {
-      myAccountLink.classList.remove('hidden');
-      
-      // Get user's name for personalized greeting
+      // User is logged in - show user info and logout
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('full_name')
         .eq('user_id', user.id)
         .single();
       
-      if (profile?.full_name) {
-        myAccountLink.textContent = `👤 ${profile.full_name}`;
-      } else {
-        myAccountLink.textContent = 'My Account';
-      }
+      const userName = profile?.full_name || 'User';
+      
+      authContainer.innerHTML = `
+        <span class="user-greeting">Hi, ${userName}</span>
+        <button class="logout-btn" id="logout-btn">Log Out</button>
+      `;
+    } else {
+      // User is not logged in - show login/signup
+      authContainer.innerHTML = `
+        <a href="login.html" class="login-btn">Log In</a>
+        <a href="signup.html" class="signup-btn">Sign Up</a>
+      `;
+    }
+  }
+  
+  // ===== MOBILE AUTH LINKS =====
+  if (mobileAuthLinks) {
+    if (user) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+      
+      const userName = profile?.full_name || 'User';
+      
+      mobileAuthLinks.innerHTML = `
+        <span class="user-greeting">Hi, ${userName}</span>
+        <button class="logout-btn" id="logout-btn-mobile">Log Out</button>
+      `;
+    } else {
+      mobileAuthLinks.innerHTML = `
+        <a href="login.html" class="login-btn">Log In</a>
+        <a href="signup.html" class="signup-btn">Sign Up</a>
+      `;
+    }
+  }
+  
+  // ===== MY ACCOUNT LINK =====
+  if (myAccountLink) {
+    if (user) {
+      myAccountLink.classList.remove('hidden');
+      myAccountLink.href = 'my-account.html';
     } else {
       myAccountLink.classList.add('hidden');
     }
   }
   
-  // Handle Add Listing buttons (only show when logged in)
+  // ===== ADD LISTING BUTTONS =====
   const addListingButtons = [navAddListing, fabAddListing];
   addListingButtons.forEach(button => {
     if (button) {
@@ -110,16 +148,28 @@ async function updateAuthNavigation() {
 }
 
 // ==========================================
-// Logout Handler
+// Logout Handler - IMPROVED
 // ==========================================
 
 function setupLogoutHandler() {
   document.addEventListener('click', async (e) => {
-    if (e.target.id === 'logout-btn' || e.target.closest('#logout-btn')) {
+    // Check if clicked element or its parent is a logout button
+    const logoutBtn = e.target.closest('#logout-btn, #logout-btn-mobile');
+    
+    if (logoutBtn) {
       e.preventDefault();
       const supabase = window.supabase;
-      await supabase.auth.signOut();
-      window.location.reload();
+      
+      try {
+        await supabase.auth.signOut();
+        // Update UI immediately
+        await updateAuthNavigation();
+        // Optional: Redirect to home page
+        // window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Error logging out. Please try again.');
+      }
     }
   });
 }
@@ -129,7 +179,7 @@ function setupLogoutHandler() {
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Wait a moment for supabase to be fully initialized
+  // Wait for Supabase to initialize
   setTimeout(async () => {
     const supabase = window.supabase;
     
@@ -138,19 +188,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
     
-    // Initialize auth navigation
-    await updateAuthNavigation();
-    
-    // Setup logout handler
-    setupLogoutHandler();
-    
-    // Listen for auth state changes (login/logout)
-    supabase.auth.onAuthStateChange(() => {
-      updateAuthNavigation();
-    });
-  }, 100); // Small delay to ensure supabase is ready
+    try {
+      // Initialize auth navigation
+      await updateAuthNavigation();
+      
+      // Setup logout handler
+      setupLogoutHandler();
+      
+      // Listen for auth state changes
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state changed:', event);
+        await updateAuthNavigation();
+      });
+      
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+    }
+  }, 100);
 });
 </script>
+
 
 
  </head>
@@ -194,6 +251,9 @@ if (!getCookie("fl_access")) {
  <img src="assets/images/logo-new.png" alt="FleetLinkr" class="logo-img">
  </div>
  </header>
+
+ <!-- Add this after your header, before the navbar -->
+
  
  <nav class="navbar" aria-label="Main navigation">
   <div class="navbar-container">
@@ -211,10 +271,16 @@ if (!getCookie("fl_access")) {
       <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
       <li><a href="insurance.html">Insurance</a></li>
       <li><a href="view-listings.html">Listings</a></li>
+      <li><a href="my-account.html" class="hidden" id="my-account-link">My Account</a></li>
       
       <!-- Option 1: Add Listing Button in Navigation -->
       <li><a href="add-listing.html" class="nav-highlight" id="nav-add-listing">+ Add Listing</a></li>
-      
+
+      <!-- Mobile Auth Links -->
+       <li class="mobile-auth-links">
+    <a href="/login.html" class="login-btn">Log In</a>
+    <a href="/signup.html" class="signup-btn">Sign Up</a>
+  </li>
       <li><a href="contact.html">Contact</a></li>
       
       <!-- Auth Links Container -->
