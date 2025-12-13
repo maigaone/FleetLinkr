@@ -142,77 +142,88 @@
     auth: { persistSession: true }
   }
 );
-
+   //Form submission handler
     const form = document.getElementById("signup-form");
     const errorEl = document.getElementById("error-message");
     const successEl = document.getElementById("success-message");
 
     form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorEl.textContent = "";
-      successEl.textContent = "";
+  e.preventDefault();
+  errorEl.textContent = "";
+  successEl.textContent = "";
 
-      const fullName = document.getElementById("full-name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+  const fullName = document.getElementById("full-name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-      // Basic validation
-      if (!fullName || !phone || !email || !password) {
-        errorEl.textContent = "All fields are required";
-        return;
-      }
+  if (!fullName || !phone || !email || !password) {
+    errorEl.textContent = "All fields are required";
+    return;
+  }
 
-      try {
-        // Step 1: Create auth user
-        const { data: authData, error: authError } = await supabase.auth.signUp({ 
-          email, 
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-              phone: phone
-            }
-          }
-        });
-
-        if (authError) {
-          errorEl.textContent = authError.message;
-          return;
+  try {
+    // Step 1: Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          phone: phone
         }
-
-        // Step 2: Create profile in user_profiles table
-        if (authData.user) {
-          const { error: profileError } = await supabase
-            .from("user_profiles")
-            .upsert({
-              user_id: authData.user.id,
-              email: email,
-              full_name: fullName,
-              phone: phone,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-
-          if (profileError) {
-            errorEl.textContent = "Account created but profile setup failed: " + profileError.message;
-            return;
-          }
-        }
-
-        // Success message
-        successEl.textContent = "Account created successfully! Redirecting to login...";
-        form.reset();
-
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 2000);
-
-      } catch (error) {
-        errorEl.textContent = "An unexpected error occurred: " + error.message;
       }
     });
+
+    if (authError) {
+      errorEl.textContent = "Authentication error: " + authError.message;
+      return;
+    }
+
+    // Step 2: Immediately sign in to establish session
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (signInError) {
+      errorEl.textContent = "Session creation failed: " + signInError.message;
+      return;
+    }
+
+    // Step 3: Now create profile (user is authenticated)
+    if (signInData.user) {
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .upsert({
+          user_id: signInData.user.id,
+          email: email,
+          full_name: fullName,
+          phone: phone,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) {
+        errorEl.textContent = "Profile creation failed: " + profileError.message;
+        // Optional: Sign out if profile creation fails
+        await supabase.auth.signOut();
+        return;
+      }
+    }
+
+    // Success
+    successEl.textContent = "Account created successfully! Redirecting...";
+    form.reset();
+
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 2000);
+
+  } catch (error) {
+    errorEl.textContent = "An unexpected error occurred: " + error.message;
+  }
+});
   </script>
 </body>
 </html>
