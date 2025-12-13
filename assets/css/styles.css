@@ -1514,8 +1514,8 @@ footer a:hover {
 
 /* Login Button */
 .login-btn {
-  background: #f3f4f6;
-  color: #374151;
+  background: #1d4ed8;;
+  color: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   text-decoration: none;
@@ -1525,7 +1525,7 @@ footer a:hover {
 }
 
 .login-btn:hover {
-  background: #e5e7eb;
+  background: #1d4ed8;;
   color: #111827;
 }
 
