@@ -20,276 +20,477 @@
 
     .profile-container {
       background: #ffffff;
-      padding: 2rem 2.5rem;
-      border-radius: 12px;
-      max-width: 420px;
+      padding: 2.5rem 3rem;
+      border-radius: 16px;
+      max-width: 480px;
       width: 100%;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
       position: relative;
       overflow: hidden;
     }
 
-    .progress-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 3px;
-      width: 0%;
-      background: #2563eb;
-      transition: width 0.4s ease;
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
     }
 
-    .profile-container h2 {
-      margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 1.5rem;
+    .profile-header h2 {
+      margin: 0;
+      font-size: 1.75rem;
       color: #111827;
-      text-align: center;
+      font-weight: 700;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-edit {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-edit:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-save {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-save:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-cancel {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .btn-cancel:hover {
+      background: #fee2e2;
+    }
+
+    .btn-logout {
+      background: transparent;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-logout:hover {
+      background: #f9fafb;
     }
 
     .profile-subtitle {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: #6b7280;
       text-align: center;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    /* Profile Info Display (View Mode) */
+    .profile-info {
+      margin-bottom: 2rem;
+    }
+
+    .info-group {
       margin-bottom: 1.5rem;
+      padding: 1.2rem;
+      background: #f9fafb;
+      border-radius: 10px;
+      border-left: 4px solid #2563eb;
+    }
+
+    .info-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-size: 1.1rem;
+      color: #111827;
+      font-weight: 500;
+    }
+
+    /* Profile Form (Edit Mode) */
+    .profile-form {
+      margin-bottom: 2rem;
     }
 
     .form-group {
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .form-group label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 600;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
       color: #374151;
     }
 
     .form-group input {
       width: 100%;
-      padding: 0.6rem 0.75rem;
+      padding: 0.8rem 1rem;
       border-radius: 8px;
       border: 1px solid #d1d5db;
-      font-size: 0.9rem;
+      font-size: 1rem;
       box-sizing: border-box;
+      transition: border 0.2s ease;
     }
 
     .form-group input:focus {
       outline: none;
       border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.2);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
 
-    .save-btn {
-      width: 100%;
-      border: none;
-      border-radius: 8px;
-      padding: 0.7rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      background: #2563eb;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .save-btn:disabled {
-      opacity: 0.6;
+    .form-group input:disabled {
+      background: #f3f4f6;
+      color: #6b7280;
       cursor: not-allowed;
     }
 
-    .spinner {
-      border: 2px solid #ffffff30;
-      border-top: 2px solid #ffffff;
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      animation: spin 0.9s linear infinite;
-    }
-
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
-
+    /* Messages */
     .profile-message {
-      margin-top: 1rem;
-      font-size: 0.85rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
       text-align: center;
-      min-height: 1rem;
+      display: none;
     }
 
     .profile-message.error {
-      color: #b91c1c;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      display: block;
     }
 
     .profile-message.success {
+      background: #f0fdf4;
       color: #065f46;
+      border: 1px solid #bbf7d0;
+      display: block;
     }
 
-    .checkmark-container {
-      display: none;
-      justify-content: center;
-      margin-top: 1rem;
+    /* Footer */
+    .profile-footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #9ca3af;
     }
 
-    .checkmark {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #10b981;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: pop 0.3s ease-out forwards;
+    .profile-footer a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
     }
 
-    @keyframes pop {
-      0% { transform: scale(0.3); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
+    .profile-footer a:hover {
+      text-decoration: underline;
     }
 
-    .checkmark svg {
-      width: 28px;
-      height: 28px;
-      color: white;
+    /* Responsive */
+    @media (max-width: 600px) {
+      .profile-container {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+      }
+      
+      .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .profile-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-container {
+      animation: fadeIn 0.3s ease-out;
     }
   </style>
 </head>
 <body>
 
-  <div class="profile-container">
-    <div class="progress-bar" id="progress-bar"></div>
-
+<div class="profile-container">
+  <!-- Header -->
+  <div class="profile-header">
     <h2>Your Profile</h2>
-    <p class="profile-subtitle">
-      Keep your contact details up to date for your listings.
-    </p>
-
-    <form id="profile-form">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="profile-email" disabled />
-      </div>
-
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="profile-name" required />
-      </div>
-
-      <div class="form-group">
-        <label>Phone</label>
-        <input type="tel" id="profile-phone" required />
-      </div>
-
-      <button type="submit" class="save-btn" id="save-btn">
-        Save Profile
-      </button>
-
-      <div id="profile-message" class="profile-message"></div>
-
-      <div class="checkmark-container" id="checkmark-container">
-        <div class="checkmark">
-          <svg viewBox="0 0 24 24">
-            <path fill="currentColor" d="M9 16.2l-3.5-3.5L4 14.2l5 5 12-12-1.5-1.5z"/>
-          </svg>
-        </div>
-      </div>
-    </form>
+    <div class="profile-actions" id="profile-actions">
+      <button class="btn btn-edit" id="edit-btn">Edit Profile</button>
+      <button class="btn btn-logout" id="logout-btn">Logout</button>
+    </div>
   </div>
 
-  <script>
-    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-    const supabaseAnonKey =
-      "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
+  <p class="profile-subtitle">
+    Keep your contact details up to date for your listings and communications.
+  </p>
 
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+  <!-- Profile Info Display (View Mode) -->
+  <div class="profile-info" id="profile-info">
+    <div class="info-group">
+      <div class="info-label">Email Address</div>
+      <div class="info-value" id="display-email">Loading...</div>
+    </div>
+    
+    <div class="info-group">
+      <div class="info-label">Full Name</div>
+      <div class="info-value" id="display-name">Loading...</div>
+    </div>
+    
+    <div class="info-group">
+      <div class="info-label">Phone Number</div>
+      <div class="info-value" id="display-phone">Loading...</div>
+    </div>
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      const messageEl = document.getElementById("profile-message");
-      const saveBtn = document.getElementById("save-btn");
-      const progressBar = document.getElementById("progress-bar");
-      const checkmarkContainer = document.getElementById("checkmark-container");
+    <div class="info-group">
+      <div class="info-label">Account Created</div>
+      <div class="info-value" id="display-created">Loading...</div>
+    </div>
+  </div>
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+  <!-- Profile Form (Edit Mode - Initially Hidden) -->
+  <form class="profile-form" id="profile-form" style="display: none;">
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="profile-email" disabled />
+      <small style="color: #6b7280; font-size: 0.85rem;">Email cannot be changed</small>
+    </div>
 
-      document.getElementById("profile-email").value = user.email || "";
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="profile-name" required />
+    </div>
 
-      const { data: profile, error: profileError } = await supabase
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" id="profile-phone" required />
+    </div>
+
+    <div class="profile-actions">
+      <button type="submit" class="btn btn-save" id="save-btn">Save Changes</button>
+      <button type="button" class="btn btn-cancel" id="cancel-btn">Cancel</button>
+    </div>
+  </form>
+
+  <!-- Messages -->
+  <div class="profile-message" id="profile-message"></div>
+
+  <!-- Footer -->
+  <div class="profile-footer">
+    <p>
+      Need help? <a href="contact.html">Contact Support</a> • 
+      <a href="index.html">Back to Home</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
+  const supabaseAnonKey = "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
+
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: true }
+  });
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    // DOM Elements
+    const profileInfo = document.getElementById("profile-info");
+    const profileForm = document.getElementById("profile-form");
+    const editBtn = document.getElementById("edit-btn");
+    const cancelBtn = document.getElementById("cancel-btn");
+    const saveBtn = document.getElementById("save-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const messageEl = document.getElementById("profile-message");
+
+    // Display elements
+    const displayEmail = document.getElementById("display-email");
+    const displayName = document.getElementById("display-name");
+    const displayPhone = document.getElementById("display-phone");
+    const displayCreated = document.getElementById("display-created");
+
+    // Form elements
+    const profileEmail = document.getElementById("profile-email");
+    const profileName = document.getElementById("profile-name");
+    const profilePhone = document.getElementById("profile-phone");
+
+    let currentProfile = null;
+
+    // Check authentication
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    // Load profile data
+    async function loadProfile() {
+      const { data: profile, error } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
 
-      if (profile) {
-        document.getElementById("profile-name").value = profile.full_name || "";
-        document.getElementById("profile-phone").value = profile.phone || "";
+      if (error) {
+        showMessage("Error loading profile: " + error.message, "error");
+        return;
       }
 
-      if (profileError && profileError.code !== "PGRST116") {
-        console.error("Error loading profile:", profileError);
-        messageEl.textContent = "Error loading profile.";
-        messageEl.classList.add("error");
+      currentProfile = profile || {
+        email: user.email,
+        full_name: "",
+        phone: "",
+        created_at: new Date().toISOString()
+      };
+
+      // Update display
+      displayEmail.textContent = currentProfile.email || user.email || "Not set";
+      displayName.textContent = currentProfile.full_name || "Not set";
+      displayPhone.textContent = currentProfile.phone || "Not set";
+      
+      if (currentProfile.created_at) {
+        const date = new Date(currentProfile.created_at);
+        displayCreated.textContent = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
       }
 
-      document.getElementById("profile-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        messageEl.textContent = "";
-        messageEl.className = "profile-message";
-        checkmarkContainer.style.display = "none";
+      // Update form
+      profileEmail.value = currentProfile.email || user.email || "";
+      profileName.value = currentProfile.full_name || "";
+      profilePhone.value = currentProfile.phone || "";
+    }
 
-        const fullName = document.getElementById("profile-name").value.trim();
-        const phone = document.getElementById("profile-phone").value.trim();
+    // Toggle between view and edit modes
+    function toggleEditMode(isEditing) {
+      profileInfo.style.display = isEditing ? "none" : "block";
+      profileForm.style.display = isEditing ? "block" : "none";
+      editBtn.textContent = isEditing ? "View Profile" : "Edit Profile";
+    }
 
-        if (!fullName || !phone) {
-          messageEl.textContent = "Please fill in all fields.";
-          messageEl.classList.add("error");
-          return;
-        }
-
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
-        progressBar.style.width = "50%";
-
-        const updates = {
-          user_id: user.id,
-          email: user.email,
-          full_name: fullName,
-          phone,
-          updated_at: new Date().toISOString(),
-        };
-
-        const { error: updateError } = await supabase
-          .from("user_profiles")
-          .upsert(updates);
-
-        if (updateError) {
-          progressBar.style.width = "0%";
-          messageEl.textContent = "Error: " + updateError.message;
-          messageEl.classList.add("error");
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = "Save Profile";
-          return;
-        }
-
-        progressBar.style.width = "100%";
-        messageEl.textContent = "Profile saved successfully.";
-        messageEl.classList.add("success");
-        checkmarkContainer.style.display = "flex";
-
+    // Show message
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = "profile-message " + type;
+      messageEl.style.display = "block";
+      
+      if (type === "success") {
         setTimeout(() => {
-          window.location.href = "index.html";
-        }, 1500);
-      });
+          messageEl.style.display = "none";
+        }, 3000);
+      }
+    }
+
+    // Event Listeners
+    editBtn.addEventListener("click", () => {
+      const isEditing = profileForm.style.display === "block";
+      toggleEditMode(!isEditing);
+      messageEl.style.display = "none";
     });
-  </script>
+
+    cancelBtn.addEventListener("click", () => {
+      toggleEditMode(false);
+      // Reset form to current values
+      profileName.value = currentProfile.full_name || "";
+      profilePhone.value = currentProfile.phone || "";
+      messageEl.style.display = "none";
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    profileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const fullName = profileName.value.trim();
+      const phone = profilePhone.value.trim();
+
+      if (!fullName || !phone) {
+        showMessage("Please fill in all required fields", "error");
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+
+      const updates = {
+        user_id: user.id,
+        email: user.email,
+        full_name: fullName,
+        phone: phone,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from("user_profiles")
+        .upsert(updates);
+
+      if (error) {
+        showMessage("Error: " + error.message, "error");
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Changes";
+        return;
+      }
+
+      showMessage("Profile updated successfully!", "success");
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Changes";
+      
+      // Reload profile data
+      await loadProfile();
+      
+      // Switch back to view mode after 1 second
+      setTimeout(() => {
+        toggleEditMode(false);
+      }, 1000);
+    });
+
+    // Initial load
+    await loadProfile();
+  });
+</script>
 </body>
 </html>
 
