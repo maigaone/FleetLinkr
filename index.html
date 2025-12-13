@@ -64,21 +64,80 @@
  </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const supabase = window.supabase.createClient(
-    "https://klredsqvkblbhooinwwz.supabase.co",
-    "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9"
-  );
+// ==========================================
+// Auth Navigation Management
+// ==========================================
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const myAccountLink = document.getElementById("my-account-link");
-
-  if (session) {
-    myAccountLink.classList.remove("hidden");
-    myAccountLink.href = "profile.html"; // Link to profile page
-  } else {
-    myAccountLink.classList.add("hidden");
+async function updateAuthNavigation() {
+  const myAccountLink = document.getElementById('my-account-link');
+  const navAddListing = document.getElementById('nav-add-listing');
+  const fabAddListing = document.getElementById('fab-add-listing');
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // Handle My Account link
+  if (myAccountLink) {
+    if (user) {
+      myAccountLink.classList.remove('hidden');
+      
+      // Get user's name for personalized greeting
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profile?.full_name) {
+        myAccountLink.textContent = `👤 ${profile.full_name}`;
+      } else {
+        myAccountLink.textContent = 'My Account';
+      }
+    } else {
+      myAccountLink.classList.add('hidden');
+    }
   }
+  
+  // Handle Add Listing buttons (only show when logged in)
+  const addListingButtons = [navAddListing, fabAddListing];
+  addListingButtons.forEach(button => {
+    if (button) {
+      button.style.display = user ? 'flex' : 'none';
+    }
+  });
+}
+
+// ==========================================
+// Logout Handler
+// ==========================================
+
+function setupLogoutHandler() {
+  document.addEventListener('click', async (e) => {
+    if (e.target.id === 'logout-btn' || e.target.closest('#logout-btn')) {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      window.location.reload();
+    }
+  });
+}
+
+// ==========================================
+// Initialize Everything on Page Load
+// ==========================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // Use the already initialized supabase from window.supabase
+  const supabase = window.supabase;
+  
+  // Initialize auth navigation
+  await updateAuthNavigation();
+  
+  // Setup logout handler
+  setupLogoutHandler();
+  
+  // Listen for auth state changes (login/logout)
+  supabase.auth.onAuthStateChange(() => {
+    updateAuthNavigation();
+  });
 });
 </script>
 
@@ -130,27 +189,32 @@ if (!getCookie("fl_access")) {
  
  
  <nav class="navbar" aria-label="Main navigation">
- <div class="navbar-container">
- <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
- <span class="hamburger">☰</span>
- <span class="close">✕</span>
- <span class="sr-only">Menu</span>
- </button>
- <ul class="navbar-links" id="primary-nav">
- <li><a href="index.html" class="active">Home</a></li>
- <li><a href="drivers.html">For Drivers</a></li>
- <li><a href="dealerships.html">For Dealerships</a></li>
- <li><a href="garages.html">For Garages</a></li>
- <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
- <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
- <li><a href="insurance.html">Insurance</a></li>
- <li><a href="view-listings.html">Listings</a></li>
- <li><a href="contact.html">Contact</a></li>
- <a href="profile.html" id="my-account-link" class="nav-link hidden">My Account</a>
-
- </ul>
- </div>
- </nav>
+  <div class="navbar-container">
+    <button class="menu-toggle" aria-expanded="false" aria-controls="primary-nav">
+      <span class="hamburger">☰</span>
+      <span class="close">✕</span>
+      <span class="sr-only">Menu</span>
+    </button>
+    <ul class="navbar-links" id="primary-nav">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="drivers.html">For Drivers</a></li>
+      <li><a href="dealerships.html">For Dealerships</a></li>
+      <li><a href="garages.html">For Garages</a></li>
+      <li><a href="yellow-garages.html">Yellow Taxi Garages</a></li>
+      <li><a href="sell-vehicle.html">Sell Vehicle</a></li>
+      <li><a href="insurance.html">Insurance</a></li>
+      <li><a href="view-listings.html">Listings</a></li>
+      
+      <!-- Option 1: Add Listing Button in Navigation -->
+      <li><a href="add-listing.html" class="nav-highlight" id="nav-add-listing">+ Add Listing</a></li>
+      
+      <li><a href="contact.html">Contact</a></li>
+      
+      <!-- Keep existing My Account link -->
+      <li><a href="profile.html" id="my-account-link" class="hidden">My Account</a></li>
+    </ul>
+  </div>
+</nav>
  
  <main class="main-content">
  <div class="hero">
@@ -373,6 +437,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 </script>
+
+<!-- Option 3: Floating Action Button (Mobile-Friendly) -->
+<a href="add-listing.html" class="fab" id="fab-add-listing">
+  <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+  </svg>
+  <span>Add Listing</span>
+</a>
 
  </body>
  </html>

@@ -1435,3 +1435,187 @@ footer a:hover {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ================ */
+/* Add Listing Button Styles - ADD TO END OF FILE */
+/* ================ */
+
+/* Option 1: Nav Highlight Button */
+.nav-highlight {
+  background: #10b981;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px;
+  margin: 0 0.5rem;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+}
+
+.nav-highlight:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Option 3: Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #2563eb;
+  color: white;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.fab:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+  width: auto;
+  padding: 0 1.5rem;
+  border-radius: 28px;
+}
+
+.fab span {
+  display: none;
+  margin-left: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fab:hover span {
+  display: inline;
+}
+
+/* Auth Navigation Updates */
+.auth-links {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.auth-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.login-btn:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.profile-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.profile-btn:hover {
+  background: #1d4ed8;
+}
+
+.logout-btn {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+.logout-btn:hover {
+  background: #fee2e2;
+}
+
+.user-greeting {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-right: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-greeting::before {
+  content: "👤";
+  font-size: 0.9rem;
+}
+
+/* Mobile responsive for FAB */
+@media (max-width: 768px) {
+  .fab {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 52px;
+    height: 52px;
+  }
+  
+  .fab:hover {
+    width: auto;
+    padding: 0 1.2rem;
+  }
+}
+
+/* Fix for My Account link positioning */
+#my-account-link {
+  background: #2563eb;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px;
+  margin-left: 0.5rem;
+  font-weight: 600;
+  display: inline-block;
+  text-decoration: none;
+}
+
+#my-account-link:hover {
+  background: #1d4ed8;
+}
+
+/* Mobile responsive for auth */
+@media (max-width: 768px) {
+  .auth-links {
+    margin-left: 0;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+    order: 10;
+  }
+  
+  .navbar-links {
+    flex-wrap: wrap;
+  }
+  
+  .nav-highlight {
+    margin: 0.5rem 0;
+    width: 100%;
+    text-align: center;
+  }
+}
