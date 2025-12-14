@@ -132,14 +132,19 @@
     </p>
   </div>
 <script>
-    // Use centralized config
-    const supabase = window.supabase.createClient(
+    // Use the global supabase instance from index.html
+const supabase = window.supabase;
+
+// If supabase doesn't exist, create it
+if (!supabase) {
+    window.supabase = supabase.createClient(
         "https://klredsqvkblbhooinwwz.supabase.co",
         "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9",
         {
             auth: { persistSession: true }
         }
     );
+}
 
     const form = document.getElementById("login-form");
     const errorEl = document.getElementById("error-message");

@@ -325,12 +325,18 @@
 </div>
 
 <script>
-  const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-  const supabaseAnonKey = "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
+  // Use the global supabase instance
+const supabase = window.supabase;
 
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
-    auth: { persistSession: true }
-  });
+// If supabase doesn't exist, create it
+if (!supabase) {
+    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
+    const supabaseAnonKey = "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
+    
+    window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: true }
+    });
+}
 
   document.addEventListener("DOMContentLoaded", async () => {
     // DOM Elements

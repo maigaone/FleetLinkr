@@ -132,16 +132,18 @@
   </div>
 
   <script>
+    // Use the global supabase instance
+const supabase = window.supabase;
+
+// If supabase doesn't exist, create it
+if (!supabase) {
     const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
     const supabaseAnonKey = "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
-
-  const supabase = window.supabase.createClient(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: { persistSession: true }
-  }
-);
+    
+    window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: true }
+    });
+}
    //Form submission handler
     const form = document.getElementById("signup-form");
     const errorEl = document.getElementById("error-message");

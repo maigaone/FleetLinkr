@@ -63,9 +63,10 @@
  );
  </script>
 
+
 <script>
 // ==========================================
-// Auth Navigation Management - IMPROVED VERSION
+// Simplified Auth Navigation Management - LOGIN ONLY
 // ==========================================
 
 async function updateAuthNavigation() {
@@ -73,7 +74,6 @@ async function updateAuthNavigation() {
   
   // Target containers
   const authContainer = document.getElementById('auth-links-container');
-  const mobileAuthLinks = document.querySelector('.mobile-auth-links');
   const myAccountLink = document.getElementById('my-account-link');
   const navAddListing = document.getElementById('nav-add-listing');
   const fabAddListing = document.getElementById('fab-add-listing');
@@ -97,33 +97,9 @@ async function updateAuthNavigation() {
         <button class="logout-btn" id="logout-btn">Log Out</button>
       `;
     } else {
-      // User is not logged in - show login/signup
+      // User is not logged in - show ONLY LOG IN
       authContainer.innerHTML = `
         <a href="login.html" class="login-btn">Log In</a>
-        <a href="signup.html" class="signup-btn">Sign Up</a>
-      `;
-    }
-  }
-  
-  // ===== MOBILE AUTH LINKS =====
-  if (mobileAuthLinks) {
-    if (user) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('full_name')
-        .eq('user_id', user.id)
-        .single();
-      
-      const userName = profile?.full_name || 'User';
-      
-      mobileAuthLinks.innerHTML = `
-        <span class="user-greeting">Hi, ${userName}</span>
-        <button class="logout-btn" id="logout-btn-mobile">Log Out</button>
-      `;
-    } else {
-      mobileAuthLinks.innerHTML = `
-        <a href="login.html" class="login-btn">Log In</a>
-        <a href="signup.html" class="signup-btn">Sign Up</a>
       `;
     }
   }
@@ -132,29 +108,29 @@ async function updateAuthNavigation() {
   if (myAccountLink) {
     if (user) {
       myAccountLink.classList.remove('hidden');
-      myAccountLink.href = 'my-account.html';
     } else {
       myAccountLink.classList.add('hidden');
     }
   }
   
   // ===== ADD LISTING BUTTONS =====
-  const addListingButtons = [navAddListing, fabAddListing];
-  addListingButtons.forEach(button => {
-    if (button) {
-      button.style.display = user ? 'flex' : 'none';
-    }
-  });
+  if (navAddListing) {
+    navAddListing.style.display = user ? 'flex' : 'none';
+  }
+  
+  if (fabAddListing) {
+    fabAddListing.style.display = user ? 'flex' : 'none';
+  }
 }
 
 // ==========================================
-// Logout Handler - IMPROVED
+// Logout Handler
 // ==========================================
 
 function setupLogoutHandler() {
   document.addEventListener('click', async (e) => {
     // Check if clicked element or its parent is a logout button
-    const logoutBtn = e.target.closest('#logout-btn, #logout-btn-mobile');
+    const logoutBtn = e.target.closest('#logout-btn');
     
     if (logoutBtn) {
       e.preventDefault();
@@ -164,8 +140,6 @@ function setupLogoutHandler() {
         await supabase.auth.signOut();
         // Update UI immediately
         await updateAuthNavigation();
-        // Optional: Redirect to home page
-        // window.location.href = 'index.html';
       } catch (error) {
         console.error('Logout error:', error);
         alert('Error logging out. Please try again.');
@@ -276,11 +250,6 @@ if (!getCookie("fl_access")) {
       <!-- Option 1: Add Listing Button in Navigation -->
       <li><a href="add-listing.html" class="nav-highlight" id="nav-add-listing">+ Add Listing</a></li>
 
-      <!-- Mobile Auth Links -->
-       <li class="mobile-auth-links"></li>
-    <a href="/login.html" class="login-btn">Log In</a>
-    <a href="/signup.html" class="signup-btn">Sign Up</a>
-  </li>
       <li><a href="contact.html">Contact</a></li>
       
       <!-- Auth Links Container -->
