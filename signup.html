@@ -132,24 +132,22 @@
   </div>
 
   <script>
-    // Use the global supabase instance
-const supabase = window.supabase;
-
-// If supabase doesn't exist, create it
-if (!supabase) {
-    const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
-    const supabaseAnonKey = "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
-    
-    window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey, {
-        auth: { persistSession: true }
-    });
+// Initialize Supabase if not already initialized
+if (!window.supabase) {
+  const supabaseUrl = "https://klredsqvkblbhooinwwz.supabase.co";
+  const supabaseAnonKey = "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9";
+  
+  window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: true }
+  });
 }
-   //Form submission handler
-    const form = document.getElementById("signup-form");
-    const errorEl = document.getElementById("error-message");
-    const successEl = document.getElementById("success-message");
 
-   form.addEventListener("submit", async (e) => {
+// Form submission handler
+const form = document.getElementById("signup-form");
+const errorEl = document.getElementById("error-message");
+const successEl = document.getElementById("success-message");
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorEl.textContent = "";
   successEl.textContent = "";
@@ -166,7 +164,7 @@ if (!supabase) {
 
   try {
     // Step 1: Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({ 
+    const { data: authData, error: authError } = await window.supabase.auth.signUp({ 
       email, 
       password,
       options: {
@@ -174,8 +172,7 @@ if (!supabase) {
           full_name: fullName,
           phone: phone
         },
-        // Optional: Automatically redirect after confirmation
-        emailRedirectTo: window.location.origin + '/login.html?confirmed=true'
+        emailRedirectTo: window.location.origin + '/login.html?type=confirmed'
       }
     });
 
@@ -184,10 +181,14 @@ if (!supabase) {
       return;
     }
 
+    if (!authData.user) {
+      errorEl.textContent = "Failed to create user account";
+      return;
+    }
+
     // Step 2: Store profile data temporarily (in localStorage)
-    // We'll save it to create the profile after email confirmation
     const tempProfile = {
-      user_id: authData.user?.id,
+      user_id: authData.user.id,
       email: email,
       full_name: fullName,
       phone: phone
@@ -214,20 +215,23 @@ if (!supabase) {
     // Add resend functionality
     document.getElementById('resend-email')?.addEventListener('click', async (e) => {
       e.preventDefault();
-      const { error } = await supabase.auth.resend({
+      const { error } = await window.supabase.auth.resend({
         type: 'signup',
         email: email
       });
       if (!error) {
         alert('Confirmation email resent! Please check your inbox.');
+      } else {
+        alert('Error resending email: ' + error.message);
       }
     });
 
   } catch (error) {
+    console.error("Signup error:", error);
     errorEl.textContent = "An unexpected error occurred: " + error.message;
   }
 });
-  </script>
+</script>
 </body>
 </html>
 

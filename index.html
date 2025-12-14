@@ -108,6 +108,7 @@ async function updateAuthNavigation() {
   if (myAccountLink) {
     if (user) {
       myAccountLink.classList.remove('hidden');
+      myAccountLink.href = 'my-account.html';
     } else {
       myAccountLink.classList.add('hidden');
     }

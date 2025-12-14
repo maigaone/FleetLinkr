@@ -132,103 +132,121 @@
     </p>
   </div>
 <script>
-    // Use the global supabase instance from index.html
-const supabase = window.supabase;
-
-// If supabase doesn't exist, create it
-if (!supabase) {
-    window.supabase = supabase.createClient(
-        "https://klredsqvkblbhooinwwz.supabase.co",
-        "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9",
-        {
-            auth: { persistSession: true }
-        }
-    );
+// Initialize Supabase if not already initialized
+if (!window.supabase) {
+  window.supabase = supabase.createClient(
+    "https://klredsqvkblbhooinwwz.supabase.co",
+    "sb_publishable_CHt4q1TQCEZXs-v62TCaxA_3vj3C6J9",
+    {
+      auth: { persistSession: true }
+    }
+  );
 }
 
-    const form = document.getElementById("login-form");
-    const errorEl = document.getElementById("error-message");
+const form = document.getElementById("login-form");
+const errorEl = document.getElementById("error-message");
 
-    document.addEventListener("DOMContentLoaded", async () => {
-        // Already logged in? Send them to index page
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            window.location.href = "index.html";
-            return;
-        }
-    });
+// Wait for DOM and Supabase to be ready
+document.addEventListener("DOMContentLoaded", async () => {
+  // Make sure supabase is available
+  if (!window.supabase) {
+    errorEl.textContent = "Error: Application not properly loaded. Please refresh.";
+    return;
+  }
+  
+  // Already logged in? Send them to index page
+  const { data: { session } } = await window.supabase.auth.getSession();
+  if (session) {
+    window.location.href = "index.html";
+    return;
+  }
+});
 
-    form.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorEl.textContent = "";
 
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    // Handle email not confirmed gracefully
-    if (error.message.includes('Email not confirmed')) {
-      errorEl.innerHTML = `
-        Please confirm your email first. Check your inbox for the confirmation link.<br>
-        <a href="#" id="resend-confirmation" style="color: #2563eb; font-size: 0.8rem;">
-          Resend confirmation email
-        </a>
-      `;
-      
-      document.getElementById('resend-confirmation')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const { error: resendError } = await supabase.auth.resend({
-          type: 'signup',
-          email: email
-        });
-        if (!resendError) {
-          alert('Confirmation email resent! Please check your inbox.');
-        }
-      });
-    } else {
-      errorEl.textContent = error.message;
-    }
+  // Validate inputs
+  if (!email || !password) {
+    errorEl.textContent = "Please enter both email and password";
     return;
   }
 
-  if (data.user) {
-    // Check if we have a pending profile to create
-    const tempProfile = JSON.parse(localStorage.getItem('temp_profile') || '{}');
-    
-    if (tempProfile.user_id === data.user.id) {
-      // Create the profile now that user is confirmed
-      const { error: profileError } = await supabase
-        .from("user_profiles")
-        .upsert({
-          user_id: data.user.id,
-          email: tempProfile.email,
-          full_name: tempProfile.full_name,
-          phone: tempProfile.phone,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+  try {
+    const { data, error } = await window.supabase.auth.signInWithPassword({ 
+      email, 
+      password 
+    });
 
-      if (!profileError) {
-        // Clean up temporary data
-        localStorage.removeItem('temp_profile');
-        localStorage.removeItem('pending_email');
+    if (error) {
+      // Handle email not confirmed gracefully
+      if (error.message.includes('Email not confirmed')) {
+        errorEl.innerHTML = `
+          Please confirm your email first. Check your inbox for the confirmation link.<br>
+          <a href="#" id="resend-confirmation" style="color: #2563eb; font-size: 0.8rem;">
+            Resend confirmation email
+          </a>
+        `;
+        
+        document.getElementById('resend-confirmation')?.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const { error: resendError } = await window.supabase.auth.resend({
+            type: 'signup',
+            email: email
+          });
+          if (!resendError) {
+            alert('Confirmation email resent! Please check your inbox.');
+          }
+        });
+      } else {
+        errorEl.textContent = error.message;
       }
+      return;
     }
 
-    // Update last_login
-    await supabase
-      .from("user_profiles")
-      .update({ last_login: new Date().toISOString() })
-      .eq("user_id", data.user.id);
+    if (data.user) {
+      // Check if we have a pending profile to create
+      const tempProfile = JSON.parse(localStorage.getItem('temp_profile') || '{}');
+      
+      if (tempProfile.user_id === data.user.id) {
+        // Create the profile now that user is confirmed
+        const { error: profileError } = await window.supabase
+          .from("user_profiles")
+          .upsert({
+            user_id: data.user.id,
+            email: tempProfile.email,
+            full_name: tempProfile.full_name,
+            phone: tempProfile.phone,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
 
-    // Redirect to index page
-    window.location.href = "index.html";
+        if (!profileError) {
+          // Clean up temporary data
+          localStorage.removeItem('temp_profile');
+          localStorage.removeItem('pending_email');
+        }
+      }
+
+      // Update last_login
+      await window.supabase
+        .from("user_profiles")
+        .update({ last_login: new Date().toISOString() })
+        .eq("user_id", data.user.id)
+        .then(() => {
+          // Redirect to index page
+          window.location.href = "index.html";
+        });
+
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    errorEl.textContent = "An unexpected error occurred. Please try again.";
   }
 });
-  
 </script>
- 
 </body>
 </html>
